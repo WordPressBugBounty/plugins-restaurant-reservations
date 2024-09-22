@@ -1,0 +1,19 @@
+.rtb-clear {
+  clear: both;
+}
+
+.rtb-helper-install-notice {
+  display: inline-block;
+  clear: both;
+}
+
+.rtb-helper-install-notice-img,
+.rtb-helper-install-notice-txt
+ {
+  float: left;
+  padding: 8px 8px 8px 0px;
+}
+
+.rtb-helper-install-notice div img {
+  max-height: 36px;
+}
