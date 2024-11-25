@@ -1,8 +1,8 @@
 === Five Star Restaurant Reservations - WordPress Booking Plugin ===
 Contributors: Rustaurius
-Tested Up To: 6.6
+Tested Up To: 6.7
 Tags: reservation, reservations, restaurant reservations, reservation form, restaurant, restaurant booking, restaurant reservation form, restaurant booking form, restaurant booking system, reservation system, online reservations, online restaurant booking, dinner reservations, restaurant form, gutenberg reservations, gutenberg restaurant reservations, gutenberg restaurant booking, mobile reservations, responsive reservations, table reservations, open table, book table, reserve table, easy reservations, simple reservations, quick restaurant reservations, custom reservation form, custom restaurant reservations
-Stable tag: 2.6.26
+Stable tag: 2.6.27
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -277,6 +277,9 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 21. Viewing bookings in the Five Star Restaurant Manager app.
 
 == Changelog ==
+
+= 2.6.27 (2024-11-25) =
+- Tested with WordPress 6.7.
 
 = 2.6.26 (2024-07-18) =
 - Fix for issue with date range exceptions not being correctly applied in some cases.
