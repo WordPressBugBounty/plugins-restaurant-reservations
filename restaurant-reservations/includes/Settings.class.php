@@ -2317,7 +2317,7 @@ If you were not the one to cancel this booking, please contact us.
 	 * Get options for the party select field in the booking form
 	 * @since 1.3
 	 */
-	public function get_form_party_options() {
+	public function get_form_party_options( $location_id = 0 ) {
 
 		$options = array();
 
@@ -2326,11 +2326,15 @@ If you were not the one to cancel this booking, please contact us.
 			$options[] = '';
 		}
 
+		$location = ( ! empty( $location_id ) and term_exists( $location_id ) ) ? get_term( $location_id ) : false;
+		$location_slug = ! empty( $location ) ? $location->slug : false;
+
 		$party_size = (int) $this->get_setting( 'party-size' );
 		$party_size_min = (int) $this->get_setting( 'party-size-min' );
-
+		$max_people = (int) $this->get_setting( 'rtb-max-people-count', $location_slug );
+		
 		$min = apply_filters( 'rtb_party_size_lower_limit', empty( $party_size_min ) ? 1 : (int) $this->get_setting( 'party-size-min' ) );
-		$max = apply_filters( 'rtb_party_size_upper_limit', empty( $party_size ) ? 100 : (int) $this->get_setting( 'party-size' ) );
+		$max = min( $max_people, apply_filters( 'rtb_party_size_upper_limit', empty( $party_size ) ? 100 : (int) $this->get_setting( 'party-size' ) ) );
 
 		for ( $i = $min; $i <= $max; $i++ ) {
 			$options[$i] = $i;
@@ -2347,10 +2351,10 @@ If you were not the one to cancel this booking, please contact us.
 
 		$options = array();
 
-		$table_sections = json_decode( html_entity_decode( $this->get_setting( 'rtb-table-sections' ) ) );
+		$table_sections = ! empty( $this->get_setting( 'rtb-table-sections' ) ) ? json_decode( html_entity_decode( $this->get_setting( 'rtb-table-sections' ) ) ) : array();
 		$table_sections = is_array( $table_sections ) ? $table_sections : array();
 
-		$tables = json_decode( html_entity_decode( $this->get_setting( 'rtb-tables' ) ) );
+		$tables = ! empty( $this->get_setting( 'rtb-tables' ) ) ? json_decode( html_entity_decode( $this->get_setting( 'rtb-tables' ) ) ) : array();
 		$tables = is_array( $tables ) ? $tables : array();
 
 		foreach ( $tables as $table ) {
@@ -2492,7 +2496,7 @@ If you were not the one to cancel this booking, please contact us.
 						'request_input'	=> empty( $request->party ) ? '' : $request->party,
 						'callback'		=> 'rtb_print_form_select_field',
 						'callback_args'	=> array(
-							'options'	=> $this->get_form_party_options(),
+							'options'	=> $this->get_form_party_options( empty( $args['location'] ) ? 0 : $args['location'] ),
 						),
 						'required'		=> true,
 					),

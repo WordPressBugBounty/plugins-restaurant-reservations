@@ -2,7 +2,7 @@
 Contributors: Rustaurius
 Tested Up To: 6.7
 Tags: reservation, reservations, restaurant reservations, reservation form, restaurant, restaurant booking, restaurant reservation form, restaurant booking form, restaurant booking system, reservation system, online reservations, online restaurant booking, dinner reservations, restaurant form, gutenberg reservations, gutenberg restaurant reservations, gutenberg restaurant booking, mobile reservations, responsive reservations, table reservations, open table, book table, reserve table, easy reservations, simple reservations, quick restaurant reservations, custom reservation form, custom restaurant reservations
-Stable tag: 2.6.27
+Stable tag: 2.6.28
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -277,6 +277,9 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 21. Viewing bookings in the Five Star Restaurant Manager app.
 
 == Changelog ==
+
+= 2.6.28 (2024-12-06) =
+- Fixed an issued causing an incorrect maximum party size to be displayed in the booking form when you set a location-specific maximum number of seats that was smaller than your global maximum number of seats and you added a location-specific booking form to a page.
 
 = 2.6.27 (2024-11-25) =
 - Tested with WordPress 6.7.
