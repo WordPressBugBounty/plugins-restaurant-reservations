@@ -2331,7 +2331,7 @@ If you were not the one to cancel this booking, please contact us.
 
 		$party_size = (int) $this->get_setting( 'party-size' );
 		$party_size_min = (int) $this->get_setting( 'party-size-min' );
-		$max_people = (int) $this->get_setting( 'rtb-max-people-count', $location_slug );
+		$max_people = ! empty( $this->get_setting( 'rtb-max-people-count', $location_slug ) ) ? (int) $this->get_setting( 'rtb-max-people-count', $location_slug ) : 100;
 		
 		$min = apply_filters( 'rtb_party_size_lower_limit', empty( $party_size_min ) ? 1 : (int) $this->get_setting( 'party-size-min' ) );
 		$max = min( $max_people, apply_filters( 'rtb_party_size_upper_limit', empty( $party_size ) ? 100 : (int) $this->get_setting( 'party-size' ) ) );
