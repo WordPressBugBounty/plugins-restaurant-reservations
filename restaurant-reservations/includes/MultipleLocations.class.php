@@ -892,17 +892,23 @@ if ( ! class_exists( 'rtbMultipleLocations', false ) ) {
 		 * @param array $summary_data      [label -> data] list
 		 * @param rtbBooking $booking      current booking
 		 */
-		public function add_payment_summary( $summary_data, $booking )
-		{
+		public function add_payment_summary( $summary_data, $booking ) {
 			global $rtb_controller;
 
-			if( property_exists( $booking, 'location' ) && ! empty( $booking->location ) ) {
+			if ( property_exists( $booking, 'location' ) && ! empty( $booking->location ) ) {
+				
 				$loc_term = get_term( $booking->location, $rtb_controller->locations->location_taxonomy, OBJECT );
-				if ( !$loc_term || is_a( $loc_term, 'WP_Error' ) ) {
+				
+				if ( ! $loc_term || is_a( $loc_term, 'WP_Error' ) ) {
+
 					unset( $summary_data['location'] );
 				}
 				else {
-					$summary_data['location'] = $loc_term->name;
+
+					$summary_data['location'] = array(
+						'label'	=> $rtb_controller->settings->get_setting( 'label-location' ),
+						'value' => $loc_term->name,
+					);
 				}
 			}
 

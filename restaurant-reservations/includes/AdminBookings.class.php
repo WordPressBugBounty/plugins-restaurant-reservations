@@ -615,6 +615,10 @@ class rtbAdminBookings {
 
 		$id = (int) $_POST['booking'];
 
+		if ( get_post_type( $id ) != RTB_BOOKING_POST_TYPE ) { 
+			$this->nopriv_ajax(); 
+		}
+
 		$result = wp_trash_post( $id );
 
 		if ( $result === false ) {

@@ -339,6 +339,7 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
         'automatic_payment_methods'   => array(
           'enabled'                     => true,
         ),
+        'capture_method'              => 'automatic',
         'receipt_email'               => $booking->email,
         'description'                 => apply_filters( 'rtb-stripe-payment-desc', $desc ),
         'statement_descriptor_suffix' => apply_filters( 'rtb-stripe-payment-stmnt-desc', $stmt_desc ),

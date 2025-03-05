@@ -181,7 +181,7 @@ function rtb_print_booking_form( $args = array() )
 			<div>
 				<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-modify-using-form'  ) ); ?>
 			</div>
-			<label for="rtb-modification-email">
+			<label for="rtb_modification_email">
 				<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-modify-form-email'  ) ); ?>
 			</label>
 			<input type="email" name="rtb_modification_email" />

@@ -334,35 +334,49 @@ class rtbPaymentManager {
     </h2>
     <dl class="summary-detail">
       <?php
-      $fields_to_omit = apply_filters( 'rtb-payment-summary-omit-fields', ['payment-gateway'] );
+      $fields_to_omit = apply_filters( 'rtb-payment-summary-omit-fields', array( 'payment-gateway' ) );
       $summary_data = [];
 
       // Retrieve the form fields
       $fieldSets = $rtb_controller->settings->get_booking_form_fields();
 
       foreach ( $fieldSets as $fieldset => $list ) {
+
         foreach ( $list['fields'] as $slug => $field_data ) {
-          if( property_exists( $this->booking, $slug ) ) {
+
+          if ( property_exists( $this->booking, $slug ) ) {
+
             // Tables are saved as arrays
-            if( is_array( $this->booking->{$slug} ) || is_object( $this->booking->{$slug} ) ) continue;
-            $summary_data[ $slug ] = esc_html( $this->booking->{$slug} );
+            if ( is_array( $this->booking->{$slug} ) || is_object( $this->booking->{$slug} ) )  { continue; }
+
+            $summary_data[ $slug ] = array( 
+              'label' => $field_data['title'],
+              'value' => $this->booking->{$slug},
+            );
           }
         }
       }
 
-      // Tables are not avialable always
+      // Tables are not available always
       unset( $summary_data['table'] );
-      if( $rtb_controller->settings->get_setting( 'enable-tables' ) ) {
-        $summary_data['table'] = esc_html( implode( ',', $this->booking->table ) );
+
+      if ( $rtb_controller->settings->get_setting( 'enable-tables' ) ) {
+        $summary_data['table'] = array(
+          'label' => $rtb_controller->settings->get_setting( 'label-table-s' ),
+          'value' => implode( ',', $this->booking->table )
+        );
       }
 
       // Format date/time
-      $summary_data['date / time'] = ( new DateTime( $summary_data['date'], wp_timezone() ) )
+      $summary_data['date / time'] = array(
+       'label' => $rtb_controller->settings->get_setting( 'label-date' ) . ' / ' . $rtb_controller->settings->get_setting( 'label-time' ),
+       'value' => ( new DateTime( $summary_data['date']['value'], wp_timezone() ) )
         ->format(
           get_option('date_format')
           .' '.
           get_option('time_format')
-        );
+        )
+      );
       unset( $summary_data['date'] );
 
       // omit certain fields
@@ -372,10 +386,10 @@ class rtbPaymentManager {
 
       $summary_data = apply_filters( 'rtb-payment-summary-data', $summary_data, $this->booking );
 
-      foreach( $summary_data as $dt => $dd ) {
+      foreach( $summary_data as $key => $field ) {
       ?>
-        <dt><?php echo ucwords( $dt ); ?>:</dt>
-        <dd><?php echo $dd; ?></dd>
+        <dt><?php echo esc_html( $field['label'] ); ?>:</dt>
+        <dd><?php echo esc_html( $field['value'] ); ?></dd>
       <?php
       }
       ?>

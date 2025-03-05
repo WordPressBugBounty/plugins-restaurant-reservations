@@ -2,7 +2,7 @@
 Contributors: Rustaurius
 Tested Up To: 6.7
 Tags: reservation, reservations, restaurant reservations, reservation form, restaurant, restaurant booking, restaurant reservation form, restaurant booking form, restaurant booking system, reservation system, online reservations, online restaurant booking, dinner reservations, restaurant form, gutenberg reservations, gutenberg restaurant reservations, gutenberg restaurant booking, mobile reservations, responsive reservations, table reservations, open table, book table, reserve table, easy reservations, simple reservations, quick restaurant reservations, custom reservation form, custom restaurant reservations
-Stable tag: 2.6.29
+Stable tag: 2.6.30
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -277,6 +277,14 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 21. Viewing bookings in the Five Star Restaurant Manager app.
 
 == Changelog ==
+
+= 2.6.30 (2025-03-05) =
+- Fix: Some labelling options weren't being applied on payment summary screen.
+- Fix: Missing labelling options.
+- Change: Updated a labelling option value for accessibility reasons.
+- Change: Updated Stripe integration to account for user accounts using new API version. 
+- Fix: Fatal error occurring in some cases with the payment summary data.
+- Fix: Rare issue causing trash action for non-booking posts.
 
 = 2.6.29 (2024-12-09) =
 - Fix for issue with no values in the party size dropdown.

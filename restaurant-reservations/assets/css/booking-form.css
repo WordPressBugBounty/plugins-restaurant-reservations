@@ -263,12 +263,12 @@
 	border-radius: 3px;
 	cursor: pointer;
 }
-label[for="rtb-modification-email"],
+label[for="rtb_modification_email"],
 input[name="rtb_modification_email"] {
 	float: left;
 	margin-top: 20px;
 }
-label[for="rtb-modification-email"] {
+label[for="rtb_modification_email"] {
 	margin-right: 12px;
 }
 .rtb-find-reservation-button {
