@@ -54,7 +54,7 @@ class ebfrtbExportCAL extends ebfrtbExport {
 		foreach ( $this->bookings as $booking ) {
 
 			$booking_end_datetime = new DateTime( $booking->date, wp_timezone() );
-			$booking_end_datetime->add( new DateInterval( 'PT' . $rtb_controller->settings->get_setting( 'rtb-dining-block-length' ) . 'M' ) );
+			$booking_end_datetime->add( new DateInterval( 'PT' . $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $booking->get_location_slug(), $booking->get_timeslot() ) . 'M' ) );
 
 			$event = new ZCiCalNode( 'VEVENT', $ical->curnode );
 

@@ -149,7 +149,8 @@ class rtbNotificationSMS extends rtbNotification {
 				'admin_email' 	=> urlencode( $this->purchase_email ),
 				'phone_number' 	=> urlencode( $this->phone_number ),
 				'message'		=> urlencode( $this->message ),
-				'country_code'	=> urlencode( $rtb_controller->settings->get_setting( 'rtb-country-code' ) )
+				'country_code'	=> urlencode( $rtb_controller->settings->get_setting( 'rtb-country-code' ) ),
+				'sender_id'		=> urlencode( $rtb_controller->settings->get_setting( 'sms-sender-id' ) )
 			),
 			'http://www.fivestarplugins.com/sms-handling/sms-client.php'
 		);

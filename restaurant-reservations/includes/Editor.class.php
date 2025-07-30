@@ -130,10 +130,10 @@ class cffrtbEditor {
 		?>
 
 		<div class="wrap">
-			<h2>
+			<h1>
 				<?php _e( 'Custom Fields Editor', 'restaurant-reservations' ); ?>
 				<a href="#" class="add-new-h2 add-field">Add New</a>
-			</h2>
+			</h1>
 			<?php if ( $custom_fields_permission ) { ?> 
 				<div id="cffrtb-editor">
 					<?php $this->print_booking_form_fields(); ?>

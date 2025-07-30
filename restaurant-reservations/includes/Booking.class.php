@@ -58,6 +58,10 @@ class rtbBooking {
 
 	// location
 	public $location;
+	public $location_slug;
+
+	// timeslot
+	public $timeslot;
 
 	// post meta
 	public $party;
@@ -256,13 +260,7 @@ class rtbBooking {
 			// get all tables and select the deposits for any selected
 			else {
 
-				if ( empty( $this->location ) or ! term_exists( $this->location ) ) { $location_slug = false; }
-				else {
-
-					$location = get_term( $this->location );
-
-					$location_slug = $location->slug;
-				}
+				$location_slug = $this->get_location_slug();
 
 				$tables = json_decode( html_entity_decode( $rtb_controller->settings->get_setting( 'rtb-tables', $location_slug ) ) );
 				$tables = is_array( $tables ) ? $tables : array();
@@ -744,7 +742,7 @@ class rtbBooking {
 		$this->table = is_array( $table ) ? array_map( 'sanitize_text_field', $table ) : array();
 
 		$table_required = $rtb_controller->settings->get_setting( 'require-table' );
-		if ( $table_required && empty( $this->table ) ) {
+		if ( $table_required && empty( $this->table ) && ! $this->by_admin ) {
 			$this->validation_errors[] = array(
 				'field'			=> 'table',
 				'post_variable'	=> $this->table,
@@ -822,7 +820,7 @@ class rtbBooking {
 		// Check if any required fields are empty
 		$required_fields = $rtb_controller->settings->get_required_fields();
 		foreach( $required_fields as $slug => $field ) {
-			if ( !$this->field_has_error( $slug ) && $this->is_field_empty( $slug ) ) {
+			if ( !$this->field_has_error( $slug ) && $this->is_field_empty( $slug ) && ! $this->by_admin ) {
 				$this->validation_errors[] = array(
 					'field'			=> $slug,
 					'post_variable'	=> '',
@@ -1048,20 +1046,15 @@ class rtbBooking {
 		// Date validation has failed, return true to avoid adding additional errors
 		if ( empty( $this->date ) ) { return true; }
 
-		$location = ( ! empty( $this->location ) and term_exists( $this->location ) ) ? get_term( $this->location ) : false;
-		$location_slug = ! empty( $location ) ? $location->slug : false;
-
-		$max_reservations_enabled = $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $location_slug );
+		$max_reservations_enabled = $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $this->get_location_slug() );
 
 		if ( ! $max_reservations_enabled ) { return true; }
 
-		$timeslot = rtb_get_timeslot( $this->date, $this->location );
-
-		$max_reservations = (int) $rtb_controller->settings->get_setting( 'rtb-max-tables-count', $location_slug, $timeslot );
+		$max_reservations = (int) $rtb_controller->settings->get_setting( 'rtb-max-tables-count', $this->get_location_slug(), $this->get_timeslot() );
 
 		if ( $max_reservations == 'undefined' or ! $max_reservations ) { return true; }
 
-		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length' ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
+		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $this->get_location_slug(), $this->get_timeslot() ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
 
 		$tmp = ( new DateTime( $this->date, wp_timezone() ) )->format( 'U' );
 		$after_time = $tmp - $dining_block_seconds;
@@ -1133,21 +1126,19 @@ class rtbBooking {
 		// Date validation has failed, return true to avoid adding additional errors
 		if ( empty( $this->date ) ) { return true; }
 
-		$location = ( ! empty( $this->location ) and term_exists( $this->location ) ) ? get_term( $this->location ) : false;
-		$location_slug = ! empty( $location ) ? $location->slug : false;
+		// Blank party number, can't put it over the maximum
+		if ( empty( $this->party ) ) { return true; }
 
-		$max_reservations_enabled = $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $location_slug );
+		$max_reservations_enabled = $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $this->get_location_slug() );
 
 		if ( ! $max_reservations_enabled ) { return true; }
 
-		$timeslot = rtb_get_timeslot( $this->date, $this->location );
-
-		$max_seats = (int) $rtb_controller->settings->get_setting( 'rtb-max-people-count', $location_slug, $timeslot );
+		$max_seats = (int) $rtb_controller->settings->get_setting( 'rtb-max-people-count', $this->get_location_slug(), $this->get_timeslot() );
 
 		if ( $max_seats == 'undefined' or ! $max_seats ) { return true; } 
 		if ( $this->party > $max_seats ) { return false; }
 
-		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length' ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
+		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $this->get_location_slug(), $this->get_timeslot() ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
 
 		$tmp = ( new DateTime( $this->date, wp_timezone() ) )->format( 'U' );
 		$after_time = $tmp - $dining_block_seconds;
@@ -1358,11 +1349,11 @@ class rtbBooking {
 	public function under_max_confirm_reservations() {
 		global $rtb_controller;
 
-		$max_reservations = (int) $rtb_controller->settings->get_setting( 'auto-confirm-max-reservations' );
+		$max_reservations = (int) $rtb_controller->settings->get_setting( 'auto-confirm-max-reservations', $this->get_location_slug(), $this->get_timeslot() );
 
 		if ( $max_reservations == 'undefined' or $max_reservations <= 1 ) { return false; }
 
-		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length' ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
+		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $this->get_location_slug(), $this->get_timeslot() ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
 
 		$tmp = (new DateTime( $this->date, wp_timezone() ) )->format( 'U' );
 		$after_time = $tmp - $dining_block_seconds;
@@ -1412,11 +1403,11 @@ class rtbBooking {
 	public function under_max_confirm_seats() {
 		global $rtb_controller;
 
-		$max_seats = (int) $rtb_controller->settings->get_setting( 'auto-confirm-max-seats' );
+		$max_seats = (int) $rtb_controller->settings->get_setting( 'auto-confirm-max-seats', $this->get_location_slug(), $this->get_timeslot() );
 
 		if ( $max_seats == 'undefined' or $max_seats < 2 or $this->party >= $max_seats ) { return false; }
 
-		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length' ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
+		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $this->get_location_slug(), $this->get_timeslot() ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
 
 		$tmp = (new DateTime( $this->date, wp_timezone() ) )->format( 'U' );
 		$after_time = $tmp - $dining_block_seconds;
@@ -1491,13 +1482,13 @@ class rtbBooking {
 			)
 		) {
 			$post_status = 'payment_pending';
-		} elseif ( $this->party < $rtb_controller->settings->get_setting( 'auto-confirm-max-party-size' ) ) {
+		} elseif ( $this->party < $rtb_controller->settings->get_setting( 'auto-confirm-max-party-size', $this->get_location_slug(), $this->get_timeslot() ) ) {
 			$post_status = 'confirmed';
 			$this->temp_confirmed_user = -1;
-		} elseif ($rtb_controller->settings->get_setting( 'auto-confirm-max-reservations' ) and $this->under_max_confirm_reservations() ) {
+		} elseif ($rtb_controller->settings->get_setting( 'auto-confirm-max-reservations', $this->get_location_slug(), $this->get_timeslot() ) and $this->under_max_confirm_reservations() ) {
 			$post_status = 'confirmed';
 			$this->temp_confirmed_user = -2;
-		} elseif ( $rtb_controller->settings->get_setting( 'auto-confirm-max-seats' ) and $this->under_max_confirm_seats() ) {
+		} elseif ( $rtb_controller->settings->get_setting( 'auto-confirm-max-seats', $this->get_location_slug(), $this->get_timeslot() ) and $this->under_max_confirm_seats() ) {
 			$post_status = 'confirmed';
 			$this->temp_confirmed_user = -3;
 		} else {
@@ -1505,6 +1496,41 @@ class rtbBooking {
 		}
 
 		$this->post_status = apply_filters( 'rtb_determine_booking_status', $post_status, $this );
+	}
+
+	/**
+	 * Get the location slug for this booking, if a location is set
+	 *
+	 * @since 2.7.0
+	 */
+	public function get_location_slug() {
+
+		if ( isset( $this->location_slug ) ) { return $this->location_slug; }
+
+		if ( empty( $this->location ) or ! term_exists( $this->location ) ) { $this->location_slug = false; }
+		else {
+
+			$location = get_term( $this->location );
+
+			$this->location_slug = $location->slug;
+		}
+
+		return $this->location_slug;
+	}
+
+	/**
+	 * Get the scheduling slot that this booking falls under
+	 *
+	 * @since 2.7.0
+	 */
+	public function get_timeslot() {
+
+		if ( ! isset( $this->timeslot ) ) {
+
+			$this->timeslot = rtb_get_timeslot( $this->date, $this->location );
+		}
+
+		return $this->timeslot;
 	}
 
 	/**

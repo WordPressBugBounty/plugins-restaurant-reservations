@@ -14,7 +14,7 @@
  *
  */
 
-class mcfrtbAdminPageSettingMcListMerge_2_6_21_rtb {
+class mcfrtbAdminPageSettingMcListMerge_2_7_0_rtb {
 
 	// Page defaults
 	public $id; // used in form fields and database to track and store setting

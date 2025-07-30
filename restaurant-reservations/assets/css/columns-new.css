@@ -1,0 +1,216 @@
+.rtb-booking-form,
+.rtb-booking-form * {
+	box-sizing: border-box;
+	color: #212427;
+	font-weight: normal;
+	font-size: 16px;
+	transition: background .35s, color .35s, border .35s;
+}
+
+.rtb-booking-form {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.rtb-modification-form {
+	margin-top: 24px;
+	display: flex;
+	flex-direction: column;
+}
+.rtb-modification-toggle {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 48px;
+	width: auto;
+	padding: 0 16px;
+	margin: 24px auto 0 0;
+	background: transparent;
+	color: #212427;
+	border: 1px solid #252525;
+	border-radius: 8px;
+	font-size: 18px;
+	cursor: pointer;
+}
+.rtb-modification-toggle:hover {
+	background: #252525;
+	color: #fff;
+}
+label[for="rtb_modification_email"] {
+	margin-top: 24px;
+	display: flex;
+	align-items: center;
+}
+input[name="rtb_modification_email"] {
+	margin-top: 0;
+}
+.rtb-bookings-results {
+	margin-top: 24px;
+	display: flex;
+	flex-direction: column;
+}
+.rtb-cancel-booking-div {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	height: 48px;
+	border-color: #b1b1b1;
+	border-radius: 8px;
+	overflow: hidden;
+}
+.rtb-cancel-booking,
+.rtb-deposit-booking {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100px;
+	min-width: auto;
+	max-width: none;
+	height: 48px;
+	padding: 0;
+	margin: 0;
+}
+.rtb-cancel-booking-div :not(:first-child) {
+	margin: 0;
+}
+.rtb-booking-information {
+	padding: 0 0 0 6px;
+}
+
+.rtb-find-reservation-button,
+.rtb-form-submit button {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 48px;
+	width: auto;
+	padding: 0 16px;
+	margin: 24px auto 0 0;
+	background: #252525;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 18px;
+	cursor: pointer;
+}
+.rtb-find-reservation-button:hover,
+.rtb-form-submit button:hover {
+	background: #555;
+	color: #fff;
+}
+
+.rtb-booking-form-form {
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+}
+
+.rtb-booking-form-form fieldset {
+	display: flex;
+	width: 100%;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	padding: 0;
+	margin: 64px 0 0;
+	border: none;
+}
+.rtb-booking-form-form fieldset.optin,
+.rtb-booking-form-form fieldset.rtb-form-footer {
+	margin: 24px 0 0;
+}
+.rtb-booking-form-form fieldset legend {
+	width: 100%;
+	margin-bottom: 8px;
+	padding: 0;
+	font-size: 18px;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+.rtb-booking-form-form fieldset > div {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	margin: 24px 0 0;
+}
+.rtb-booking-form-form fieldset > div.rtb-text.date,
+.rtb-booking-form-form fieldset > div.rtb-text.time,
+.rtb-booking-form-form fieldset > div.rtb-text.email,
+.rtb-booking-form-form fieldset > div.rtb-text.phone {
+	width: 49%;
+}
+.rtb-booking-form .add-message {
+	margin: 0;
+}
+.rtb-booking-form .add-message a {
+	display: block;
+	margin: 24px 0 0;
+}
+.rtb-booking-form-form fieldset > div label {
+	margin: 0 0 8px;
+	font-weight: bold;
+}
+.rtb-booking-form input[type="text"],
+.rtb-booking-form input[type="email"],
+.rtb-booking-form input[type="tel"],
+.rtb-booking-form select,
+.rtb-booking-form textarea {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	max-width: none;
+	height: 48px;
+	border: 1px solid #b1b1b1;
+	border-radius: 8px;
+	padding: 0 16px;
+	background: transparent;
+	color: #7a7a7a;
+}
+.rtb-booking-form input[type="email"][name="rtb_modification_email"] {
+	width: 300px;
+	margin-left: 6px;
+}
+.rtb-booking-form textarea {
+	min-width: 100%;
+	max-width: 100%;
+	padding: 16px;
+	min-height: 160px;
+}
+.rtb-booking-form-form fieldset > div.rtb-checkbox label:nth-of-type(n+2),
+.rtb-booking-form-form fieldset > div.rtb-radio label:nth-of-type(n+2),
+.rtb-booking-form-form fieldset > div.mc-optin label {
+	margin: 0;
+	font-weight: normal;
+	display: flex;
+	align-items: center;
+}
+.rtb-booking-form input[type="checkbox"],
+.rtb-booking-form input[type="radio"] {
+	margin: 0 6px 0 0;
+	max-width: none;
+	vertical-align: initial;
+	width: 16px;
+	height: 16px;
+}
+#rtb_recaptcha {
+	margin: 0;
+}
+.rtb-booking-form-form fieldset > div.rtb-form-submit {
+	margin-top: 0;
+}
+.rtb-form-submit button {
+	margin: 0 auto 0 0;
+}
+
+@media screen and (max-width: 568px) {
+	.rtb-booking-form-form fieldset > div.rtb-text.date,
+	.rtb-booking-form-form fieldset > div.rtb-text.time,
+	.rtb-booking-form-form fieldset > div.rtb-text.email,
+	.rtb-booking-form-form fieldset > div.rtb-text.phone {
+		width: 100%;
+	}
+}
+
+.rtb-hidden {
+	display: none;
+}

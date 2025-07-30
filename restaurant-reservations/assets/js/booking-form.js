@@ -38,6 +38,21 @@ jQuery(document).ready(function ($) {
 			return true;
 		} );
 
+		// Remove required attribute from all checkboxes in a group if one is checked
+		$( '.rtb-booking-form form button[type="submit"]' ).on( 'click', function() {
+
+			$( '.rtb-booking-form form input[required]:checkbox' ).each( function() {
+				 var checkbox_name = $( this ).attr('name');
+
+				 var checkbox_group = $( '.rtb-booking-form form input[name="' + checkbox_name + '"]' );
+
+				 if ( checkbox_group.is( ':checked' ) ) {
+
+				 	checkbox_group.prop( 'required', false );
+				 }
+			});
+		});
+
 		// Enable datepickers on load
 		if ( typeof rtb_pickadate !== 'undefined' ) {
 
@@ -666,14 +681,21 @@ jQuery(document).ready(function ($) {
 
 				partySelect.prop('disabled', false);
 
-				partySelect.find('> option').each(function() {
-					var that = $(this); 
-					if (this.value > available_spots) {
-						that.prop('disabled', true);
-					} else {
-						that.prop('disabled', false);
-					}
-				});
+				if ( rtb_booking_form_js_localize.is_admin && rtb_booking_form_js_localize.admin_ignore_maximums ) {
+
+					partySelect.find('> option').prop( 'disabled', false );
+				}
+				else {
+
+					partySelect.find('> option').each(function() {
+						var that = $(this); 
+						if (this.value > available_spots) {
+							that.prop('disabled', true);
+						} else {
+							that.prop('disabled', false);
+						}
+					});
+				}
 			});
 		}
 	}
@@ -698,7 +720,7 @@ jQuery(document).ready(function ($) {
 				selected_location = hidden_location.val();
 			}
 
-			if ( ! selected_time || ! party ) { return; }
+			if ( ! selected_time || ! party || party == 0 ) { return; }
 
 			selected_date_month = ('0' + (selected_date_month + 1)).slice(-2);
 			selected_date_date = ('0' + selected_date_date).slice(-2);
@@ -741,6 +763,10 @@ jQuery(document).ready(function ($) {
 				}
 				else {
 					clearPrevFieldError( 'table' );
+				}
+
+				if ( rtb_booking_form_js_localize.is_admin ) {
+					table_select.append( '<option></option>' );
 				}
 
 				jQuery.each(available_tables, function(index, element) {

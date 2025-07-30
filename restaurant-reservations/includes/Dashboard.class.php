@@ -78,255 +78,212 @@ class rtbDashboard {
 		?>
 		<div id="rtb-dashboard-content-area">
 
-			<div id="rtb-dashboard-content-left">
-		
-				<?php if ( ! $permission or ! $ultimate or get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) {
-					$premium_info = '<div class="rtb-dashboard-new-widget-box ewd-widget-box-full">';
-					$premium_info .= '<div class="rtb-dashboard-new-widget-box-top">';
-					$premium_info .= sprintf( __( '<a href="%s" target="_blank">Visit our website</a> to learn how to upgrade to premium.'), 'https://www.fivestarplugins.com/premium-upgrade-instructions/?utm_source=rtb_dashboard&utm_content=visit_our_site_link' );
-					$premium_info .= '</div>';
-					$premium_info .= '</div>';
+			<?php if ( ! $permission or ! $ultimate or get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) {
+				$premium_info = '<div class="rtb-dashboard-visit-our-site">';
+				$premium_info .= sprintf( __( '<a href="%s" target="_blank">Visit our website</a> to learn how to upgrade to premium.', 'restaurant-reservations' ), 'https://www.fivestarplugins.com/premium-upgrade-instructions/?utm_source=fdm_dashboard&utm_content=visit_our_site_link' );
+				$premium_info .= '</div>';
 
-					$premium_info = apply_filters( 'fsp_dashboard_top', $premium_info, 'RTB', 'https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1' );
+				$premium_info = apply_filters( 'fsp_dashboard_top', $premium_info, 'RTB', 'https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1' );
 
-					if ( $permission and get_option("RTU_Trial_Happening") != "Yes" ) {
-						$ultimate_premium_notice = '<div class="rtb-ultimate-notification">';
-						$ultimate_premium_notice .= __( 'Thanks for being a premium user! <strong>If you\'re looking to upgrade to our ultimate version, enter your new product key below.</strong>', 'restaurant-reservations' );
-						$ultimate_premium_notice .= '</div>';
-						$ultimate_premium_notice .= '<div class="rtb-ultimate-upgrade-dismiss"></div>';
+				if ( $permission and get_option("RTU_Trial_Happening") != "Yes" ) {
+					$ultimate_premium_notice = '<div class="rtb-ultimate-notification">';
+					$ultimate_premium_notice .= __( 'Thanks for being a premium user! <strong>If you\'re looking to upgrade to our ultimate version, enter your new product key below.</strong>', 'restaurant-reservations'  );
+					$ultimate_premium_notice .= '</div>';
+					$ultimate_premium_notice .= '<div class="rtb-ultimate-upgrade-dismiss"></div>';
 
-						$premium_info = str_replace('<div class="fsp-premium-helper-dashboard-new-widget-box-top">', '<div class="fsp-premium-helper-dashboard-new-widget-box-top">' . $ultimate_premium_notice, $premium_info);
-					}
+					$premium_info = str_replace('<div class="fsp-premium-helper-dashboard-new-widget-box-top">', '<div class="fsp-premium-helper-dashboard-new-widget-box-top">' . $ultimate_premium_notice, $premium_info);
+				}
 
-					echo $premium_info;
-				} ?>
-		
-				<div class="rtb-dashboard-new-widget-box ewd-widget-box-full" id="rtb-dashboard-support-widget-box">
-					<div class="rtb-dashboard-new-widget-box-top">Get Support<span id="rtb-dash-mobile-support-down-caret">&nbsp;&nbsp;&#9660;</span><span id="rtb-dash-mobile-support-up-caret">&nbsp;&nbsp;&#9650;</span></div>
-					<div class="rtb-dashboard-new-widget-box-bottom">
-						<ul class="rtb-dashboard-support-widgets">
-							<li>
-								<a href="https://www.youtube.com/watch?v=b6x0QkgHBKI&list=PLEndQUuhlvSpWIb_sbRdFsHSkDADYU7JF" target="_blank">
-									<img src="<?php echo plugins_url( '../assets/img/ewd-support-icon-youtube.png', __FILE__ ); ?>">
-									<div class="rtb-dashboard-support-widgets-text">YouTube Tutorials</div>
-								</a>
-							</li>
-							<li>
-								<a href="https://wordpress.org/plugins/restaurant-reservations/#faq" target="_blank">
-									<img src="<?php echo plugins_url( '../assets/img/ewd-support-icon-faqs.png', __FILE__ ); ?>">
-									<div class="rtb-dashboard-support-widgets-text">Plugin FAQs</div>
-								</a>
-							</li>
-							<li>
-								<a href="http://doc.fivestarplugins.com/plugins/restaurant-reservations/?utm_source=rtb_dashboard&utm_content=icons_documentation" target="_blank">
-									<img src="<?php echo plugins_url( '../assets/img/ewd-support-icon-documentation.png', __FILE__ ); ?>">
-									<div class="rtb-dashboard-support-widgets-text">Documentation</div>
-								</a>
-							</li>
-							<li>
-								<a href="https://www.fivestarplugins.com/support-center/?utm_source=rtb_dashboard&utm_content=icons_get_support" target="_blank">
-									<img src="<?php echo plugins_url( '../assets/img/ewd-support-icon-forum.png', __FILE__ ); ?>">
-									<div class="rtb-dashboard-support-widgets-text">Get Support</div>
-								</a>
-							</li>
-						</ul>
+				echo $premium_info;
+			} ?>
+
+			<ul class="rtb-dashboard-support-widgets">
+				<li>
+					<div class="rtb-dashboard-support-widgets-title"><?php _e('YouTube Tutorials', 'restaurant-reservations'); ?></div>
+					<div class="rtb-dashboard-support-widgets-text-and-link">
+						<div class="rtb-dashboard-support-widgets-text"><span class="dashicons dashicons-star-empty"></span>Get help with our video tutorials</div>
+						<a class="rtb-dashboard-support-widgets-link" href="https://www.youtube.com/watch?v=b6x0QkgHBKI&list=PLEndQUuhlvSpWIb_sbRdFsHSkDADYU7JF" target="_blank"><?php _e('View', 'restaurant-reservations'); ?></a>
 					</div>
-				</div>
-		
-				<div class="rtb-dashboard-new-widget-box ewd-widget-box-full" id="rtb-dashboard-optional-table">
-					<div class="rtb-dashboard-new-widget-box-top"><?php _e('Bookings Summary', 'restaurant-reservations'); ?><span id="rtb-dash-optional-table-down-caret">&nbsp;&nbsp;&#9660;</span><span id="rtb-dash-optional-table-up-caret">&nbsp;&nbsp;&#9650;</span></div>
-					<div class="rtb-dashboard-new-widget-box-bottom">
-						<table class='rtb-overview-table wp-list-table widefat fixed striped posts'>
-							<thead>
-								<tr>
-									<th><?php _e("Date", 'restaurant-reservations'); ?></th>
-									<th><?php _e("Party", 'restaurant-reservations'); ?></th>
-									<th><?php _e("Name", 'restaurant-reservations'); ?></th>
-									<th><?php _e("Status", 'restaurant-reservations'); ?></th>
-								</tr>
-							</thead>
-							<tbody>
-								<?php
-									require_once( RTB_PLUGIN_DIR . '/includes/Query.class.php' );
-									$query = new rtbQuery( array() );
-									$query->prepare_args();
-
-									$bookings = $query->get_bookings();
-									$booking_statuses = $rtb_controller->cpts->booking_statuses;
-									
-									if (sizeOf($bookings) == 0) {echo "<tr><td colspan='4'>" . __("No bookings to display yet. Create a booking for it to be displayed here.", 'restaurant-reservations') . "</td></tr>";}
-									else {
-										foreach ($bookings as $booking) {
-										?>
-
-											<tr>
-												<td><?php echo esc_html( $booking->date ); ?></td>
-												<td><?php echo esc_html( $booking->party ); ?></td>
-												<td><?php echo esc_html( $booking->name ); ?></td>
-												<td><?php echo esc_html( $booking_statuses[$booking->post_status]['label'] ); ?></td>
-											</tr>
-										<?php }
-									}
-								?>
-							</tbody>
-						</table>
+				</li>
+				<li>
+					<div class="rtb-dashboard-support-widgets-title"><?php _e('Documentation', 'restaurant-reservations'); ?></div>
+					<div class="rtb-dashboard-support-widgets-text-and-link">
+						<div class="rtb-dashboard-support-widgets-text"><span class="dashicons dashicons-star-empty"></span>View our in-depth plugin documentation</div>
+						<a class="rtb-dashboard-support-widgets-link" href="http://doc.fivestarplugins.com/plugins/restaurant-reservations/?utm_source=rtb_dashboard&utm_content=icons_documentation" target="_blank"><?php _e('View', 'restaurant-reservations'); ?></a>
 					</div>
-				</div>
-		
-				<?php /*<div class="rtb-dashboard-new-widget-box ewd-widget-box-full">
-					<div class="rtb-dashboard-new-widget-box-top">What People Are Saying</div>
-					<div class="rtb-dashboard-new-widget-box-bottom">
-						<ul class="rtb-dashboard-testimonials">
-							<?php $randomTestimonial = rand(0,2);
-							if($randomTestimonial == 0){ ?>
-								<li id="rtb-dashboard-testimonial-one">
-									<img src="<?php echo plugins_url( '../assets/img/dash-asset-stars.png', __FILE__ ); ?>">
-									<div class="rtb-dashboard-testimonial-title">"Awesome. Just Awesome."</div>
-									<div class="rtb-dashboard-testimonial-author">- @shizart</div>
-									<div class="rtb-dashboard-testimonial-text">Thanks for this very well-made plugin. This works so well out of the box, I barely had to do ANYTHING to create an amazing FAQ accordion display... <a href="https://wordpress.org/support/topic/awesome-just-awesome-11/" target="_blank">read more</a></div>
-								</li>
-							<?php }
-							if($randomTestimonial == 1){ ?>
-								<li id="rtb-dashboard-testimonial-two">
-									<img src="<?php echo plugins_url( '../assets/img/dash-asset-stars.png', __FILE__ ); ?>">
-									<div class="rtb-dashboard-testimonial-title">"Absolutely perfect with great support"</div>
-									<div class="rtb-dashboard-testimonial-author">- @isaac85</div>
-									<div class="rtb-dashboard-testimonial-text">I tried several different FAQ plugins and this is by far the prettiest and easiest to use... <a href="https://wordpress.org/support/topic/absolutely-perfect-with-great-support/" target="_blank">read more</a></div>
-								</li>
-							<?php }
-							if($randomTestimonial == 2){ ?>
-								<li id="rtb-dashboard-testimonial-three">
-									<img src="<?php echo plugins_url( '../assets/img/dash-asset-stars.png', __FILE__ ); ?>">
-									<div class="rtb-dashboard-testimonial-title">"Perfect FAQ Plugin"</div>
-									<div class="rtb-dashboard-testimonial-author">- @muti-wp</div>
-									<div class="rtb-dashboard-testimonial-text">Works great! Easy to configure and to use. Thanks! <a href="https://wordpress.org/support/topic/perfect-faq-plugin/" target="_blank">read more</a></div>
-								</li>
-							<?php } ?>
-						</ul>
+				</li>
+				<li>
+					<div class="rtb-dashboard-support-widgets-title"><?php _e('Plugin FAQs', 'restaurant-reservations'); ?></div>
+					<div class="rtb-dashboard-support-widgets-text-and-link">
+						<div class="rtb-dashboard-support-widgets-text"><span class="dashicons dashicons-star-empty"></span>Access plugin and info and FAQs here.</div>
+						<a class="rtb-dashboard-support-widgets-link" href="https://wordpress.org/plugins/restaurant-reservations/#faq" target="_blank"><?php _e('View', 'restaurant-reservations'); ?></a>
 					</div>
-				</div> */ ?>
-		
-				<?php /* if($hideReview != 'Yes' and $Ask_Review_Date < time()){ ?>
-					<div class="rtb-dashboard-new-widget-box ewd-widget-box-one-third">
-						<div class="rtb-dashboard-new-widget-box-top">Leave a review</div>
-						<div class="rtb-dashboard-new-widget-box-bottom">
-							<div class="rtb-dashboard-review-ask">
-								<img src="<?php echo plugins_url( '../assets/img/dash-asset-stars.png', __FILE__ ); ?>">
-								<div class="rtb-dashboard-review-ask-text">If you enjoy this plugin and have a minute, please consider leaving a 5-star review. Thank you!</div>
-								<a href="https://wordpress.org/plugins/ultimate-faqs/#reviews" class="rtb-dashboard-review-ask-button">LEAVE A REVIEW</a>
-								<form action="admin.php?page=EWD-UFAQ-Options" method="post">
-									<input type="hidden" name="hide_ufaq_review_box_hidden" value="Yes">
-									<input type="submit" name="hide_ufaq_review_box_submit" class="rtb-dashboard-review-ask-dismiss" value="I've already left a review">
-								</form>
-							</div>
-						</div>
+				</li>
+				<li>
+					<div class="rtb-dashboard-support-widgets-title"><?php _e('Get Support', 'restaurant-reservations'); ?></div>
+					<div class="rtb-dashboard-support-widgets-text-and-link">
+						<div class="rtb-dashboard-support-widgets-text"><span class="dashicons dashicons-star-empty"></span>Need more help? Get in touch.</div>
+						<a class="rtb-dashboard-support-widgets-link" href="https://www.fivestarplugins.com/support-center/?utm_source=rtb_dashboard&utm_content=icons_get_support" target="_blank"><?php _e('View', 'restaurant-reservations'); ?></a>
 					</div>
-				<?php } */ ?>
-		
-				<?php if ( ! $permission or get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) { ?>
-					<div class="rtb-dashboard-new-widget-box ewd-widget-box-full" id="rtb-dashboard-guarantee-widget-box">
-						<div class="rtb-dashboard-new-widget-box-top">
-							<div class="rtb-dashboard-guarantee">
-								<div class="rtb-dashboard-guarantee-title">14-Day 100% Money-Back Guarantee</div>
-								<div class="rtb-dashboard-guarantee-text">If you're not 100% satisfied with the premium version of our plugin - no problem. You have 14 days to receive a FULL REFUND. We're certain you won't need it, though.</div>
-							</div>
-						</div>
-					</div>
-				<?php } ?>
-		
-			</div> <!-- left -->
-		
-			<div id="rtb-dashboard-content-right">
-		
-				<?php if ( ! $permission or get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) { ?>
-					<div class="rtb-dashboard-new-widget-box ewd-widget-box-full" id="rtb-dashboard-get-premium-widget-box">
-						<div class="rtb-dashboard-new-widget-box-top">Get Premium</div>
+				</li>
+			</ul>
+	
+			<div class="rtb-dashboard-catalogs">
+				<div class="rtb-dashboard-catalogs-title"><?php _e('Bookings Summary', 'restaurant-reservations'); ?></div>
+					<table class='rtb-overview-table wp-list-table widefat fixed striped posts'>
+						<thead>
+							<tr>
+								<th><?php _e("Date", 'restaurant-reservations'); ?></th>
+								<th><?php _e("Party", 'restaurant-reservations'); ?></th>
+								<th><?php _e("Name", 'restaurant-reservations'); ?></th>
+								<th><?php _e("Status", 'restaurant-reservations'); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php
+								require_once( RTB_PLUGIN_DIR . '/includes/Query.class.php' );
+								$query = new rtbQuery( array() );
+								$query->prepare_args();
 
-						<?php if ( get_option( "RTB_Trial_Happening" ) == "Yes" ) { do_action( 'fsp_trial_happening', 'RTB' ); } ?>
-						<?php if ( get_option( "RTU_Trial_Happening" ) == "Yes" ) { do_action( 'fsp_trial_happening', 'RTU' ); } ?>
-
-						<div class="rtb-dashboard-new-widget-box-bottom">
-							<div class="rtb-dashboard-get-premium-widget-features-title"<?php echo ( ( get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) ? "style='padding-top: 20px;'" : ""); ?>>GET FULL ACCESS WITH OUR PREMIUM VERSION AND GET:</div>
-							<ul class="rtb-dashboard-get-premium-widget-features">
-								<li>Multiple Layouts</li>
-								<li>Custom Fields</li>
-								<li>MailChimp Integration</li>
-								<li>Advanced Styling Options</li>
-								<li>+ More</li>
-							</ul>
-							<a href="https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1&utm_source=rtb_dashboard&utm_content=sidebar_upgrade" class="rtb-dashboard-get-premium-widget-button" target="_blank">UPGRADE NOW</a>
-							
-							<?php if ( ! get_option("RTB_Trial_Happening") and ! get_option("RTU_Trial_Happening") ) { 
-								$trial_info = sprintf( __( '<a href="%s" target="_blank">Visit our website</a> to learn how to get a free 7-day trial of the premium plugin.'), 'https://www.fivestarplugins.com/premium-upgrade-instructions/?utm_source=rtb_dashboard&utm_content=sidebar_visit_our_site_link' );
+								$bookings = $query->get_bookings();
+								$booking_statuses = $rtb_controller->cpts->booking_statuses;
 								
-								$version_select_modal = '<div class="rtb-trial-version-select-modal-background rtb-hidden"></div>';
-								$version_select_modal .= '<div class="rtb-trial-version-select-modal rtb-hidden">';
-								$version_select_modal .= '<div class="rtb-trial-version-select-modal-title">' . __( 'Select version to trial', 'restaurant-reservations' ) . '</div>';
-								$version_select_modal .= '<div class="rtb-trial-version-select-modal-option"><input type="radio" value="premium" name="rtb-trial-version" checked /> ' . __( 'Premium', 'restaurant-reservations' ) . '</div>';
-								$version_select_modal .= '<div class="rtb-trial-version-select-modal-option"><input type="radio" value="ultimate" name="rtb-trial-version" /> ' . __( 'Ultimate', 'restaurant-reservations' ) . '</div>';
-								$version_select_modal .= '<div class="rtb-trial-version-select-modal-explanation">' . __( 'SMS messaging will not work in the ultimate version trial.', 'restaurant-reservations' ) . '</div>';
-								$version_select_modal .= '<div class="rtb-trial-version-select-modal-submit">' . __( 'Select', 'restaurant-reservations' ) . '</div>';
-								$version_select_modal .= '</div>';
+								if (sizeOf($bookings) == 0) {echo "<tr><td colspan='4'>" . __("No bookings to display yet. Create a booking for it to be displayed here.", 'restaurant-reservations') . "</td></tr>";}
+								else {
+									foreach ($bookings as $booking) {
+									?>
 
-								$trial_info = apply_filters( 'fsp_trial_button', $trial_info, 'RTB' );
+										<tr>
+											<td><?php echo esc_html( $booking->date ); ?></td>
+											<td><?php echo esc_html( $booking->party ); ?></td>
+											<td><?php echo esc_html( $booking->name ); ?></td>
+											<td><?php echo esc_html( $booking_statuses[$booking->post_status]['label'] ); ?></td>
+										</tr>
+									<?php }
+								}
+							?>
+						</tbody>
+					</table>
+			</div>
 
-								$trial_info = str_replace( '</form>', '</form>' . $version_select_modal, $trial_info );
+			<?php if ( ! $permission or get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) { ?>
+				<div class="rtb-dashboard-get-premium-and-trial<?php echo ( get_option( 'RTB_Trial_Happening' ) == 'Yes' or get_option( 'RTU_Trial_Happening' ) == 'Yes' ) ? ' trial-happening' : ''; ?>">
+					<div id="rtb-dashboard-new-footer-one">
+						<div class="rtb-dashboard-new-footer-one-inside">
+							<div class="rtb-dashboard-new-footer-one-left">
+								<div class="rtb-dashboard-new-footer-one-title">What's Included in Our Premium Version?</div>
+								<ul class="rtb-dashboard-new-footer-one-benefits">
+									<li>Multiple Form Layouts</li>
+									<li>Custom Form Fields</li>
+									<li>Advanced Email Designer</li>
+									<li>MailChimp Integration</li>
+									<li>Set Table and Seat Restrictions</li>
+									<li>Automatic Booking Confirmation</li>
+									<li>Bookings Page for Staff</li>
+									<li>Export Bookings</li>
+									<li>Advanced Styling Options</li>
+								</ul>
+							</div>
+							<div class="rtb-dashboard-new-footer-one-buttons">
+								<a class="rtb-dashboard-new-upgrade-button" href="https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1&utm_source=fdm_dashboard&utm_content=footer_upgrade" target="_blank">UPGRADE NOW</a>
+								<?php if ( ! get_option("RTB_Trial_Happening") and ! get_option( "RTU_Trial_Happening" ) ) { 
+									$version_select_modal = '<div class="rtb-trial-version-select-modal rtb-hidden">';
+									$version_select_modal .= '<div class="rtb-trial-version-select-modal-title">' . __( 'Select version to trial', 'restaurant-reservations' ) . '</div>';
+									$version_select_modal .= '<div class="rtb-trial-version-select-modal-option"><input type="radio" value="premium" name="rtb-trial-version" checked /> ' . __( 'Premium', 'restaurant-reservations' ) . '</div>';
+									$version_select_modal .= '<div class="rtb-trial-version-select-modal-option"><input type="radio" value="ultimate" name="rtb-trial-version" /> ' . __( 'Ultimate', 'restaurant-reservations' ) . '</div>';
+									$version_select_modal .= '<div class="rtb-trial-version-select-modal-explanation">' . __( 'SMS messaging will not work in the ultimate version trial.', 'restaurant-reservations' ) . '</div>';
+									$version_select_modal .= '<div class="rtb-trial-version-select-modal-submit">' . __( 'Select', 'restaurant-reservations' ) . '</div>';
+									$version_select_modal .= '</div>';
 
-								echo $trial_info;
-							} ?>
+									$trial_info = apply_filters( 'fsp_trial_button', $trial_info, 'RTB' );
+
+									$trial_info = str_replace( '</form>', '</form>' . $version_select_modal, $trial_info );
+
+									echo $trial_info;
+								} ?>
+							</div>
+						</div>
+					</div>
+					<?php if ( get_option( "RTB_Trial_Happening" ) == "Yes" ) { ?>
+						<div class="rtb-dashboard-trial-container">
+							<?php do_action( 'fsp_trial_happening', 'RTB' ); ?>
+						</div>
+					<?php } ?>
+					<?php if ( get_option( "RTU_Trial_Happening" ) == "Yes" ) { ?>
+						<div class="rtb-dashboard-trial-container">
+							<?php do_action( 'fsp_trial_happening', 'RTU' ); ?>
+						</div>
+					<?php } ?>
 				</div>
-					</div>
-				<?php } ?>
-		
-				<!-- <div class="rtb-dashboard-new-widget-box ewd-widget-box-full">
-					<div class="rtb-dashboard-new-widget-box-top">Other Plugins by Etoile</div>
-					<div class="rtb-dashboard-new-widget-box-bottom">
-						<ul class="rtb-dashboard-other-plugins">
-							<li>
-								<a href="https://wordpress.org/plugins/ultimate-product-catalogue/" target="_blank"><img src="<?php echo plugins_url( '../images/ewd-upcp-icon.png', __FILE__ ); ?>"></a>
-								<div class="rtb-dashboard-other-plugins-text">
-									<div class="rtb-dashboard-other-plugins-title">Product Catalog</div>
-									<div class="rtb-dashboard-other-plugins-blurb">Enables you to display your business's products in a clean and efficient manner.</div>
-								</div>
+			<?php } ?>	
+
+			<div class="rtb-dashboard-testimonials-and-other-plugins">
+
+				<div class="rtb-dashboard-testimonials-container">
+					<div class="rtb-dashboard-testimonials-container-title"><?php _e( 'What People Are Saying', 'restaurant-reservations' ); ?></div>
+					<ul class="rtb-dashboard-testimonials">
+						<?php $randomTestimonial = rand(0,2);
+						if($randomTestimonial == 0){ ?>
+							<li id="rtb-dashboard-testimonial-one">
+								<img src="<?php echo plugins_url( '../assets/img/dash-asset-stars.png', __FILE__ ); ?>">
+								<div class="rtb-dashboard-testimonial-title">"Exactly as the name says – a Five Star plugin!"</div>
+								<div class="rtb-dashboard-testimonial-author">- @manuelayar</div>
+								<div class="rtb-dashboard-testimonial-text">Works flawlessly across devices. Plus, the support is outstanding, quick, helpful and reliable! Highly recommended! <a href="https://wordpress.org/support/topic/exactly-as-the-name-says-a-five-star-plugin/" target="_blank">read more</a></div>
 							</li>
-							<li>
-								<a href="https://wordpress.org/plugins/ultimate-reviews/" target="_blank"><img src="<?php echo plugins_url( '../images/ewd-urp-icon.png', __FILE__ ); ?>"></a>
-								<div class="rtb-dashboard-other-plugins-text">
-									<div class="rtb-dashboard-other-plugins-title">Ultimate Reviews</div>
-									<div class="rtb-dashboard-other-plugins-blurb">Let visitors submit reviews and display them right in the tabbed page layout!</div>
-								</div>
+						<?php }
+						if($randomTestimonial == 1){ ?>
+							<li id="rtb-dashboard-testimonial-two">
+								<img src="<?php echo plugins_url( '../assets/img/dash-asset-stars.png', __FILE__ ); ?>">
+								<div class="rtb-dashboard-testimonial-title">"Excellent plugin, amazing support!"</div>
+								<div class="rtb-dashboard-testimonial-author">- @terkwong</div>
+								<div class="rtb-dashboard-testimonial-text">We migrated from a Google plugin reservation system to Fivestarrestaurant and are well pleased with how this is working for us! <a href="https://wordpress.org/support/topic/excellent-plugin-amazing-support-32/" target="_blank">read more</a></div>
 							</li>
-						</ul>
+						<?php }
+						if($randomTestimonial == 2){ ?>
+							<li id="rtb-dashboard-testimonial-three">
+								<img src="<?php echo plugins_url( '../assets/img/dash-asset-stars.png', __FILE__ ); ?>">
+								<div class="rtb-dashboard-testimonial-title">"Wish I could give this 10 stars!"</div>
+								<div class="rtb-dashboard-testimonial-author">- @timboc</div>
+								<div class="rtb-dashboard-testimonial-text">This is above and beyond and I cannot recommend this plugin highly enough... <a href="https://wordpress.org/support/topic/wish-i-could-give-this-10-stars/" target="_blank">read more</a></div>
+							</li>
+						<?php } ?>
+					</ul>
+				</div>
+
+				<div class="rtb-dashboard-other-plugins-container">
+					<div class="rtb-dashboard-other-plugins-container-title"><?php _e('Other plugins by Etoile', 'restaurant-reservations'); ?></div>
+					<ul class="rtb-dashboard-other-plugins">
+						<li>
+							<a href="https://wordpress.org/plugins/restaurant-reservations/" target="_blank"><img src="<?php echo plugins_url( '../assets/img/fdm-icon.png', __FILE__ ); ?>"></a>
+							<div class="rtb-dashboard-other-plugins-text">
+								<div class="rtb-dashboard-other-plugins-title">Restaurant Menu and Food Ordering</div>
+								<div class="rtb-dashboard-other-plugins-blurb">Quickly set up and display a responsive menu and allow food ordering directly from your site!</div>
+							</div>
+						</li>
+						<li>
+							<a href="https://wordpress.org/plugins/business-profile/" target="_blank"><img src="<?php echo plugins_url( '../assets/img/bpfwp-icon.png', __FILE__ ); ?>"></a>
+							<div class="rtb-dashboard-other-plugins-text">
+								<div class="rtb-dashboard-other-plugins-title">Business Profile and Schema</div>
+								<div class="rtb-dashboard-other-plugins-blurb">Easily add schema strutured data to any page on your site, and also create a contact card</div>
+							</div>
+						</li>
+					</ul>
+				</div>
+
+			</div>
+
+			<?php if ( ! $permission or get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) { ?>
+				<div class="rtb-dashboard-guarantee">
+					<img src="<?php echo plugins_url( '../assets/img/dash-asset-badge.png', __FILE__ ); ?>" alt="14-Day 100% Money-Back Guarantee">
+					<div class="rtb-dashboard-guarantee-title-and-text">
+						<div class="rtb-dashboard-guarantee-title">14-Day 100% Money-Back Guarantee</div>
+						<div class="rtb-dashboard-guarantee-text">If you're not 100% satisfied with the premium version of our plugin - no problem. You have 14 days to receive a FULL REFUND. We're certain you won't need it, though.</div>
 					</div>
-				</div> -->
-		
-			</div> <!-- right -->	
-		
+				</div>
+			<?php } ?>
+
 		</div> <!-- rtb-dashboard-content-area -->
 		
-		<?php if ( ! $permission or get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) { ?>
-			<div id="rtb-dashboard-new-footer-one">
-				<div class="rtb-dashboard-new-footer-one-inside">
-					<div class="rtb-dashboard-new-footer-one-left">
-						<div class="rtb-dashboard-new-footer-one-title">What's Included in Our Premium Version?</div>
-						<ul class="rtb-dashboard-new-footer-one-benefits">
-							<li>Multiple Form Layouts</li>
-							<li>Custom Form Fields</li>
-							<li>Advanced Email Designer</li>
-							<li>MailChimp Integration</li>
-							<li>Set Table and Seat Restrictions</li>
-							<li>Automatic Booking Confirmation</li>
-							<li>Bookings Page for Staff</li>
-							<li>Export Bookings</li>
-							<li>Advanced Styling Options</li>
-						</ul>
-					</div>
-					<div class="rtb-dashboard-new-footer-one-buttons">
-						<a class="rtb-dashboard-new-upgrade-button" href="https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1&utm_source=rtb_dashboard&utm_content=footer_upgrade" target="_blank">UPGRADE NOW</a>
-					</div>
-				</div>
-			</div> <!-- rtb-dashboard-new-footer-one -->
-		<?php } ?>	
 		<div id="rtb-dashboard-new-footer-two">
 			<div class="rtb-dashboard-new-footer-two-inside">
 				<img src="<?php echo plugins_url( '../assets/img/fivestartextlogowithstar.png', __FILE__ ); ?>" class="rtb-dashboard-new-footer-two-icon">

@@ -183,13 +183,13 @@ function rtb_print_booking_form( $args = array() )
 			</div>
 			<label for="rtb_modification_email">
 				<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-modify-form-email'  ) ); ?>
+				<input type="email" name="rtb_modification_email">
 			</label>
-			<input type="email" name="rtb_modification_email" />
-			<div class="rtb-clear"></div>
-			<div class="rtb-find-reservation-button">
-				<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-modify-find-reservations'  ) ); ?>
+			<div class="rtb-find-reservation-button-div">
+				<div class="rtb-find-reservation-button">
+					<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-modify-find-reservations'  ) ); ?>
+				</div>
 			</div>
-			<div class="rtb-clear"></div>
 			<div class="rtb-bookings-results"></div>
 		</form>
 	<?php endif; ?>
@@ -553,7 +553,7 @@ function rtb_enqueue_assets() {
 		wp_enqueue_style( 'rtb-contemporary-css', RTB_PLUGIN_URL . '/assets/css/contemporary.css' );
 	}
 	if( $rtb_controller->settings->get_setting( 'rtb-styling-layout' ) == 'minimal' && $screenID != 'toplevel_page_rtb-bookings' ){
-		wp_enqueue_style( 'rtb-minimal', RTB_PLUGIN_URL . '/assets/css/minimal.css' );
+		wp_enqueue_style( 'rtb-columns-css', RTB_PLUGIN_URL . '/assets/css/columns-new.css' );
 	}
 	if( $rtb_controller->settings->get_setting( 'rtb-styling-layout' ) == 'columns' && $screenID != 'toplevel_page_rtb-bookings' ){
 		wp_enqueue_style( 'rtb-columns-css', RTB_PLUGIN_URL . '/assets/css/columns.css' );
@@ -801,6 +801,7 @@ function rtb_print_form_checkbox_field( $slug, $title, $value, $args ) {
 	$options = is_array( $args['options'] ) ? $args['options'] : array();
 	$classes = isset( $args['classes'] ) ? $args['classes'] : array();
 	$classes[] = 'rtb-checkbox';
+	$required = isset( $args['required'] ) && $args['required'] ? ' required aria-required="true"' : '';
 
 	?>
 
@@ -811,7 +812,7 @@ function rtb_print_form_checkbox_field( $slug, $title, $value, $args ) {
 		</label>
 		<?php foreach ( $options as $opt_value => $opt_label ) : ?>
 		<label>
-			<input type="checkbox" name="rtb-<?php echo $slug; ?>[]" id="rtb-<?php echo $slug; ?>-<?php echo esc_attr( $opt_value ); ?>" value="<?php echo esc_attr( $opt_value ); ?>"<?php echo !empty( $value ) && in_array( $opt_value, $value ) ? ' checked' : ''; ?>>
+			<input type="checkbox" name="rtb-<?php echo $slug; ?>[]" id="rtb-<?php echo $slug; ?>-<?php echo esc_attr( $opt_value ); ?>" value="<?php echo esc_attr( $opt_value ); ?>"<?php echo !empty( $value ) && in_array( $opt_value, $value ) ? ' checked' : ''; ?><?php echo $required; ?>>
 			<?php echo $opt_label; ?>
 		</label>
 		<?php endforeach; ?>
@@ -1054,7 +1055,17 @@ if ( ! function_exists( 'rtb_get_valid_tables') ) {
 		
 		if ( empty( $table_numbers ) ) { return $table_numbers; }
 
-		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length' ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
+		if ( empty( $location_id ) or ! term_exists( $location_id ) ) { $location_slug = false; }
+		else {
+
+			$location = get_term( $location_id );
+
+			$location_slug = $location->slug;
+		}
+
+		$timeslot = rtb_get_timeslot( $datetime, $location_id );
+
+		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $location_slug, $timeslot ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
 
 		$args = array(
 			'posts_per_page' => -1,
@@ -1095,6 +1106,11 @@ if ( ! function_exists( 'rtb_get_valid_tables') ) {
 if ( ! function_exists( 'rtb_get_timeslot' ) ) {
 function rtb_get_timeslot( $datetime, $location_id ) {
 	global $rtb_controller;
+
+	// If $datetime is numeric, treat it as a Unix timestamp
+	if ( is_numeric( $datetime ) ) {
+		$datetime = '@' . $datetime;
+	}
 
 	$selected_datetime = new DateTime( $datetime, wp_timezone() );
 	$selected_weekday = strtolower( $selected_datetime->format( 'l' ) );

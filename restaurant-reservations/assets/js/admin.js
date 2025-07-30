@@ -29,23 +29,30 @@ jQuery(document).ready(function ($) {
 
 	// Name filter helper
 	$(document)
-		.on('click', '#rtb-filters .filter_name a' , function(ev) {
+		.on('click', '#rtb-filters .filter_submit a' , function(ev) {
 			ev.preventDefault();
-			filterByName();
+			filterByDetails();
 		})
-		.on('keydown', '#rtb-filters .filter_name input' , function(ev) {
+		.on('keydown', '#rtb-filters .filter_name input, #rtb-filters .filter_email input, #rtb-filters .filter_phone input, #rtb-filters .filter_table input' , function(ev) {
 			if(event.keyCode == 13) {
 				event.preventDefault();
-				filterByName();
+				filterByDetails();
 				return false;
 			}
 		});
 
-	function filterByName() {
-		let text = $('#rtb-filters .filter_name input').val();
-		let href = $('#rtb-filters .filter_name a').prop('href');
-		href += '='+encodeURIComponent(text);
-		href += '&date_range=all';
+	function filterByDetails() {
+		let name = $('#rtb-filters .filter_name input').val();
+		let email = $('#rtb-filters .filter_email input').val();
+		let phone = $('#rtb-filters .filter_phone input').val();
+		let table = $('#rtb-filters .filter_table input').val();
+
+		let href = $('#rtb-filters .filter_submit a').prop('href');
+
+		if ( name ) { href += '&filter_name='+encodeURIComponent(name); }
+		if ( email ) { href += '&filter_email='+encodeURIComponent(email); }
+		if ( phone ) { href += '&filter_phone='+encodeURIComponent(phone); }
+		if ( table ) { href += '&filter_table='+encodeURIComponent(table); }
 		
 		window.location = href;
 	}
@@ -1177,6 +1184,106 @@ jQuery( document ).ready( function() {
 	    	jQuery.post( ajaxurl, data, function() {} );
 	    }
 	} );
+});
+
+// SMS segment estimator
+
+jQuery(document).ready(function ($) {
+    const extendedGsmChars = ['^', '{', '}', '\\', '[', '~', ']', '|', '€'];
+
+    // Template tag length mappings
+    const templateLengths = {
+        '{user_email}': 25,
+        '{user_name}': 10,
+        '{party}': 2,
+        '{date}': 12,
+        '{phone}': 12,
+        '{message}': 50,
+        '{booking_id}': 4,
+        '{booking_page_link}': 120,
+        '{booking_url}': 90,
+        '{cancel_link}': 135,
+        '{cancellation_url}': 100,
+        '{bookings_link}': 135,
+        '{bookings_link_url}': 100,
+        '{confirm_link}': 135,
+        '{confirm_link_url}': 100,
+        '{close_link}': 135,
+        '{close_link_url}': 100,
+        '{site_name}': 50,
+        '{site_link}': 100,
+        '{site_link_url}': 65,
+        '{current_time}': 12,
+        '{table}': 4
+    };
+
+    const customFieldRegex = /\{cf-[^}]+\}/g; // Matches {cf-something}
+
+    function isGsm7(text) {
+        const gsm7 = /^[\x00-\x7F€£¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæÉ!"#¤%&'()*+,\-./0-9:;<=>?@A-Z\[\\\]^_`a-z{|}~¡§¿ÄÖÑÜäöñüà^{}\\[~]|€]*$/;
+        return gsm7.test(text);
+    }
+
+    // Replaces template tags with dummy characters of estimated length
+    function replaceTemplateTags(text) {
+        for (let tag in templateLengths) {
+            const length = templateLengths[tag];
+            const re = new RegExp(escapeRegExp(tag), 'g');
+            text = text.replace(re, 'X'.repeat(length));
+        }
+
+        // Handle custom {cf-xxx} fields
+        text = text.replace(customFieldRegex, 'X'.repeat(40));
+
+        return text;
+    }
+
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function getGsm7Length(text) {
+        let length = 0;
+        for (let char of text) {
+            length += extendedGsmChars.includes(char) ? 2 : 1;
+        }
+        return length;
+    }
+
+    function getSegmentCount(text) {
+        const processedText = replaceTemplateTags(text);
+        const encoding = isGsm7(processedText) ? 'GSM-7' : 'UCS-2';
+        const length = encoding === 'GSM-7' ? getGsm7Length(processedText) : processedText.length;
+
+        const segmentLimit = encoding === 'GSM-7'
+            ? (length <= 160 ? 160 : 153)
+            : (length <= 70 ? 70 : 67);
+
+        return Math.ceil(length / segmentLimit);
+    }
+
+    $( '#bookingnotifications.wp-editor-area' ).on('input', function () {
+
+    	$( '.rtb-sms-segment-length-estimate' ).remove();
+    	
+        const originalText = $(this).val();
+        const processedText = replaceTemplateTags(originalText);
+        const encoding = isGsm7(processedText) ? 'GSM-7' : 'UCS-2';
+        const length = encoding === 'GSM-7' ? getGsm7Length(processedText) : processedText.length;
+        const segments = getSegmentCount(originalText);
+
+        $( '.sap-infinite-table-editor-buttons' ).before(`
+            <div class='rtb-sms-segment-length-estimate'>
+            	Length estimate (after substitutions): <strong>${length}</strong><br>
+            	Estimated SMS Segments: <strong>${segments}</strong>
+        	</div>
+        `);
+    });
+
+    $( '#wp-bookingnotifications-wrap' ).parent().find( '.sap-infinite-table-editor-cancel, .sap-infinite-table-editor-save' ).on( 'click', function() {
+
+    	$( '.rtb-sms-segment-length-estimate' ).remove();
+    });
 });
 
 

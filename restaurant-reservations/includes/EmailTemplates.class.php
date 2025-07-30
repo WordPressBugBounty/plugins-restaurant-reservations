@@ -28,7 +28,7 @@ class rtbEmailTemplates {
 		require_once( RTB_PLUGIN_DIR . '/includes/load-notifications.php' );
 		require_once( RTB_PLUGIN_DIR . '/includes/integrations/business-profile.php' );
 
-		$this->load_template_options();
+		add_action( 'init', array( $this, 'load_template_options' ), 1 );
 
 		add_image_size( 'etfrtb_logo', 200, 200 );
 	}

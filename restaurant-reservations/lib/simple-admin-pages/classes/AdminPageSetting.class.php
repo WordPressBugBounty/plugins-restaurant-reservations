@@ -16,7 +16,7 @@
  * @package Simple Admin Pages
  */
 
-abstract class sapAdminPageSetting_2_6_21_rtb {
+abstract class sapAdminPageSetting_2_7_0_rtb {
 
 	// Page defaults
 	public $id; // used in form fields and database to track and store setting
@@ -266,20 +266,38 @@ abstract class sapAdminPageSetting_2_6_21_rtb {
 
 		if ( empty( $option_group_value ) ) { return; }
 
-		$option_group_value[ $this->conditional_on ] = isset( $option_group_value[ $this->conditional_on ] ) ? $option_group_value[ $this->conditional_on ] : false;
+		// Turn conditional_on and conditional_on_value into arrays.
+		// If conditional_on_value is an array and conditional_on isn't, then turn it into a multidimensional array
+		$this->conditional_on_value = is_array( $this->conditional_on ) ? (array) $this->conditional_on_value : array( $this->conditional_on_value );
+		$this->conditional_on = is_array( $this->conditional_on ) ? $this->conditional_on : (array) $this->conditional_on;
 
-		if ( is_array( $option_group_value[ $this->conditional_on ] ) ) {
+		foreach ( $this->conditional_on as $key => $conditional_on ) {
 
-			$this->conditional_display = is_array( $this->conditional_on_value ) ? ! empty( array_intersect( $this->conditional_on_value, $option_group_value[ $this->conditional_on ] ) ) : in_array( $this->conditional_on_value, $option_group_value[ $this->conditional_on ] );
-		}
-		else {
+			// If one condition fails, stop
+			if ( empty( $this->conditional_display ) ) { break; }
 
-			$this->conditional_display = is_array( $this->conditional_on_value ) ? in_array( $option_group_value[ $this->conditional_on ], $this->conditional_on_value )  : ( $this->conditional_on_value == $option_group_value[ $this->conditional_on ] ? true : false );
+			$option_group_value[ $conditional_on ] = isset( $option_group_value[ $conditional_on ] ) ? $option_group_value[ $conditional_on ] : false;
+
+			if ( is_array( $option_group_value[ $conditional_on ] ) ) {
+
+				$this->conditional_display = is_array( $this->conditional_on_value[ $key ] ) ? ! empty( array_intersect( $this->conditional_on_value[ $key ], $option_group_value[ $conditional_on ] ) ) : in_array( $this->conditional_on_value[ $key ], $option_group_value[ $conditional_on ] );
+			}
+			else {
+
+				$this->conditional_display = is_array( $this->conditional_on_value[ $key ] ) ? in_array( $option_group_value[ $conditional_on ], $this->conditional_on_value[ $key ] )  : ( $this->conditional_on_value[ $key ] == $option_group_value[ $conditional_on ] ? true : false );
+			}
 		}
 
 		if ( ! empty( $this->conditional_display ) ) { return; }
 
-		$this->args['class'] = ! empty( $this->args['class'] ) ? $this->args['class'] . ' sap-hidden' : 'sap-hidden';
+		if ( ! empty( $this->args['class'] ) ) {
+
+			$this->args['class'] .= ' sap-hidden';
+		}
+		else {
+
+			$this->args['class'] = 'sap-hidden';
+		}
 	}
 
 	/**
@@ -291,8 +309,8 @@ abstract class sapAdminPageSetting_2_6_21_rtb {
 
 		if ( empty( $this->conditional_on ) ) { return; }
 
-		echo 'data-conditional_on="' . esc_attr( $this->conditional_on ) . '"';
-		echo 'data-conditional_on_value="' . esc_attr( is_array( $this->conditional_on_value ) ? implode( ',', $this->conditional_on_value ) : $this->conditional_on_value ) . '"';
+		echo 'data-conditional_on="' . esc_attr( json_encode( $this->conditional_on ) ) . '"';
+		echo 'data-conditional_on_value="' . esc_attr( json_encode( $this->conditional_on_value ) ) . '"';
 	}
 
 	/**

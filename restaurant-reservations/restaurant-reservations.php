@@ -3,7 +3,7 @@
  * Plugin Name: Five Star Restaurant Reservations - WordPress Booking Plugin
  * Plugin URI: http://www.fivestarplugins.com/plugins/five-star-restaurant-reservations/
  * Description: Restaurant reservations made easy. Accept bookings online. Quickly confirm or reject reservations, send email notifications, set booking times and more.
- * Version: 2.6.31
+ * Version: 2.7.0
  * Author: Five Star Plugins
  * Author URI: https://www.fivestarplugins.com/
  * Text Domain: restaurant-reservations
@@ -58,7 +58,7 @@ class rtbInit {
 	public function __construct() {
 
 		// Common strings
-		define( 'RTB_VERSION', '2.6.31' );
+		define( 'RTB_VERSION', '2.7.0' );
 		define( 'RTB_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 		define( 'RTB_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 		define( 'RTB_PLUGIN_FNAME', plugin_basename( __FILE__ ) );
@@ -232,6 +232,9 @@ class rtbInit {
 		// Handle the helper notice
 		add_action( 'admin_notices', array( $this, 'maybe_display_helper_notice' ) );
 		add_action( 'wp_ajax_rtb_hide_helper_notice', array( $this, 'hide_helper_notice' ) );
+
+		// Handle the helper button
+		add_action( 'admin_init', array( $this, 'display_help_bubble' ) );
 	}
 
 	/**
@@ -474,10 +477,10 @@ class rtbInit {
 		?>
 		<div class="rtb-admin-header-menu">
 			<h2 class="nav-tab-wrapper">
-				<a id="rtb-dash-mobile-menu-open" href="#" class="menu-tab nav-tab">
-					<?php _e("MENU", 'restaurant-reservations'); ?>
-					<span id="rtb-dash-mobile-menu-down-caret">&nbsp;&nbsp;&#9660;</span>
-					<span id="rtb-dash-mobile-menu-up-caret">&nbsp;&nbsp;&#9650;</span>
+
+				<a id="rtb-dash-mobile-menu-open" href="#" class="menu-tab nav-tab fdm-hidden">
+					<span class="dashicons dashicons-menu"></span>
+					<?php _e("Menu", 'order-tracking'); ?>
 				</a>
 
 				<?php if( current_user_can( 'manage_options' ) ) { ?>
@@ -620,7 +623,9 @@ class rtbInit {
 			'rtb_booking_form_js_localize',
 			array(
 				'nonce'                  => wp_create_nonce( 'rtb-booking-form' ),
+				'is_admin'				 => is_admin(),
 				'cancellation_cutoff'    => $rtb_controller->settings->get_setting( 'late-cancellations' ),
+				'admin_ignore_maximums'  => $rtb_controller->settings->get_setting( 'rtb-admin-ignore-maximums' ),
 				'want_to_modify'         => esc_html( $rtb_controller->settings->get_setting( 'label-modify-reservation'  ) ),
 				'make'                   => esc_html( $rtb_controller->settings->get_setting( 'label-modify-make-reservation'  ) ),
 				'guest'                  => esc_html( $rtb_controller->settings->get_setting( 'label-modify-guest'  ) ),
@@ -781,6 +786,10 @@ class rtbInit {
 		die();
 	}
 
+	public function display_help_bubble() {
+
+		rtbHelper::display_help_button();
+	}
 }
 } // endif;
 

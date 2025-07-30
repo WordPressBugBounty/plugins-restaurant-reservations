@@ -231,7 +231,7 @@ jQuery(document).ready(function ($) {
 			this.form.el.find( 'input[name="title"]' ).val( field.title );
 
 			if ( field.required ) {
-				this.form.el.find( '.required input' ).attr( 'checked', 'checked' );
+				this.form.el.find( '.required input' ).prop( 'checked', true );
 			}
 
 			if ( field.options && Object.keys( field.options ).length ) {

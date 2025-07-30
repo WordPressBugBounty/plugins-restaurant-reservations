@@ -84,6 +84,30 @@ class rtbBookingsTable extends WP_List_Table {
 	public $filter_name = '';
 
 	/**
+	 * Current email filter
+	 *
+	 * @var string
+	 * @since 2.7.0
+	 */
+	public $filter_email = '';
+
+	/**
+	 * Current phone filter
+	 *
+	 * @var string
+	 * @since 2.7.0
+	 */
+	public $filter_phone = '';
+
+	/**
+	 * Current table filter
+	 *
+	 * @var string
+	 * @since 2.7.0
+	 */
+	public $filter_table = '';
+
+	/**
 	 * Current query string
 	 *
 	 * @var string
@@ -224,14 +248,30 @@ class rtbBookingsTable extends WP_List_Table {
 	}
 
 	/**
-	 * Set filter like name
+	 * Set filters like name, email, phone, and table 
 	 *
 	 * @since 2.4.4
 	 */
-	public function set_other_filter()
-	{
+	public function set_other_filter() {
+
 		if( isset( $_GET['filter_name'] ) && ! empty( $_GET['filter_name'] ) ) {
+
 			$this->filter_name = sanitize_text_field( $_GET['filter_name'] );
+		}
+
+		if( isset( $_GET['filter_email'] ) && ! empty( $_GET['filter_email'] ) ) {
+
+			$this->filter_email = sanitize_text_field( $_GET['filter_email'] );
+		}
+
+		if( isset( $_GET['filter_phone'] ) && ! empty( $_GET['filter_phone'] ) ) {
+
+			$this->filter_phone = sanitize_text_field( $_GET['filter_phone'] );
+		}
+
+		if( isset( $_GET['filter_table'] ) && ! empty( $_GET['filter_table'] ) ) {
+
+			$this->filter_table = sanitize_text_field( $_GET['filter_table'] );
 		}
 	}
 
@@ -314,11 +354,11 @@ class rtbBookingsTable extends WP_List_Table {
 
 		// Strip out existing date filters from the date_range view urls
 		$date_range_query_string = remove_query_arg(
-			array( 'date_range', 'start_date', 'end_date', 'filter_name' ), 
+			array( 'date_range', 'start_date', 'end_date' ), 
 			$this->query_string
 		);
 
-		$views = array(
+		$date_views = array(
 			'upcoming' => sprintf( 
 				'<a href="%s"%s>%s</a>', 
 				esc_url( 
@@ -366,36 +406,70 @@ class rtbBookingsTable extends WP_List_Table {
 		);
 
 		if ( $date_range == 'custom' ) {
-			$views['date'] = '<span class="date-filter-range current">' . $this->get_current_date_range() . '</span>';
-			$views['date'] .= '<a id="rtb-date-filter-link" href="#"><span class="dashicons dashicons-calendar"></span> <span class="rtb-date-filter-label">Change date range</span></a>';
+			$date_views['date'] = '<span class="date-filter-range current">' . $this->get_current_date_range() . '</span>';
+			$date_views['date'] .= '<a id="rtb-date-filter-link" href="#"><span class="dashicons dashicons-calendar"></span> <span class="rtb-date-filter-label">Change date range</span></a>';
 		} else {
-			$views['date'] = '<a id="rtb-date-filter-link" href="#">' . esc_html__( 'Specific Date(s)/Time', 'restaurant-reservations' ) . '</a>';
+			$date_views['date'] = '<a id="rtb-date-filter-link" href="#">' . esc_html__( 'Specific Date(s)/Time', 'restaurant-reservations' ) . '</a>';
 		}
 
-		$views['filter_name'] = sprintf( 
-			'<input type="text" value="%s"><a href="%s"%s>%s</a>', 
-			esc_attr( $this->filter_name ),
-			esc_url( 
-				add_query_arg( 
-					array( 'filter_name' => '', 'paged' => FALSE ), 
-					$date_range_query_string 
-				) 
-			), 
-			'' != $this->filter_name ? ' class="current"' : '', 
-			'<span class="dashicons dashicons-search"></span>' 
+		// Strip out existing detail filters from the details view urls
+		$details_query_string = remove_query_arg(
+			array( 'filter_name', 'filter_email', 'filter_phone', 'filter_table' ), 
+			$this->query_string
 		);
 
-		$views = apply_filters( 'rtb_bookings_table_views_date_range', $views );
+		$detail_views = array(
+			'filter_name' => sprintf( 
+				'<input type="text" value="%s" placeholder="' . __( 'Name', 'restaurant-reservations' ) . '">', 
+				esc_attr( $this->filter_name )
+			),
+			'filter_email' => sprintf( 
+				'<input type="text" value="%s" placeholder="' . __( 'Email', 'restaurant-reservations' ) . '">', 
+				esc_attr( $this->filter_email )
+			),
+			'filter_phone' => sprintf( 
+				'<input type="text" value="%s" placeholder="' . __( 'Phone', 'restaurant-reservations' ) . '">', 
+				esc_attr( $this->filter_phone )
+			),
+			'filter_table' => sprintf( 
+				'<input type="text" value="%s" placeholder="' . __( 'Table', 'restaurant-reservations' ) . '">', 
+				esc_attr( $this->filter_table )
+			),
+			'filter_submit' => sprintf( 
+				'<a href="%s" class="rtb-details-search">%s</a>', 
+				esc_url( 
+					add_query_arg( 
+						array( 'paged' => FALSE ), 
+						$details_query_string 
+					) 
+				),
+				'<span class="dashicons dashicons-search"></span>'
+			)
+		);
+
+		$date_views = apply_filters( 'rtb_bookings_table_views_date_range', $date_views );
+		$detail_views = apply_filters( 'rtb_bookings_table_views_details', $detail_views )
 		?>
 
 		<div id="rtb-filters">
 			<ul class="subsubsub rtb-views-date_range">
 				<?php
-					$total = count( $views );
+					$total = count( $date_views );
 					$index = 1;
-					foreach ($views as $class => $value) {
+					foreach ($date_views as $class => $value) {
 						$separator = $index != $total ? ' |' : '';
 						echo "<li class=\"{$class}\">{$value}{$separator}</li>";
+						$index++;
+					}
+				?>
+			</ul>
+
+			<ul class="subsubsub rtb-views-details">
+				<?php
+					$total = count( $detail_views );
+					$index = 1;
+					foreach ($detail_views as $class => $value) {
+						echo "<li class=\"{$class}\">{$value}</li>";
 						$index++;
 					}
 				?>
@@ -1122,6 +1196,29 @@ class rtbBookingsTable extends WP_List_Table {
 		}
 
 		$join = '';
+
+		if ( ! empty( $this->filter_email ) or ! empty( $this->filter_phone ) or ! empty( $this->filter_table ) ) {
+
+			$join .= " LEFT JOIN $wpdb->postmeta pm ON (pm.post_id=p.ID)";
+
+			$where .= " AND pm.meta_key='rtb'";
+
+			if ( ! empty( $this->filter_email ) ) { 
+
+				$where .= " AND pm.meta_value LIKE '%\"email\";s:%:\"%" . esc_sql( $wpdb->esc_like( $this->filter_email ) ) . "%\"%'";
+			}
+
+			if ( ! empty( $this->filter_phone ) ) { 
+
+				$where .= " AND pm.meta_value LIKE '%\"phone\";s:%:\"%" . esc_sql( $wpdb->esc_like( $this->filter_phone ) ) . "%\"%'";
+			}
+
+			if ( ! empty( $this->filter_table ) ) { 
+
+				$where .= " AND pm.meta_value LIKE '%\"table\";a:%;s:" . strlen( $this->filter_table ) . ":\"" . esc_sql( $this->filter_table ) . "\"%'";
+			}
+		}
+
 		if ( $this->filter_location ) {
 			$join .= " LEFT JOIN $wpdb->term_relationships t ON (t.object_id=p.ID)";
 			$where .= " AND t.term_taxonomy_id=" . absint( $this->filter_location );
@@ -1185,7 +1282,24 @@ class rtbBookingsTable extends WP_List_Table {
 
 		$query->args = apply_filters( 'rtb_bookings_table_query_args', $query->args );
 
-		$this->bookings = $query->get_bookings();
+		$filtered_bookings = array();
+
+		$email = ! empty( $_GET['filter_email'] ) ? sanitize_text_field( $_GET['filter_email'] ) : false;
+		$phone = ! empty( $_GET['filter_phone'] ) ? $_GET['filter_phone'] : false;
+		$table = ! empty( $_GET['filter_table'] ) ? sanitize_text_field( $_GET['filter_table'] ) : false;
+
+		$filtered_bookings = array();
+
+		foreach ( $query->get_bookings() as $reservation ) {
+
+			if ( ! empty( $email ) and strpos( $reservation->email, $email ) === false ) { continue; }
+			if ( ! empty( $phone ) and strpos( $reservation->phone, $phone ) === false ) { continue; }
+			if ( ! empty( $table ) and ! in_array( $table, $reservation->table ) ) { continue; }
+
+			$filtered_bookings[] = $reservation;
+		}
+
+		$this->bookings = $filtered_bookings;
 	}
 
 	/**

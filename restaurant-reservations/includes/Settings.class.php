@@ -1060,7 +1060,7 @@ If you were not the one to cancel this booking, please contact us.
 		require_once( RTB_PLUGIN_DIR . '/lib/simple-admin-pages/simple-admin-pages.php' );
 		$sap = sap_initialize_library(
 			$args = array(
-				'version'       => '2.6.21.rtb',
+				'version'       => '2.7.0.rtb',
 				'theme'			=> 'blue',
 				'lib_url'       => RTB_PLUGIN_URL . '/lib/simple-admin-pages/',
 			)
@@ -1091,7 +1091,8 @@ If you were not the one to cancel this booking, please contact us.
 				'is_tab'			=> true,
 				'rank'				=> 1,
 				'tutorial_yt_id'	=> 'fmMO_xn-9-8',
-				'settings_type_toggle_options' => $settings_type_toggle_options
+				'settings_type_toggle_options' => $settings_type_toggle_options,
+				'icon'				=> 'calendar-alt'
 			)
 		);
 
@@ -1308,6 +1309,7 @@ If you were not the one to cancel this booking, please contact us.
 				'is_tab'			=> true,
 				'rank'				=> 2,
 				'tutorial_yt_id'	=> '-RC2kUhXkLQ',
+				'icon'				=> 'text'				
 			)
 		);
 
@@ -1711,6 +1713,7 @@ If you were not the one to cancel this booking, please contact us.
 				'is_tab'			=> true,
 				'rank'				=> 4,
 				'tutorial_yt_id'	=> 's1LnEb6xuXw',
+				'icon'				=> 'bell'
 			)
 		);
 
@@ -2044,7 +2047,8 @@ If you were not the one to cancel this booking, please contact us.
 	        'rank'	 				=> 3,
 	        'tutorial_yt_id'		=> 'Mp6n8Ph0Pm4',
 	        'settings_type_toggle_options' => $settings_type_toggle_options,
-	        'show_submit_button' 	=> $this->show_submit_button( 'premium' )
+	        'show_submit_button' 	=> $this->show_submit_button( 'premium' ),
+			'icon'					=> 'awards'
 	      )
 	    );
 	    $sap->add_section(
@@ -2065,7 +2069,8 @@ If you were not the one to cancel this booking, please contact us.
 	        'is_tab' 				=> true,
 	        'rank'	 				=> 5,
 	        'tutorial_yt_id'		=> 'vEhvAOAWBk4',
-	        'show_submit_button' 	=> $this->show_submit_button( 'payments' )
+	        'show_submit_button' 	=> $this->show_submit_button( 'payments' ),
+			'icon'					=> 'money-alt'
 	      )
 	    );
 	    $sap->add_section(
@@ -2086,7 +2091,8 @@ If you were not the one to cancel this booking, please contact us.
 	        'is_tab' 				=> true,
 	        'rank'	 				=> 8,
 	        'tutorial_yt_id'		=> '-FOrQSVVDj4',
-	        'show_submit_button' 	=> $this->show_submit_button( 'export' )
+	        'show_submit_button' 	=> $this->show_submit_button( 'export' ),
+			'icon'					=> 'database-export'
 	      )
 	    );
 	    $sap->add_section(
@@ -2107,7 +2113,8 @@ If you were not the one to cancel this booking, please contact us.
 		    'is_tab' 				=> true,
 		    'rank'	 				=> 7,
 	        'tutorial_yt_id'		=> '1JG7PVu09nA',
-		    'show_submit_button' 	=> $this->show_submit_button( 'labelling' )
+		    'show_submit_button' 	=> $this->show_submit_button( 'labelling' ),
+			'icon'					=> 'translation'
 		  )
 		);
 		$sap->add_section(
@@ -2128,7 +2135,8 @@ If you were not the one to cancel this booking, please contact us.
 	        'is_tab' 				=> true,
 	        'rank'	 				=> 6,
 	        'tutorial_yt_id'		=> 'JEuRu71ccPg',
-	        'show_submit_button' 	=> $this->show_submit_button( 'styling' )
+	        'show_submit_button' 	=> $this->show_submit_button( 'styling' ),
+			'icon'					=> 'welcome-widgets-menus'
 	      )
 	    );
 	    $sap->add_section(
@@ -2332,6 +2340,7 @@ If you were not the one to cancel this booking, please contact us.
 		$party_size = (int) $this->get_setting( 'party-size' );
 		$party_size_min = (int) $this->get_setting( 'party-size-min' );
 		$max_people = ! empty( $this->get_setting( 'rtb-max-people-count', $location_slug ) ) ? (int) $this->get_setting( 'rtb-max-people-count', $location_slug ) : 100;
+		$max_people = ( ! is_admin() || empty( $this->get_setting( 'rtb-admin-ignore-maximums' ) ) ) ? $max_people : 100;
 		
 		$min = apply_filters( 'rtb_party_size_lower_limit', empty( $party_size_min ) ? 1 : (int) $this->get_setting( 'party-size-min' ) );
 		$max = min( $max_people, apply_filters( 'rtb_party_size_upper_limit', empty( $party_size ) ? 100 : (int) $this->get_setting( 'party-size' ) ) );
@@ -2350,6 +2359,8 @@ If you were not the one to cancel this booking, please contact us.
 	public function get_form_table_options() {
 
 		$options = array();
+
+		if ( is_admin() ) { $options[] = ''; }
 
 		$table_sections = ! empty( $this->get_setting( 'rtb-table-sections' ) ) ? json_decode( html_entity_decode( $this->get_setting( 'rtb-table-sections' ) ) ) : array();
 		$table_sections = is_array( $table_sections ) ? $table_sections : array();
@@ -2948,6 +2959,13 @@ If you were not the one to cancel this booking, please contact us.
 			);
 		}
 
+		$dining_block_length_options = array();
+
+	    for ( $i = 10; $i <= 240; $i = $i +5 ) {
+	
+	      $dining_block_length_options[$i] = $i;
+	    }
+
 		$max_reservation_options = array();
 		$max_reservations_upper_limit = apply_filters( 'rtb-max-reservations-upper-limit', 100 );
 
@@ -2964,9 +2982,53 @@ If you were not the one to cancel this booking, please contact us.
 			$max_people_options[$i] = $i;
 		}
 
+		$max_auto_confirm_reservation_options = array();
+	    $max_auto_confirm_reservations_upper_limit = apply_filters( 'rtb-auto-confirm-reservations-upper-limit', 100 );
+	
+	    for ( $i = 1; $i <= $max_auto_confirm_reservations_upper_limit; $i++ ) {
+	
+	      $max_auto_confirm_reservation_options[$i] = $i;
+	    }
+
+	    $max_auto_confirm_seats_options = array();
+	    $max_auto_confirm_seats_upper_limit = apply_filters( 'rtb-auto-confirm-seats-upper-limit', 400 );
+	
+	    for ( $i = 1; $i <= $max_auto_confirm_seats_upper_limit; $i++ ) {
+	
+	      $max_auto_confirm_seats_options[$i] = $i;
+	    }
+
 		foreach ( array_merge( $this->location_options, $this->timeslot_options ) as $option ) {
 
 			if ( empty( $option['value'] ) ) { continue; }
+
+			$sap->add_setting(
+				'rtb-settings',
+				'rtb-general',
+				'select',
+				array(
+					'id'            		=> $option['slug'] . '-auto-confirm-max-party-size',
+					'title'         		=> __( 'Automatically Confirm Below Party Size', 'restaurant-reservations' ),
+					'description'   		=> __( 'Set a maximum party size below which all bookings will be automatically confirmed.', 'restaurant-reservations' ),
+					'options'       		=> $this->get_party_size_setting_options( false ),
+					'setting_type' 			=> $option['type'],
+					'setting_type_value'	=> $option['value'],
+				)
+			);
+
+			$sap->add_setting(
+				'rtb-settings',
+				'rtb-seat-assignments',
+				'select',
+				array(
+					'id'					=> $option['slug'] . '-rtb-dining-block-length',
+					'title'					=> __( 'Dining Block Length', 'restaurant-reservations' ),
+					'description'			=> __( 'How long, in minutes, does a meal generally last? This setting affects a how long a slot and/or seat unavailable for after someone makes a reservation.', 'restaurant-reservations' ),
+					'options'				=> $dining_block_length_options,
+					'setting_type' 			=> $option['type'],
+					'setting_type_value'	=> $option['value'],
+				)
+			);
 
 			$sap->add_setting(
 				'rtb-settings',
@@ -2991,6 +3053,34 @@ If you were not the one to cancel this booking, please contact us.
 					'title'     			=> __( 'Max People', 'restaurant-reservations' ),
 					'description'     		=> __( 'How many people, if enabled, should be allowed to be present at this restaurant location at the same time? Set dining block length to change how long a meal typically lasts. May not work correctly if max reservations is set.', 'restaurant-reservations' ),
 					'options'				=> $max_people_options,
+					'setting_type' 			=> $option['type'],
+					'setting_type_value'	=> $option['value'],
+				)
+			);
+
+			$sap->add_setting(
+				'rtb-settings',
+				'rtb-seat-assignments',
+				'select',
+				array(
+					'id'					=> $option['slug'] . '-auto-confirm-max-reservations',
+					'title'					=> __( 'Automatically Confirm Below Reservation Number', 'restaurant-reservations' ),
+					'description'			=> __( 'Set a maximum number of reservations at one time below which all bookings will be automatically confirmed.', 'restaurant-reservations' ),
+					'options'				=> $max_auto_confirm_reservation_options,
+					'setting_type' 			=> $option['type'],
+					'setting_type_value'	=> $option['value'],
+				)
+			);
+
+			$sap->add_setting(
+				'rtb-settings',
+				'rtb-seat-assignments',
+				'select',
+				array(
+					'id'					=> $option['slug'] . '-auto-confirm-max-seats',
+					'title'					=> __( 'Automatically Confirm Below Seats Number', 'restaurant-reservations' ),
+					'description'			=> __( 'Set a maximum number of seats at one time below which all bookings will be automatically confirmed.', 'restaurant-reservations' ),
+					'options'				=> $max_auto_confirm_seats_options,
 					'setting_type' 			=> $option['type'],
 					'setting_type_value'	=> $option['value'],
 				)

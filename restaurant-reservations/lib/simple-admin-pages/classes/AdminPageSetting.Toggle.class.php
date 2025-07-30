@@ -17,7 +17,7 @@
  * @package Simple Admin Pages
  */
 
-class sapAdminPageSettingToggle_2_6_21_rtb extends sapAdminPageSetting_2_6_21_rtb {
+class sapAdminPageSettingToggle_2_7_0_rtb extends sapAdminPageSetting_2_7_0_rtb {
 
 	public $sanitize_callback = 'sanitize_text_field';
 

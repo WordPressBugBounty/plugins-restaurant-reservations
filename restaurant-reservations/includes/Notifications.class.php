@@ -269,6 +269,16 @@ class rtbNotifications {
 
 		$bookings = get_posts( $args );
 
+		// Don't send an email today if there are no bookings
+		if ( empty( $bookings ) ) {
+
+			$now = new DateTime( 'now', wp_timezone() );
+
+			update_option( 'rtb-daily-summary-send-date', $now->format( 'Y-m-d' ) );
+
+			return;
+		}
+
 		ob_start();
 
 		?>

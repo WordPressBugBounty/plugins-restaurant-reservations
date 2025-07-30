@@ -300,18 +300,16 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 			// Get opening/closing times for this particular day
 			$hours = $this->get_opening_hours();
 
-			// If the restaurant is closed that day
-			// If Enable Max Reservation not set
-			if ( 1 > count( $hours ) or ! $rtb_controller->settings->get_setting( 'rtb-enable-max-tables' ) ) {
-				
-				$finalize_response( $hours );
-			}
-
 			$location_id = ! empty( $this->location ) ? $this->location->term_id : false;
 
 			$location_slug = ! empty( $this->location ) ? $this->location->slug : false;
 
-			$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length' ) * 60;
+			// If the restaurant is closed that day
+			// If Enable Max Reservation not set
+			if ( 1 > count( $hours ) or ! $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $location_slug ) ) {
+				
+				$finalize_response( $hours );
+			}
 
 			$min_party_size = (int) $rtb_controller->settings->get_setting( 'party-size-min' );
 
@@ -360,6 +358,10 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				}
 				$all_bookings_by_slots[$booking_time]['total_bookings']++;
 				$all_bookings_by_slots[$booking_time]['total_guest'] += intval( $booking->party );
+
+				$timeslot = rtb_get_timeslot( $booking_time, $location_id );
+
+				$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $location_slug, $timeslot ) * 60;
 
 				/**
 				 * Expanding bookings
@@ -420,9 +422,16 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				}
 			}
 
-			// Mark slots unavailable, due to dinning block length
+			// Mark slots unavailable, due to dining block length
 			$additional_blocked_slots = [];
 			foreach ($all_blocked_slots as $slot) {
+
+				$datetime = ( new DateTime( '@' . $slot ) )->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s');
+
+				$timeslot = rtb_get_timeslot( $datetime, $location_id );
+
+				$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $location_slug, $timeslot ) * 60;
+
 				// blocking before this slot
 				$begin = $slot - $dining_block_seconds;
 				/**
@@ -457,6 +466,19 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				while($next < $end) {
 					$additional_blocked_slots[] = $next;
 					$next += $interval;
+				}
+			}
+
+			// If tables are required, block slots where there is no table available
+			if ( $rtb_controller->settings->get_setting( 'require-table' ) ) {
+
+				foreach ( $all_possible_slots as $slot ) {
+
+					$datetime = ( new DateTime( '@' . $slot ) )->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s');
+
+					$valid_tables = rtb_get_valid_tables( $datetime, $location_id );
+
+					if ( empty( $valid_tables ) ) { $all_blocked_slots[] = $slot; }
 				}
 			}
 
@@ -703,7 +725,7 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 			$max_people = (int) $rtb_controller->settings->get_setting( 'rtb-max-people-count', $location_slug, $timeslot );
 
-			$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length' )* 60 - 1;  // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
+			$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $location_slug, $timeslot ) * 60 - 1;  // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
 			
 			// Get opening/closing times for this particular day
 			$hours = $this->get_opening_hours();
