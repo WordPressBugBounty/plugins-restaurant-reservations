@@ -302,6 +302,9 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 
 == Changelog ==
 
+= 2.7.1 (2025-08-19) =
+- Minor bugfix for multiple locations settings
+
 = 2.7.0 (2025-07-30) =
 - **IMPORTANT NOTE: Significant updates have been made to the styling of the "Minimal" booking form layout option. If you are using this layout, we highly recommend that you install the update on a staging environment first and test with with the updated style, especially if you have customized the layout and/or CSS.**
 - Refresh of the "Minimal" booking form layout.

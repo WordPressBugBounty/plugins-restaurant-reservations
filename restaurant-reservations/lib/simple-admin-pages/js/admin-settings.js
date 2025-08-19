@@ -50,24 +50,19 @@ jQuery(document).ready(function() {
 
                 var show_option = true;
 
-                jQuery.each( conditional_on, function ( index, field ) { //console.log( conditional_on ); console.log( conditional_on_value );
+                jQuery.each( conditional_on, function ( index, field ) { console.log( conditional_on ); console.log( conditional_on_value );
 
                     var check_option = option_page + '[' + field + ']';
                     var input_element = jQuery( '[name="' + check_option + '"], [name="' + check_option + '[]"]' );
 
                     if ( input_element.length ) {
 
-                        if (input_element.is(':checkbox')) {
-                            option_value = input_element.is(':checked') ? input_element.val() : false;
-                        } else if (input_element.is(':radio')) {
-                            option_value = jQuery('[name="' + check_option + '"]:checked').val() || false;
-                        } else {
-                            option_value = input_element.val();
-                        }
-                    } //console.log( option_value );
+                        if ( input_element.attr( 'type' ) === 'checkbox' ) { var option_value = input_element.is(':checked') ? input_element.val() : false; }
+                        else { var option_value = input_element.val(); }
+                    }
 
                     var values_to_check = Array.isArray( conditional_on_value[ index ] ) ? conditional_on_value[ index ] : [ conditional_on_value[ index ] ];
-                    //console.log( values_to_check ); console.log( values_to_check.includes( option_value ) ); console.log( option_value == true  ); console.log( values_to_check.includes( true ) );
+                    console.log( values_to_check ); console.log( values_to_check.includes( option_value ) ); console.log( option_value == true  ); console.log( values_to_check.includes( true ) );
                     if ( ! values_to_check.includes( option_value ) && ! ( option_value == true && values_to_check.includes( true ) ) ) {
 
                         show_option = false;
@@ -100,9 +95,9 @@ jQuery(document).ready(function() {
         } );
     });
 
-    jQuery( '.sap-settings-type-toggle-option select' ).on( 'change', function() {
+    jQuery( '.sap-settings-type-toggle-option select' ).on( 'change', function() { 
 
-        var referrer_url = jQuery( this ).closest( 'form' ).find( 'input[name="_wp_http_referer"]' ); console.log( referrer_url.val() );
+        var referrer_url = jQuery( this ).closest( '.sap-settings-page' ).find( 'input[name="_wp_http_referer"]' );
         var [ base , params ] = referrer_url.val().split( '?' );
 
         search_params = new URLSearchParams( params );
@@ -112,7 +107,7 @@ jQuery(document).ready(function() {
             jQuery( '.sap-settings-type-toggle-option select' ).prop( 'disabled', false );
 
             search_params.delete( 'setting_type' );
-            search_params.delete( 'setting_type_value' ); console.log( base + '?' + search_params.toString() );
+            search_params.delete( 'setting_type_value' );
 
             referrer_url.val( base + '?' + search_params.toString() );
         }
@@ -122,7 +117,7 @@ jQuery(document).ready(function() {
             jQuery( this ).prop( 'disabled', false );
 
             search_params.set( 'setting_type', jQuery( this ).attr( 'name' ) );
-            search_params.set( 'setting_type_value', jQuery( this ).val() ); console.log( base + '?' + search_params.toString() );
+            search_params.set( 'setting_type_value', jQuery( this ).val() );
 
             referrer_url.val( base + '?' + search_params.toString() );
         }

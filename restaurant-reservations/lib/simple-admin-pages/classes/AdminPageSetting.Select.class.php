@@ -39,7 +39,7 @@ class sapAdminPageSettingSelect_2_7_0_rtb extends sapAdminPageSetting_2_7_0_rtb 
 
 		?>
 
-		<fieldset <?php $this->print_conditional_data(); ?>>
+		<fieldset <?php $this->print_conditional_data(); ?> <?php $this->print_setting_type_data(); ?>>
 
 			<select name="<?php echo esc_attr( $this->get_input_name() ); ?>" id="<?php echo esc_attr( $this->id ); ?>" <?php echo ( $this->disabled ? 'disabled' : ''); ?>>
 
