@@ -27,7 +27,7 @@
 	margin: 0 0 48px -20px;
 	width: calc(100% + 20px);
 	height: 256px;
-	background: url(../img/rtb-dashboard-banner.png) center no-repeat #1b0f49;
+	background: url(../img/rtb-dashboard-banner.png) center no-repeat #0C154C;
 	box-sizing: border-box;
 }
 .rtb-dashboard-new-upgrade-banner * {
@@ -278,7 +278,7 @@
 	width: 100%;
 	padding: 28px;
 	margin: 48px 0 0;
-	background: #7b31af;
+	background: #1b335f;
 	border-radius: 8px;
 	color: #fff;
 	font-size: 16px;

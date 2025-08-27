@@ -1071,13 +1071,13 @@ class rtbBooking {
 
     	// If there are multiple locations, a location is selected, and 
 		// max seats has been enabled for this specific location
-		if ( ! empty( $location_slug ) and $rtb_controller->settings->is_location_setting_enabled( 'rtb-max-tables-count', $location_slug ) ) {
+		if ( ! empty( $this->get_location_slug() ) and $rtb_controller->settings->is_location_setting_enabled( 'rtb-max-tables-count', $this->get_location_slug() ) ) {
 
 			$tax_query = array(
 				array(
 					'taxonomy'	=> $rtb_controller->locations->location_taxonomy,
-					'field'		=> 'term_id',
-					'terms'		=> $location->term_id
+					'field'		=> 'slug',
+					'terms'		=> $this->get_location_slug()
 				)
 			);
 
@@ -1155,13 +1155,13 @@ class rtbBooking {
 
 		// If there are multiple locations, a location is selected, and 
 		// max seats has been enabled for this specific location
-		if ( ! empty( $location_slug ) and $rtb_controller->settings->is_location_setting_enabled( 'rtb-max-people-count', $location_slug ) ) {
+		if ( ! empty( $this->get_location_slug() ) and $rtb_controller->settings->is_location_setting_enabled( 'rtb-max-people-count', $this->get_location_slug() ) ) {
 
 			$tax_query = array(
 				array(
 					'taxonomy'	=> $rtb_controller->locations->location_taxonomy,
-					'field'		=> 'term_id',
-					'terms'		=> $location->term_id
+					'field'		=> 'slug',
+					'terms'		=> $this->get_location_slug()
 				)
 			);
 

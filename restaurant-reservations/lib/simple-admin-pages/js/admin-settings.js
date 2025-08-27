@@ -50,7 +50,7 @@ jQuery(document).ready(function() {
 
                 var show_option = true;
 
-                jQuery.each( conditional_on, function ( index, field ) { console.log( conditional_on ); console.log( conditional_on_value );
+                jQuery.each( conditional_on, function ( index, field ) { //console.log( conditional_on ); console.log( conditional_on_value );
 
                     var check_option = option_page + '[' + field + ']';
                     var input_element = jQuery( '[name="' + check_option + '"], [name="' + check_option + '[]"]' );
@@ -62,7 +62,7 @@ jQuery(document).ready(function() {
                     }
 
                     var values_to_check = Array.isArray( conditional_on_value[ index ] ) ? conditional_on_value[ index ] : [ conditional_on_value[ index ] ];
-                    console.log( values_to_check ); console.log( values_to_check.includes( option_value ) ); console.log( option_value == true  ); console.log( values_to_check.includes( true ) );
+                    //console.log( values_to_check ); console.log( values_to_check.includes( option_value ) ); console.log( option_value == true  ); console.log( values_to_check.includes( true ) );
                     if ( ! values_to_check.includes( option_value ) && ! ( option_value == true && values_to_check.includes( true ) ) ) {
 
                         show_option = false;
