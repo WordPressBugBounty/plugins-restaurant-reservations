@@ -1458,3 +1458,18 @@ jQuery( document ).ready( function() {
 	jQuery( '.rtb-settings-preview' ).prevAll( '.sap-tutorial-toggle' ).hide();
 	jQuery( '.rtb-settings-preview .sap-tutorial-toggle' ).hide();
 });
+
+// NEW PLUGIN NOTICE
+
+jQuery( document ).ready( function( $ ) {
+
+  jQuery(document).on( 'click', '.ait-iat-new-plugin-notice .notice-dismiss', function( event ) {
+    var data = jQuery.param({
+      action: 'rtb_hide_new_plugin_notice',
+      plugin: 'ait_iat',
+      nonce: rtb_admin.nonce
+    });
+
+    jQuery.post( ajaxurl, data, function() {} );
+  });
+});

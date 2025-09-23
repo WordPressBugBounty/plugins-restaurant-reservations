@@ -2,7 +2,7 @@
 Contributors: Rustaurius
 Tested Up To: 6.8
 Tags: reservation, reservations, restaurant reservations, reservation form, restaurant, restaurant booking, restaurant reservation form, restaurant booking form, restaurant booking system, reservation system, online reservations, online restaurant booking, dinner reservations, restaurant form, gutenberg reservations, gutenberg restaurant reservations, gutenberg restaurant booking, mobile reservations, responsive reservations, table reservations, open table, book table, reserve table, easy reservations, simple reservations, quick restaurant reservations, custom reservation form, custom restaurant reservations
-Stable tag: 2.7.2
+Stable tag: 2.7.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -301,6 +301,9 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 - [Our Support Center](https://www.fivestarplugins.com/support-center/)
 
 == Changelog ==
+
+= 2.7.3 (2025-09-23) =
+- Updated admin notice capability.
 
 = 2.7.2 (2025-08-27) =
 - Fixed an issue with location-specific maximums being incorrectly calculated.

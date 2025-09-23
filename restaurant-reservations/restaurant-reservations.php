@@ -3,7 +3,7 @@
  * Plugin Name: Five Star Restaurant Reservations - WordPress Booking Plugin
  * Plugin URI: http://www.fivestarplugins.com/plugins/five-star-restaurant-reservations/
  * Description: Restaurant reservations made easy. Accept bookings online. Quickly confirm or reject reservations, send email notifications, set booking times and more.
- * Version: 2.7.2
+ * Version: 2.7.3
  * Author: Five Star Plugins
  * Author URI: https://www.fivestarplugins.com/
  * Text Domain: restaurant-reservations
@@ -58,7 +58,7 @@ class rtbInit {
 	public function __construct() {
 
 		// Common strings
-		define( 'RTB_VERSION', '2.7.2' );
+		define( 'RTB_VERSION', '2.7.3' );
 		define( 'RTB_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 		define( 'RTB_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 		define( 'RTB_PLUGIN_FNAME', plugin_basename( __FILE__ ) );
@@ -133,7 +133,7 @@ class rtbInit {
 		$this->bookings = new rtbAdminBookings();
 
 		// Load assets
-		add_action( 'admin_notices', array($this, 'display_header_area') );
+		add_action( 'admin_notices', array($this, 'display_header_area'), 99 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
 
@@ -232,6 +232,10 @@ class rtbInit {
 		// Handle the helper notice
 		add_action( 'admin_notices', array( $this, 'maybe_display_helper_notice' ) );
 		add_action( 'wp_ajax_rtb_hide_helper_notice', array( $this, 'hide_helper_notice' ) );
+
+		// New Plugin Notice
+		add_action( 'admin_notices', array( $this, 'maybe_display_new_plugin_notice' ) );
+		add_action( 'wp_ajax_rtb_hide_new_plugin_notice', array( $this, 'hide_new_plugin_notice' ) );
 
 		// Handle the helper button
 		add_action( 'admin_init', array( $this, 'display_help_bubble' ) );
@@ -782,6 +786,59 @@ class rtbInit {
 		}
 	
 		set_transient( 'fsp-helper-notice-dismissed', true, 3600*24*7 );
+	
+		die();
+	}
+
+	public function maybe_display_new_plugin_notice() {
+
+		$screen = get_current_screen();
+	    if (!isset($screen->id) || strpos($screen->id, 'bookings_page_') === false) { return; }
+	
+		if ( get_transient( 'rtb-ait-iat-plugin-notice-dismissed' ) ) { return; }
+	
+		// October 17th, 2025
+		if ( time() > 1760759940 ) { return; }
+	
+		?>
+	
+		<div class='notice notice-error is-dismissible ait-iat-new-plugin-notice'>
+				
+			<div class='rtb-new-plugin-notice-img'>
+				<img src='<?php echo RTB_PLUGIN_URL . '/assets/img/ait-iat-plugin-icon.png' ; ?>' />
+			</div>
+	
+			<div class='rtb-new-plugin-notice-txt'>
+				<p><?php _e( 'Want to improve your search rankings? Try our new <strong>AI Image Alt Text</strong> plugin!', 'restaurant-reservations' ); ?></p>
+				<p><?php echo sprintf( __( 'As a thank you to our customers, for a limited time you can get a <strong>free pro license</strong>! Try the <a target=\'_blank\' href=\'%s\'>free version</a> today or use code <code>early_adopter_pro</code> to <a target=\'_blank\' href=\'%s\'>get your pro version license</a>!', 'restaurant-reservations' ), admin_url( 'plugin-install.php?tab=plugin-information&plugin=ai-image-alt-text' ), 'https://www.wpaiplugins.dev/wordpress-image-alt-text-ai-plugin/' ); ?></p>
+			</div>
+	
+			<div class='rtb-clear'></div>
+	
+		</div>
+	
+		<?php 
+	}
+	
+	public function hide_new_plugin_notice() {
+		global $rtb_controller;
+	
+		// Authenticate request
+		if (
+			! check_ajax_referer( 'rtb-admin', 'nonce' )
+			||
+			! current_user_can( 'manage_options' )
+		) {
+			wp_send_json_error(
+				array(
+					'error' => 'loggedout',
+					'msg' => sprintf( __( 'You have been logged out. Please %slogin again%s.', 'restaurant-reservations' ), '<a href="' . wp_login_url( admin_url( 'admin.php?page=rtb-dashboard' ) ) . '">', '</a>' ),
+				)
+			);
+	
+		}
+	
+		set_transient( 'rtb-ait-iat-plugin-notice-dismissed', true, 3600*24*7 );
 	
 		die();
 	}
