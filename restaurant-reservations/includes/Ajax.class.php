@@ -839,7 +839,7 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				$max_people = min( ( $max_people - $max_time_size ), $max_party_size );
 
 				$response = (object) array( 
-					'available_spots' => $max_people - $max_time_size,
+					'available_spots' => $max_people,
 					'min_party_size'  => $min_party_size,
 				);
 
