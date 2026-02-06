@@ -105,20 +105,22 @@ abstract class rtbNotification {
 			array(
 				'action' => 'cancel',
 				'booking_id' => $this->booking->ID,
-				'booking_email' => $this->booking->email
+				'booking_email' => $this->booking->email,
+				'booking_code' => $this->booking->cancellation_code
 			),
 			$booking_page_url
 		);
 
 		$template_tags = array(
 			'{booking_id}'			=> $this->booking->ID,
-			'{user_email}'			=> $this->booking->email,
-			'{user_name}'			=> $this->booking->name,
+			'{user_email}'			=> esc_html( $this->booking->email ),
+			'{user_name}'			=> esc_html( $this->booking->name ),
 			'{party}'				=> $this->booking->party,
 			'{table}'				=> implode(',', $this->booking->table ), 
 			'{date}'				=> $this->booking->format_date( $this->booking->date ),
-			'{phone}'				=> $this->booking->phone,
-			'{message}'				=> $this->booking->message,
+			'{phone}'				=> esc_html( $this->booking->phone ),
+			'{message}'				=> esc_html( $this->booking->message ),
+			'{cancellation_code}'	=> esc_html( $this->booking->cancellation_code ),
 			'{booking_url}'			=> $booking_page_url,
 			'{cancellation_url}'	=> $cancellation_url,
 			'{bookings_link_url}'	=> admin_url( 'admin.php?page=rtb-bookings&status=pending' ),

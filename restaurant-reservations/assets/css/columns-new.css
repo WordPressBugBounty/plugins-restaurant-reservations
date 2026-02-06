@@ -37,12 +37,14 @@
 	background: #252525;
 	color: #fff;
 }
-label[for="rtb_modification_email"] {
+label[for="rtb_modification_email"],
+label[for="rtb_modification_code"] {
 	margin-top: 24px;
 	display: flex;
 	align-items: center;
 }
-input[name="rtb_modification_email"] {
+input[name="rtb_modification_email"],
+input[name="rtb_modification_code"] {
 	margin-top: 0;
 }
 .rtb-bookings-results {
@@ -166,7 +168,8 @@ input[name="rtb_modification_email"] {
 	background: transparent;
 	color: #7a7a7a;
 }
-.rtb-booking-form input[type="email"][name="rtb_modification_email"] {
+.rtb-booking-form input[type="email"][name="rtb_modification_email"],
+.rtb-booking-form input[type="text"][name="rtb_modification_code"] {
 	width: 300px;
 	margin-left: 6px;
 }

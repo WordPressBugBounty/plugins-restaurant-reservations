@@ -89,12 +89,22 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 			}
 
 			$email = isset($_POST['booking_email']) ? sanitize_email( $_POST['booking_email'] ) : '';
+			$code = isset($_POST['booking_code']) ? sanitize_text_field( $_POST['booking_code'] ) : '';
 
 			if ( ! $email ) {
 				wp_send_json_error(
 					array(
 						'error' => 'noemail',
 						'msg' => __( 'The email you entered is not valid.', 'restaurant-reservations' ),
+					)
+				);
+			}
+
+			if ( ! $code and empty( $rtb_controller->settings->get_setting( 'disable-cancellation-code-required' ) ) ) {
+				wp_send_json_error(
+					array(
+						'error' => 'nocode',
+						'msg' => __( 'The cancellation code you entered is not valid.', 'restaurant-reservations' ),
 					)
 				);
 			}
@@ -114,15 +124,18 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				if ( $booking->load_post( $booking_id->post_id ) ) {
 					$booking_date = (new DateTime($booking->date, wp_timezone()))->format('U');
 					if ( in_array($booking->post_status, ['pending', 'payment_pending', 'payment_failed', 'confirmed'] ) and time() < $booking_date ) {
-						$bookings[] = array(
-							'ID'         => $booking->ID,
-							'email'      => $booking->email,
-							'datetime'   => $booking->format_date( $booking->date ),
-							'datetime_u' => $booking_date,
-							'party'      => $booking->party,
-							'status'     => $booking->post_status,
-							'status_lbl' => $booking_status_lbls[$booking->post_status]['label']
-						);
+						if ( $booking->cancellation_code == $code or ! empty( $rtb_controller->settings->get_setting( 'disable-cancellation-code-required' ) ) ) {
+							$bookings[] = array(
+								'ID'         => $booking->ID,
+								'email'      => $booking->email,
+								'code'       => $booking->cancellation_code,
+								'datetime'   => $booking->format_date( $booking->date ),
+								'datetime_u' => $booking_date,
+								'party'      => $booking->party,
+								'status'     => $booking->post_status,
+								'status_lbl' => $booking_status_lbls[$booking->post_status]['label']
+							);
+						}
 					}
 				}
 			}
@@ -161,6 +174,7 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 			$booking_id = isset($_REQUEST['booking_id']) ? absint( $_REQUEST['booking_id'] ) : '';
 			$booking_email = isset($_REQUEST['booking_email']) ? sanitize_email( $_REQUEST['booking_email'] ) : '';
+			$booking_code = isset($_REQUEST['booking_code']) ? sanitize_text_field( $_REQUEST['booking_code'] ) : '';
 
 			$success = false;
 			$error = array(
@@ -170,10 +184,22 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 			$booking = new rtbBooking();
 			if ( $booking->load_post( $booking_id ) ) {
+				
 				if ( $booking_email == $booking->email ) {
-					wp_update_post( array( 'ID' => $booking->ID, 'post_status' => 'cancelled' ) );
+					
+					if ( $booking_code != $booking->cancellation_code and empty( $rtb_controller->settings->get_setting( 'disable-cancellation-code-required' ) ) ) {
+						
+						$error = array(
+							'error' => 'invalidcode',
+							'msg' => __( 'The cancellation code you entered is not valid.', 'restaurant-reservations' ),
+						);
+					}
+					else {
 
-					$success = true;
+						wp_update_post( array( 'ID' => $booking->ID, 'post_status' => 'cancelled' ) );
+
+						$success = true;
+					}
 				}
 				else {
 					$error = array(
@@ -311,8 +337,6 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				$finalize_response( $hours );
 			}
 
-			$min_party_size = (int) $rtb_controller->settings->get_setting( 'party-size-min' );
-
 			$all_possible_slots = $this->get_all_possible_timeslots( $hours );
 
 			// Get all current bookings sorted by date
@@ -395,6 +419,8 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				$datetime = ( new DateTime( '@' . $slot ) )->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s');
 
 				$timeslot = rtb_get_timeslot( $datetime, $location_id );
+
+				$min_party_size = (int) $rtb_controller->settings->get_setting( 'party-size-min', $location_slug, $timeslot );
 
 				$max_reservations = (int) $rtb_controller->settings->get_setting( 'rtb-max-tables-count', $location_slug, $timeslot );
 
@@ -723,6 +749,12 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 			$datetime = $this->year . '-' . $this->month . '-' . $this->day . ' ' . $this->time;
 			$timeslot = rtb_get_timeslot( $datetime, $location_id );
 
+			$min_party_size = (int) $rtb_controller->settings->get_setting( 'party-size-min', $location_slug, $timeslot );
+			$max_party_size = (int) $rtb_controller->settings->get_setting( 'party-size', $location_slug, $timeslot );
+
+			// Deals with when "Any Size" is selected as the "Party Size" setting 
+			$max_party_size = ! empty( $max_party_size ) ? $max_party_size : 100;
+
 			$max_people = (int) $rtb_controller->settings->get_setting( 'rtb-max-people-count', $location_slug, $timeslot );
 
 			$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $location_slug, $timeslot ) * 60 - 1;  // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
@@ -804,12 +836,27 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 					$max_time_size = max( $max_time_size, array_sum( $party_sizes ) );
 				}
 
-				$response = (object) array( 'available_spots' => $max_people - $max_time_size);
+				$max_people = min( ( $max_people - $max_time_size ), $max_party_size );
+
+				$response = (object) array( 
+					'available_spots' => $max_people - $max_time_size,
+					'min_party_size'  => $min_party_size,
+				);
 
 				echo json_encode($response);
 				
 				die();
-			} else {
+			} elseif ( $rtb_controller->settings->check_location_timeslot_party_rules() ) {
+
+				$response = (object) array( 
+					'available_spots' => $max_party_size,
+					'min_party_size'  => $min_party_size,
+				);
+
+				echo json_encode($response);
+				die();
+			}
+			else {
 				return false;
 			}
 		}

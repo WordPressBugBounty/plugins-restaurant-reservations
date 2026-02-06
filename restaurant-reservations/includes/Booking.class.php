@@ -77,6 +77,7 @@ class rtbBooking {
 	public $payment_failure_message;
 	public $receipt_id;
 	public $mc_optin;
+	public $cancellation_code;
 
 	// notifications
 	public $reminder_sent;
@@ -167,7 +168,8 @@ class rtbBooking {
 			'late_arrival_sent' => false,
 			'post_reservation_follow_up_sent' => false,
 			'reservation_notifications'	=> array(),
-			'mc_optin' => false
+			'mc_optin' => false,
+			'cancellation_code' => ''
 		);
 
 		$meta_defaults = apply_filters( 'rtb_booking_metadata_defaults', $meta_defaults );
@@ -190,6 +192,7 @@ class rtbBooking {
 		$this->table = $meta['table'];
 		$this->payment_failure_message = $meta['payment_failure_message'];
 		$this->receipt_id = $meta['receipt_id'];
+		$this->cancellation_code = $meta['cancellation_code'];
 
 		$this->reminder_sent = $meta['reminder_sent'];
 		$this->late_arrival_sent = $meta['late_arrival_sent'];
@@ -507,7 +510,7 @@ class rtbBooking {
 			if (
 				empty( $this->validation_errors )
 				&& !empty( $exception_rules )
-				&& !current_user_can( 'manage_bookings' )
+				&& ( ! empty( $rtb_controller->settings->get_setting( 'admin-ignore-schedule' ) ) && ! current_user_can( 'manage_bookings' ) )
 			) {
 
 				/**
@@ -602,7 +605,7 @@ class rtbBooking {
 			if (
 				empty( $this->validation_errors )
 				&& !empty( $rules )
-				&& !current_user_can( 'manage_bookings' )
+				&& ( ! empty( $rtb_controller->settings->get_setting( 'admin-ignore-schedule' ) ) && ! current_user_can( 'manage_bookings' ) )
 				&& !$exception_is_active
 			) {
 				$request_weekday = strtolower( $request->format( 'l' ) );
@@ -672,7 +675,7 @@ class rtbBooking {
 		$this->request_time = empty( $_POST['rtb-time'] ) ? '' : sanitize_text_field( $_POST['rtb-time'] );
 
 		// Name
-		$this->name = empty( $_POST['rtb-name'] ) ? '' : wp_strip_all_tags( sanitize_text_field( $_POST['rtb-name'] ), true ); // @todo should I limit length?
+		$this->name = empty( $_POST['rtb-name'] ) ? '' : preg_replace( "/[^\p{L}\p{N}\p{M}'\-\s]/u", '', $_POST['rtb-name'] );;
 		if ( empty( $this->name ) ) {
 			$this->validation_errors[] = array(
 				'field'			=> 'name',
@@ -692,7 +695,8 @@ class rtbBooking {
 
 		// Check party size
 		} else {
-			$party_size = $rtb_controller->settings->get_setting( 'party-size' );
+
+			$party_size = $rtb_controller->settings->get_setting( 'party-size', $this->get_location_slug(), $this->get_timeslot() );
 			if ( ! empty( $party_size ) && $party_size < $this->party ) {
 				$this->validation_errors[] = array(
 					'field'			=> 'party',
@@ -700,7 +704,7 @@ class rtbBooking {
 					'message'	=> sprintf( esc_html( $rtb_controller->settings->get_setting( 'label-only-accept-bookings-for-parties-up-to' ) ), $party_size ),
 				);
 			}
-			$party_size_min = $rtb_controller->settings->get_setting( 'party-size-min' );
+			$party_size_min = $rtb_controller->settings->get_setting( 'party-size-min', $this->get_location_slug(), $this->get_timeslot() );
 			if ( ! empty( $party_size_min ) && $party_size_min > $this->party ) {
 				$this->validation_errors[] = array(
 					'field'			=> 'party',
@@ -871,6 +875,9 @@ class rtbBooking {
 				'message'	=> esc_html( $rtb_controller->settings->get_setting( 'label-booking-info-exactly-matches' ) ),
 			);
 		}
+
+		// Create a cancellation code for this booking if it's not set
+		$this->cancellation_code = ! empty( $this->cancellation_code ) ? $this->cancellation_code : rtb_random_string();
 
 		do_action( 'rtb_validate_booking_submission', $this );
 
@@ -1604,9 +1611,10 @@ class rtbBooking {
 	public function insert_post_meta() {
 
 		$meta = array(
-			'party' => $this->party,
-			'email' => $this->email,
-			'phone' => $this->phone,
+			'party'             => $this->party,
+			'email'             => $this->email,
+			'phone'             => $this->phone,
+			'cancellation_code' => $this->cancellation_code,
 		);
 
 		if ( !empty( $this->ip ) ) {

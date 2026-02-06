@@ -614,6 +614,7 @@ class rtbSettings {
 			'label-modify-make-reservation'		=> __( 'Make a Reservation', 'restaurant-reservations' ),
 			'label-modify-using-form'			=> __( 'Use the form below to find your reservation', 'restaurant-reservations' ),
 			'label-modify-form-email'			=> __( 'Email:', 'restaurant-reservations' ),
+			'label-modify-form-code'			=> __( 'Modification Code:', 'restaurant-reservations' ),
 			'label-modify-find-reservations'	=> __( 'Find Reservations', 'restaurant-reservations' ),
 			'label-modify-no-bookings-found'	=> __( 'No bookings were found for the email address you entered.', 'restaurant-reservations' ),
 			'label-modify-cancel'				=> __( 'Cancel', 'restaurant-reservations' ),
@@ -1301,6 +1302,22 @@ If you were not the one to cancel this booking, please contact us.
 			)
 		);
 
+		$sap->add_setting(
+    		'rtb-settings',
+    		'rtb-schedule',
+    		'toggle',
+    		array(
+    			'id'      => 'admin-ignore-schedule',
+    			'title'     => __( 'Admin Ignore Schedule', 'restaurant-reservations' ),
+    			'description'     => __( 'Allows bookings to be made at any time at all via the admin, ignoring all scheduling rules.', 'restaurant-reservations' )
+    		)
+    	);
+
+    	$settings_type_toggle_options = array();
+
+		if ( ! empty( $this->location_options ) ) { $settings_type_toggle_options['location'] = $this->location_options; }
+		if ( ! empty( $this->timeslot_options ) ) { $settings_type_toggle_options['scheduling_rule'] = $this->timeslot_options; }
+
 		$sap->add_section(
 			'rtb-settings',
 			array(
@@ -1309,6 +1326,7 @@ If you were not the one to cancel this booking, please contact us.
 				'is_tab'			=> true,
 				'rank'				=> 2,
 				'tutorial_yt_id'	=> '-RC2kUhXkLQ',
+				//'settings_type_toggle_options' => $settings_type_toggle_options,
 				'icon'				=> 'text'				
 			)
 		);
@@ -1400,6 +1418,17 @@ If you were not the one to cancel this booking, please contact us.
 				'id'			=> 'allow-cancellations',
 				'title'			=> __( 'Let Guests View and Cancel Bookings', 'restaurant-reservations' ),
 				'description'	=> __( 'Adds an option to your booking form that lets guests view and/or cancel their upcoming bookings. If you have deposits enabled, then guests can also use this feature to make a payment for a deposit that wasn\'t paid at the time of the initial booking.', 'restaurant-reservations' )
+			)
+		);
+
+		$sap->add_setting(
+			'rtb-settings',
+			'rtb-general',
+			'toggle',
+			array(
+				'id'			=> 'disable-cancellation-code-required',
+				'title'			=> __( 'Disable Cancellation Code Required', 'restaurant-reservations' ),
+				'description'	=> __( 'By default, cancelling or modifying a reservation requires a code as well as the user\'s email address, to prevent malicious cancellation activity.', 'restaurant-reservations' )
 			)
 		);
 
@@ -2029,11 +2058,6 @@ If you were not the one to cancel this booking, please contact us.
 			)
 		);
 
-		$settings_type_toggle_options = array();
-
-		if ( ! empty( $this->location_options ) ) { $settings_type_toggle_options['location'] = $this->location_options; }
-		if ( ! empty( $this->timeslot_options ) ) { $settings_type_toggle_options['scheduling_rule'] = $this->timeslot_options; }
-
 		/**
 	     * Premium options preview only
 	     */
@@ -2337,13 +2361,13 @@ If you were not the one to cancel this booking, please contact us.
 		$location = ( ! empty( $location_id ) and term_exists( $location_id ) ) ? get_term( $location_id ) : false;
 		$location_slug = ! empty( $location ) ? $location->slug : false;
 
-		$party_size = (int) $this->get_setting( 'party-size' );
-		$party_size_min = (int) $this->get_setting( 'party-size-min' );
+		$party_size = (int) $this->get_setting( 'party-size', $location_slug );
+		$party_size_min = (int) $this->get_setting( 'party-size-min', $location_slug );
 		$max_people = ! empty( $this->get_setting( 'rtb-max-people-count', $location_slug ) ) ? (int) $this->get_setting( 'rtb-max-people-count', $location_slug ) : 100;
 		$max_people = ( ! is_admin() || empty( $this->get_setting( 'rtb-admin-ignore-maximums' ) ) ) ? $max_people : 100;
 		
-		$min = apply_filters( 'rtb_party_size_lower_limit', empty( $party_size_min ) ? 1 : (int) $this->get_setting( 'party-size-min' ) );
-		$max = min( $max_people, apply_filters( 'rtb_party_size_upper_limit', empty( $party_size ) ? 100 : (int) $this->get_setting( 'party-size' ) ) );
+		$min = apply_filters( 'rtb_party_size_lower_limit', empty( $party_size_min ) ? 1 : (int) $this->get_setting( 'party-size-min', $location_slug ) );
+		$max = min( $max_people, apply_filters( 'rtb_party_size_upper_limit', empty( $party_size ) ? 100 : (int) $this->get_setting( 'party-size', $location_slug ) ) );
 
 		for ( $i = $min; $i <= $max; $i++ ) {
 			$options[$i] = $i;
@@ -2370,11 +2394,16 @@ If you were not the one to cancel this booking, please contact us.
 
 		foreach ( $tables as $table ) {
 
+			if ( ! empty( $table->disabled ) ) { continue; }
+
 			$option = '';
 			$table_section_name = '';
 
 			foreach ( $table_sections as $table_section ) { 
 				if ( $table_section->section_id == $table->section ) {
+
+					if ( ! empty( $table_section->disabled ) ) { continue 2; }
+
 					$table_section_name = $table_section->name;
 					break;
 				}
@@ -2417,11 +2446,27 @@ If you were not the one to cancel this booking, please contact us.
 
 		$location_slug = ! empty( $location_id ) ? get_term_field( 'slug', $location_id ) : false;
 
+		$table_sections = json_decode( html_entity_decode( $this->get_setting( 'rtb-table-sections', $location_slug, $timeslot ) ) );
+		$table_sections = is_array( $table_sections ) ? $table_sections : array();
+
 		$tables = json_decode( html_entity_decode( $this->get_setting( 'rtb-tables', $location_slug, $timeslot ) ) );
 		$tables = is_array( $tables ) ? $tables : array();
 		
 		$sorted_tables = array();
 		foreach ( $tables as $table ) {
+
+			if ( ! empty( $table->disabled ) ) { continue; }
+
+			// Ignore table if it's in a disabled section
+			foreach ( $table_sections as $table_section ) { 
+				if ( $table_section->section_id == $table->section ) {
+
+					if ( ! empty( $table_section->disabled ) ) { continue 2; }
+
+					break;
+				}
+			}
+
 			$sorted_tables[ $table->number ] = $table;
 		}
 
@@ -2650,6 +2695,7 @@ If you were not the one to cancel this booking, please contact us.
 				'{date}'				=> __( '* Date and time of the booking', 'restaurant-reservations' ),
 				'{phone}'				=> __( 'Phone number if supplied with the request', 'restaurant-reservations' ),
 				'{message}'				=> __( 'Message added to the request', 'restaurant-reservations' ),
+				'{cancellation_code}'   => __( 'The code needed to cancel or modify a booking, if that setting is not disabled.', 'restaurant-reservations' ),
 				'{booking_id}'			=> __( 'The ID of the booking', 'restaurant-reservations' ),
 				'{booking_page_link}'	=> __( 'A link to the bookings page on the front-end of the site.', 'restaurant-reservations' ),
 				'{booking_url}'			=> __( 'The URL of the bookings page on the front-end of the site.', 'restaurant-reservations' ),
@@ -2757,6 +2803,9 @@ If you were not the one to cancel this booking, please contact us.
 
 		$table_section_options = array();
 		foreach ( $table_sections as $table_section ) {
+
+			if ( ! empty( $table_section->disabled ) ) { continue; }
+
 			$table_section_options[ $table_section->section_id ] = $table_section->name;
 		}
 
@@ -2858,7 +2907,7 @@ If you were not the one to cancel this booking, please contact us.
 
 		if ( empty( $this->location_options ) and empty( $this->timeslot_options ) ) { return $sap; }
 
-		$tabs_to_modify = array( 'rtb-schedule-tab', 'rtb-advanced-tab' );
+		$tabs_to_modify = array( 'rtb-schedule-tab', 'rtb-basic', 'rtb-advanced-tab' );
 
 		foreach ( $sap->pages['rtb-settings']->sections as $key => $section ) {
 			
@@ -2867,8 +2916,8 @@ If you were not the one to cancel this booking, please contact us.
 			foreach ( $section->settings as $setting_key => $setting ) {
 
 				// add get/set to utilize method chaining
-				$sap->pages['rtb-settings']->sections[ $key ]->settings[ $setting_key ]->setting_type = $section->tab == 'rtb-advanced-tab' ? array( 'location', 'scheduling_rule' ) : array( 'location' );
-				$sap->pages['rtb-settings']->sections[ $key ]->settings[ $setting_key ]->setting_type_value = $section->tab == 'rtb-advanced-tab' ? array( false, false ) : array( false );
+				$sap->pages['rtb-settings']->sections[ $key ]->settings[ $setting_key ]->setting_type = $section->tab == 'rtb-schedule-tab' ? array( 'location' ) : array( 'location', 'scheduling_rule' );
+				$sap->pages['rtb-settings']->sections[ $key ]->settings[ $setting_key ]->setting_type_value = $section->tab == 'rtb-schedule-tab' ? array( false ) : array( false, false );
 
 				$sap->pages['rtb-settings']->sections[ $key ]->settings[ $setting_key ]->set_setting_type_display();
 			}
@@ -3007,6 +3056,36 @@ If you were not the one to cancel this booking, please contact us.
 				'rtb-general',
 				'select',
 				array(
+					'id'            => $option['slug'] . '-party-size-min',
+					'title'         => __( 'Min Party Size', 'restaurant-reservations' ),
+					'description'   => __( 'Set a minimum allowed party size for bookings.', 'restaurant-reservations' ),
+					'blank_option'	=> false,
+					'options'       => $this->get_party_size_setting_options( false ),
+					'setting_type' 			=> $option['type'],
+					'setting_type_value'	=> $option['value'],
+				)
+			);
+	
+			$sap->add_setting(
+				'rtb-settings',
+				'rtb-general',
+				'select',
+				array(
+					'id'            => $option['slug'] . '-party-size',
+					'title'         => __( 'Max Party Size', 'restaurant-reservations' ),
+					'description'   => __( 'Set a maximum allowed party size for bookings.', 'restaurant-reservations' ),
+					'blank_option'	=> false,
+					'options'       => $this->get_party_size_setting_options(),
+					'setting_type' 			=> $option['type'],
+					'setting_type_value'	=> $option['value'],
+				)
+			);
+
+			$sap->add_setting(
+				'rtb-settings',
+				'rtb-general',
+				'select',
+				array(
 					'id'            		=> $option['slug'] . '-auto-confirm-max-party-size',
 					'title'         		=> __( 'Automatically Confirm Below Party Size', 'restaurant-reservations' ),
 					'description'   		=> __( 'Set a maximum party size below which all bookings will be automatically confirmed.', 'restaurant-reservations' ),
@@ -3099,6 +3178,11 @@ If you were not the one to cancel this booking, please contact us.
 			        'setting_type' 			=> $option['type'],
 					'setting_type_value'	=> $option['value'],
 			        'fields'    => array(
+			          'disabled' => array(
+              		    'type'    => 'toggle',
+              		    'label'   => __('Disabled', 'restaurant-reservations' ),
+              		    'required'  => false
+              		  ),
 			          'section_id' => array(
 			            'type'    => 'id',
 			            'label'   => __('Section ID', 'restaurant-reservations' ),
@@ -3132,6 +3216,11 @@ If you were not the one to cancel this booking, please contact us.
 					'setting_type_value'	=> $option['value'],
 					'fields'    => array_merge(
 						array(
+			          		'disabled' => array(
+			          			'type'    => 'toggle',
+			          			'label'   => __('Disabled', 'restaurant-reservations' ),
+			          			'required'  => false
+			          		),
 			          		'number' => array(
 			          			'type'    => 'text',
 			          			'label'   => __('Table Number', 'restaurant-reservations' ),
@@ -3166,6 +3255,16 @@ If you were not the one to cancel this booking, please contact us.
 		}
 
 		return $sap;
+	}
+
+	public function check_location_timeslot_party_rules() {
+		
+		foreach ( array_keys( $this->settings ) as $key ) {
+    		if ( substr( $key, -strlen( '-party-size' ) ) === '-party-size' ) { return true; }
+    		if ( substr( $key, -strlen( '-party-size-min' ) ) === '-party-size-min' ) { return true; }
+    	}
+
+		return false;
 	}
 
 }

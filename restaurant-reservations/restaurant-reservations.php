@@ -3,7 +3,7 @@
  * Plugin Name: Five Star Restaurant Reservations - WordPress Booking Plugin
  * Plugin URI: http://www.fivestarplugins.com/plugins/five-star-restaurant-reservations/
  * Description: Restaurant reservations made easy. Accept bookings online. Quickly confirm or reject reservations, send email notifications, set booking times and more.
- * Version: 2.7.3
+ * Version: 2.7.11
  * Author: Five Star Plugins
  * Author URI: https://www.fivestarplugins.com/
  * Text Domain: restaurant-reservations
@@ -58,7 +58,7 @@ class rtbInit {
 	public function __construct() {
 
 		// Common strings
-		define( 'RTB_VERSION', '2.7.3' );
+		define( 'RTB_VERSION', '2.7.11' );
 		define( 'RTB_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 		define( 'RTB_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 		define( 'RTB_PLUGIN_FNAME', plugin_basename( __FILE__ ) );
@@ -228,6 +228,10 @@ class rtbInit {
 		add_action( 'admin_init', array( $this, 'maybe_delete_payment_pending_reservations' ), 8 );
 		add_action( 'admin_init', array( $this, 'maybe_delete_older_reservations' ) );
 		add_filter( 'sanitize_option_rtb-settings', array( $this, 'maybe_delete_older_reservations' ), 100 );
+
+		// Localize settings data if booking form is loaded
+		add_action( 'wp_footer', array( $this, 'assets_footer' ), 2 );
+		add_action( 'admin_footer', array( $this, 'assets_footer' ), 2 );
 
 		// Handle the helper notice
 		add_action( 'admin_notices', array( $this, 'maybe_display_helper_notice' ) );
@@ -629,6 +633,7 @@ class rtbInit {
 				'nonce'                  => wp_create_nonce( 'rtb-booking-form' ),
 				'is_admin'				 => is_admin(),
 				'cancellation_cutoff'    => $rtb_controller->settings->get_setting( 'late-cancellations' ),
+				'admin_ignore_schedule'  => $rtb_controller->settings->get_setting( 'admin-ignore-schedule' ),
 				'admin_ignore_maximums'  => $rtb_controller->settings->get_setting( 'rtb-admin-ignore-maximums' ),
 				'want_to_modify'         => esc_html( $rtb_controller->settings->get_setting( 'label-modify-reservation'  ) ),
 				'make'                   => esc_html( $rtb_controller->settings->get_setting( 'label-modify-make-reservation'  ) ),
@@ -736,10 +741,61 @@ class rtbInit {
 	 */
 	public function output_buffer_end() {
 
-		if ( count( ob_list_handlers() ) ) {
-
-			ob_end_flush();
+		if ( ob_get_level() > 0 ) {
+			
+			@ob_end_flush();
 		}
+	}
+
+	/**
+	 * Print out any PHP data needed for our JS to work correctly
+	 * @since 2.7.6
+	 */
+	public function assets_footer() {
+		global $rtb_controller;
+
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : false;
+		
+		if ( 
+			empty( $rtb_controller->display_bookings_form_rendered ) and 
+			empty( $rtb_controller->form_rendered ) and 
+			( ! empty( $screen) and $screen->base != 'toplevel_page_rtb-bookings' )
+		) { 
+			return; 
+		}
+
+		$rtb_pickadate = apply_filters(
+			'rtb_pickadate_args',
+			array(
+				'date_format' 					=> rtb_esc_js( $rtb_controller->settings->get_setting( 'date-format' ) ),
+				'time_format'  					=> rtb_esc_js( $rtb_controller->settings->get_setting( 'time-format' ) ),
+				'disable_dates'					=> rtb_get_datepicker_rules(),
+				'schedule_open' 				=> $rtb_controller->settings->get_setting( 'schedule-open' ),
+				'schedule_closed' 				=> $rtb_controller->settings->get_setting( 'schedule-closed' ),
+				'multiple_locations_enabled'	=> $rtb_controller->locations->do_locations_exist(),
+				'early_bookings' 				=> is_admin() && current_user_can( 'manage_bookings' ) ? '' : $rtb_controller->settings->get_setting( 'early-bookings' ),
+				'late_bookings' 				=> is_admin() && current_user_can( 'manage_bookings' ) ? '' : $rtb_controller->settings->get_setting( 'late-bookings' ),
+				'enable_max_reservations' 		=> is_admin() && current_user_can( 'manage_bookings' ) ? false : $rtb_controller->settings->get_setting( 'rtb-enable-max-tables' ),
+				'location_timeslot_party_rules'	=> is_admin() && current_user_can( 'manage_bookings' ) ? false : $rtb_controller->settings->check_location_timeslot_party_rules(),
+				'max_people' 					=> is_admin() && current_user_can( 'manage_bookings' ) ? 100 : $rtb_controller->settings->get_setting( 'rtb-max-people-count' ),
+				'enable_tables' 				=> $rtb_controller->settings->get_setting( 'enable-tables' ),
+				'date_onload' 					=> $rtb_controller->settings->get_setting( 'date-onload' ),
+				'time_interval' 				=> $rtb_controller->settings->get_setting( 'time-interval' ),
+				'first_day' 					=> $rtb_controller->settings->get_setting( 'week-start' ),
+				'allow_past' 					=> is_admin() && current_user_can( 'manage_bookings' ),
+				'date_today_label'				=> rtb_esc_js( $rtb_controller->settings->get_setting( 'label-date-today' ) ),
+				'date_clear_label'				=> rtb_esc_js( $rtb_controller->settings->get_setting( 'label-date-clear' ) ),
+				'date_close_label'				=> rtb_esc_js( $rtb_controller->settings->get_setting( 'label-date-close' ) ),
+				'time_clear_label'				=> rtb_esc_js( $rtb_controller->settings->get_setting( 'label-time-clear' ) ),
+			)
+		);
+
+		echo "<script type='text/javascript'>\n";
+		echo "/* <![CDATA[ */\n";
+		echo 'var rtb_pickadate = ' . wp_json_encode( $rtb_pickadate ) . "\n";
+		echo "/* ]]> */\n";
+		echo "</script>\n";
+
 	}
 
 	public function maybe_display_helper_notice() {

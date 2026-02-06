@@ -155,16 +155,27 @@ function rtb_print_booking_form( $args = array() )
 		  ? intval( $_GET['booking_id'] ) 
 		  : $rtb_controller->request->ID;
 
+		$booking_email = isset( $_GET['booking_email'] )
+		  ? sanitize_email( $_GET['booking_email'] )
+		  : '';
+
 		$booking = new rtbBooking();
 		$booking->load_post( $booking_id );
 
-		?> <div class="booking-payment-wrapper"> <?php
-		$rtb_controller
-			->payment_manager
-			->set_booking( $booking )
-			->print_payment_summary()
-			->print_payment_form();
-		?> </div> <!-- booking-payment-wrapper --> <?php
+		if ( $rtb_controller->request->request_inserted !== true and $booking_email != $booking->email ) { ?>
+			<div class="rtb-message">
+				<p><?php echo esc_html__( 'Reservation email does not match the email associated with this booking.', 'restaurant-reservations' ); ?></p>
+			</div>
+		<?php } else { ?> 
+			<div class="booking-payment-wrapper"> <?php
+				$rtb_controller
+					->payment_manager
+					->set_booking( $booking )
+					->print_payment_summary()
+					->print_payment_form();
+				?> 
+			</div> <!-- booking-payment-wrapper --> <?php
+		}
 
 	elseif ( isset($_GET['bookingCancelled']) and $_GET['bookingCancelled'] == 'success') : ?>
 	<div class="rtb-message">
@@ -185,6 +196,12 @@ function rtb_print_booking_form( $args = array() )
 				<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-modify-form-email'  ) ); ?>
 				<input type="email" name="rtb_modification_email">
 			</label>
+			<?php if ( empty( $rtb_controller->settings->get_setting( 'disable-cancellation-code-required' ) ) ) { ?>
+				<label for="rtb_modification_code">
+					<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-modify-form-code'  ) ); ?>
+					<input type="text" name="rtb_modification_code">
+				</label>
+			<?php } ?>
 			<div class="rtb-find-reservation-button-div">
 				<div class="rtb-find-reservation-button">
 					<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-modify-find-reservations'  ) ); ?>
@@ -563,37 +580,6 @@ function rtb_enqueue_assets() {
 		wp_enqueue_style( 'rtb-columns-alternate', RTB_PLUGIN_URL . '/assets/css/columns-alternate.css' );
 		wp_enqueue_script( 'rtb-columns', RTB_PLUGIN_URL . '/assets/js/columns.js', array( 'jquery' ), '', true );
 	}
-
-	// Pass date and time format settings to the pickadate controls
-	wp_localize_script(
-		'rtb-booking-form',
-		'rtb_pickadate',
-		apply_filters(
-			'rtb_pickadate_args',
-			array(
-				'date_format' 					=> rtb_esc_js( $rtb_controller->settings->get_setting( 'date-format' ) ),
-				'time_format'  					=> rtb_esc_js( $rtb_controller->settings->get_setting( 'time-format' ) ),
-				'disable_dates'					=> rtb_get_datepicker_rules(),
-				'schedule_open' 				=> $rtb_controller->settings->get_setting( 'schedule-open' ),
-				'schedule_closed' 				=> $rtb_controller->settings->get_setting( 'schedule-closed' ),
-				'multiple_locations_enabled'	=> $rtb_controller->locations->do_locations_exist(),
-				'early_bookings' 				=> is_admin() && current_user_can( 'manage_bookings' ) ? '' : $rtb_controller->settings->get_setting( 'early-bookings' ),
-				'late_bookings' 				=> is_admin() && current_user_can( 'manage_bookings' ) ? '' : $rtb_controller->settings->get_setting( 'late-bookings' ),
-				'enable_max_reservations' 		=> is_admin() && current_user_can( 'manage_bookings' ) ? false : $rtb_controller->settings->get_setting( 'rtb-enable-max-tables' ),
-				'max_people' 					=> is_admin() && current_user_can( 'manage_bookings' ) ? 100 : $rtb_controller->settings->get_setting( 'rtb-max-people-count' ),
-				'enable_tables' 				=> $rtb_controller->settings->get_setting( 'enable-tables' ),
-				'date_onload' 					=> $rtb_controller->settings->get_setting( 'date-onload' ),
-				'time_interval' 				=> $rtb_controller->settings->get_setting( 'time-interval' ),
-				'first_day' 					=> $rtb_controller->settings->get_setting( 'week-start' ),
-				'allow_past' 					=> is_admin() && current_user_can( 'manage_bookings' ),
-				'date_today_label'				=> rtb_esc_js( $rtb_controller->settings->get_setting( 'label-date-today' ) ),
-				'date_clear_label'				=> rtb_esc_js( $rtb_controller->settings->get_setting( 'label-date-clear' ) ),
-				'date_close_label'				=> rtb_esc_js( $rtb_controller->settings->get_setting( 'label-date-close' ) ),
-				'time_clear_label'				=> rtb_esc_js( $rtb_controller->settings->get_setting( 'label-time-clear' ) ),
-			)
-		)
-	);
-
 }
 } // endif;
 
@@ -703,9 +689,7 @@ function rtb_get_datepicker_rules( $location_slug = '' ) {
 if ( !function_exists( 'rtb_print_form_text_field' ) ) {
 function rtb_print_form_text_field( $slug, $title, $value, $args = array() ) {
 
-	$slug = esc_attr( $slug );
-	$value = esc_attr( $value );
-	$type = empty( $args['input_type'] ) ? 'text' : esc_attr( $args['input_type'] );
+	$type = empty( $args['input_type'] ) ? 'text' : $args['input_type'];
 	$classes = isset( $args['classes'] ) ? $args['classes'] : array();
 	$classes[] = 'rtb-text';
 	$required = isset( $args['required'] ) && $args['required'] ? ' required aria-required="true"' : '';
@@ -715,9 +699,9 @@ function rtb_print_form_text_field( $slug, $title, $value, $args = array() ) {
 	<div <?php echo rtb_print_element_class( $slug, $classes ); ?>>
 		<?php echo rtb_print_form_error( $slug ); ?>
 		<label for="rtb-<?php echo $slug; ?>">
-			<?php echo $title; ?>
+			<?php echo esc_html( $title ); ?>
 		</label>
-		<input type="<?php echo $type; ?>" name="rtb-<?php echo $slug; ?>" id="rtb-<?php echo $slug; ?>" value="<?php echo esc_attr( $value ); ?>"<?php echo $required; ?>>
+		<input type="<?php echo esc_attr( $type ); ?>" name="rtb-<?php echo esc_attr( $slug ); ?>" id="rtb-<?php echo esc_attr( $slug ); ?>" value="<?php echo esc_attr( $value ); ?>"<?php echo $required; ?>>
 	</div>
 
 	<?php
@@ -1245,6 +1229,19 @@ if ( ! function_exists( 'rtb_esc_js' ) ) {
 	}
 }
 
+if ( ! function_exists( 'rtb_random_string' ) ) {
+	function rtb_random_string($length = 10) {
+	    $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+	    $charactersLength = strlen($characters);
+	    $randomString = '';
+	
+	    for ($i = 0; $i < $length; $i++) {
+	        $randomString .= $characters[random_int(0, $charactersLength - 1)];
+	    }
+	
+	    return $randomString;
+	}
+}
 
 // Temporary addition, so that versions of WP before 5.3.0 are supported
 if ( ! function_exists( 'wp_timezone') ) {

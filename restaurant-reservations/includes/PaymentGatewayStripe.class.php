@@ -186,6 +186,9 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
 
     $booking_id = intval( $_POST['booking_id'] );
 
+    $booking = new rtbBooking();
+    $booking->load_post( $booking_id );
+
     // Define the form's action parameter
     $booking_page = ! empty( $rtb_controller->settings->get_setting( 'booking-page' ) ) ? get_permalink( $rtb_controller->settings->get_setting( 'booking-page' ) ) : get_permalink();
 
@@ -195,6 +198,7 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
         array(
           'payment' => 'failed',
           'booking_id' => $booking_id,
+          'booking_email' => $booking->email,
           'error_code' => urlencode( __( 'The request has been rejected because it does not appear to have come from this site.', 'restaurant-reservations' ) )
         ),
         $booking_page
@@ -214,9 +218,6 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
 
     // JPY currency does not have any decimal palces
     $payment_amount = $rtb_controller->settings->get_setting( 'rtb-currency' ) != 'JPY' ? ( intval( $_POST['payment_amount'] ) * 100 ) : intval( $_POST['payment_amount'] );
-   
-    $booking = new rtbBooking();
-    $booking->load_post( $booking_id );
 
     try {
 
@@ -253,7 +254,8 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
       $redirect = add_query_arg(
         array(
           'payment' => 'paid',
-          'booking_id' => $booking_id
+          'booking_id' => $booking_id,
+          'booking_email' => $booking->email,
         ),
         $booking_page
       );
@@ -268,6 +270,7 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
         array(
           'payment' => 'failed',
           'booking_id' => $booking_id,
+          'booking_email' => $booking->email,
           'error_code' => urlencode( $ex->getMessage() )
         ),
         $booking_page
@@ -422,7 +425,8 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
 
         $url_params = array(
           'payment'    => 'paid',
-          'booking_id' => intval( $booking->ID )
+          'booking_id' => intval( $booking->ID ),
+          'booking_email' => $booking->email,
         );
 
       }

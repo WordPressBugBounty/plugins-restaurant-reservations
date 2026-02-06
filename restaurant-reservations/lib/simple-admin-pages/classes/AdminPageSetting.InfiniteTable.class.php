@@ -174,7 +174,7 @@ class sapAdminPageSettingInfiniteTable_2_7_0_rtb extends sapAdminPageSetting_2_7
 									<?php endif; ?>
 									<?php if ($field['type'] == 'toggle') : ?>
 										<label class="sap-admin-switch">
-											<input type="checkbox" class="sap-admin-option-toggle" data-name="<?php echo esc_attr( $field_id ); ?>" checked >
+											<input type="checkbox" class="sap-admin-option-toggle" data-name="<?php echo esc_attr( $field_id ); ?>" <?php echo ( empty( $field['unchecked'] ) ? 'checked' : '' ); ?> >
 											<span class="sap-admin-switch-slider round"></span>
 										</label>
 									<?php endif; ?>

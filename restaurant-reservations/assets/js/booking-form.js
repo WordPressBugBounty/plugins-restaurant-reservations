@@ -9,8 +9,6 @@ jQuery(document).ready(function ($) {
 	 */
 	rtb_booking_form.init = function() {
 
-		rtb_pickadate.init_complete = false;
-
 		// Scroll to the first error message on the booking form
 		if ( $( '.rtb-booking-form .rtb-error' ).length ) {
 			$('html, body').animate({
@@ -55,6 +53,8 @@ jQuery(document).ready(function ($) {
 
 		// Enable datepickers on load
 		if ( typeof rtb_pickadate !== 'undefined' ) {
+
+			rtb_pickadate.init_complete = false;
 
 			// Declare datepicker
 			var $date_input = $( '#rtb-date' );
@@ -250,6 +250,11 @@ jQuery(document).ready(function ($) {
 	 */
 	rtb_booking_form.update_disabled_dates = function() {
 
+		if ( rtb_booking_form_js_localize.admin_ignore_schedule && rtb_booking_form_js_localize.is_admin ) {
+			rtb_booking_form.datepicker.set( 'enable', true );
+			return;
+		}
+
 		// Pass conditional configuration parameters
 		if ( rtb_pickadate.disable_dates.length ) {
 
@@ -282,6 +287,11 @@ jQuery(document).ready(function ($) {
 		// Reset enabled/disabled rules on this timepicker
 		rtb_booking_form.timepicker.set( 'enable', false );
 		rtb_booking_form.timepicker.set( 'disable', false );
+
+		if ( rtb_booking_form_js_localize.admin_ignore_schedule && rtb_booking_form_js_localize.is_admin ) {
+			rtb_booking_form.timepicker.set( 'enable', true );
+			return;
+		}
 
 		if ( rtb_booking_form.datepicker.get() === '' ) {
 			rtb_booking_form.timepicker.set( 'disable', true );
@@ -642,7 +652,8 @@ jQuery(document).ready(function ($) {
 
 	rtb_booking_form.update_party_size_select = function() {
 		
-		if ( rtb_pickadate.enable_max_reservations && ( rtb_pickadate.max_people || rtb_pickadate.multiple_locations_enabled ) ) {
+		if ( ( rtb_pickadate.enable_max_reservations && ( rtb_pickadate.max_people || rtb_pickadate.multiple_locations_enabled ) ) ||
+			 ( rtb_pickadate.location_timeslot_party_rules ) ) {
 			var partySelect = $('#rtb-party'),
 			selected_location = jQuery( '#rtb-location' ).length ? jQuery( '#rtb-location' ).val() : '',
 			selected_date = new Date( rtb_booking_form.datepicker.get( 'select', 'yyyy/mm/dd' ) ),
@@ -670,13 +681,14 @@ jQuery(document).ready(function ($) {
 			params.location = selected_location;
 
 			var data = jQuery.param( params );
-			jQuery.post( ajaxurl, data, function( response ) {
+			jQuery.post( ajaxurl, data, function( response ) { console.log( response );
 				if ( ! response ) {
 					return;
 				}
 
 				response = jQuery.parseJSON(response);
 
+				var min_party_size = response.min_party_size;
 				var available_spots = response.available_spots;
 
 				partySelect.prop('disabled', false);
@@ -689,7 +701,7 @@ jQuery(document).ready(function ($) {
 
 					partySelect.find('> option').each(function() {
 						var that = $(this); 
-						if (this.value > available_spots) {
+						if (this.value > available_spots || this.value < min_party_size) {
 							that.prop('disabled', true);
 						} else {
 							that.prop('disabled', false);
@@ -809,12 +821,14 @@ jQuery( document ).ready( function() {
 
 	var modify_booking = function(ev) {
 		var booking_email = jQuery('input[name="rtb_modification_email"]').val();
+		var booking_code = jQuery('input[name="rtb_modification_code"]').val();
 
 		var params = {};
 
 		params.action = 'rtb_find_reservations';
 		params.nonce  = rtb_booking_form_js_localize.nonce;
 		params.booking_email   = booking_email;
+		params.booking_code   = booking_code;
 
 		var data = jQuery.param( params );
 		jQuery.post(ajaxurl, data, function(response) {
@@ -830,7 +844,7 @@ jQuery( document ).ready( function() {
 					
 					if('payment_pending' == val.status || 'payment_failed' == val.status) {
 						pay_btn = `
-							<div class="rtb-deposit-booking" data-bookingid="${val.ID}" data-bookingemail="${val.email}">
+							<div class="rtb-deposit-booking" data-bookingid="${val.ID}" data-bookingemail="${val.email}" data-bookingcode="${val.code}">
 								${rtb_booking_form_js_localize.deposit}
 							</div>
 						`;
@@ -842,7 +856,7 @@ jQuery( document ).ready( function() {
 					if ( val.datetime_u > ( Date.now() / 1000) + rtb_booking_form_js_localize.cancellation_cutoff * 60 ) {
 
 						booking_html += `
-							<div class="rtb-cancel-booking" data-bookingid="${val.ID}" data-bookingemail="${val.email}">
+							<div class="rtb-cancel-booking" data-bookingid="${val.ID}" data-bookingemail="${val.email}" data-bookingcode="${val.code}">
 								${rtb_booking_form_js_localize.cancel}
 							</div>
 						`;
@@ -887,6 +901,7 @@ function cancellationHandler() {
 
 		var booking_id = btn.data('bookingid');
 		var booking_email = btn.data('bookingemail');
+		var booking_code = btn.data('bookingcode');
 
 		var params = {};
 
@@ -894,6 +909,7 @@ function cancellationHandler() {
 		params.nonce  = rtb_booking_form_js_localize.nonce;
 		params.booking_id = booking_id;
 		params.booking_email = booking_email;
+		params.booking_code = booking_code;
 
 		var data = jQuery.param( params );
 		jQuery.post(ajaxurl, data, function(response) {

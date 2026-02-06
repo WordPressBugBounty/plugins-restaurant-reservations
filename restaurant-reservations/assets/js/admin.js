@@ -301,7 +301,7 @@ jQuery(document).ready(function ($) {
 			rtb_email_modal.find( 'input[name=ID]' ).val( id );
 			rtb_email_modal.find( 'input[name=email]' ).val( email );
 			rtb_email_modal.find( 'input[name=name]' ).val( name );
-			rtb_email_modal.find( '.rtb-email-to' ).html( name + ' &lt;' + email + '&gt;' );
+			rtb_email_modal.find( '.rtb-email-to' ).text( name + ' <' + email + '>' );
 
 			$( 'body' ).addClass( 'rtb-hide-body-scroll' );
 

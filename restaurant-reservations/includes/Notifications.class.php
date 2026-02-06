@@ -29,6 +29,14 @@ class rtbNotifications {
 	public $notifications;
 
 	/**
+	 * Notifications disabled flag for all notifications (triggered for admin insert/updates)
+	 *
+	 * @var array
+	 * @since 2.7.3
+	 */
+	public $notifications_disabled = false;
+
+	/**
 	 * Register notifications hook early so that other early hooks can
 	 * be used by the notification system.
 	 * @since 0.0.1
@@ -114,7 +122,10 @@ class rtbNotifications {
 			'rtb_booking_paid'				=> array( $this, 'handle_table_event' ), 				// Booking deposit paid
 			'rtb_confirmed_booking'			=> array( $this, 'handle_table_event' ), 				// Booking confirmed
 			'pending_to_confirmed'			=> array( $this, 'handle_table_event' ), 				// Booking confirmed
+			'closed_to_confirmed'			=> array( $this, 'handle_table_event' ), 				// Booking confirmed
+			'cancelled_to_confirmed'		=> array( $this, 'handle_table_event' ), 				// Booking confirmed
 			'pending_to_closed'				=> array( $this, 'handle_table_event' ), 				// Booking can not be made
+			'confirmed_to_closed'			=> array( $this, 'handle_table_event' ), 				// Booking can not be made
 			'pending_to_cancelled'			=> array( $this, 'handle_table_event' ), 				// Booking cancelled
 			'confirmed_to_cancelled'		=> array( $this, 'handle_table_event' ), 				// Booking cancelled
 		);
@@ -132,6 +143,8 @@ class rtbNotifications {
 	 */
 	public function handle_table_event( $booking ) {
 		global $rtb_controller;
+
+		if ( $this->notifications_disabled ) { return; }
 
 		$event = $this->get_table_event_equivalent( $booking );
 
@@ -208,17 +221,17 @@ class rtbNotifications {
 				break;
 
 			case 'pending_to_confirmed':
+			case 'closed_to_confirmed':
+			case 'cancelled_to_confirmed':
 				$event = 'booking_confirmed';
 				break;
 
 			case 'pending_to_closed':
+			case 'confirmed_to_closed':
 				$event = 'booking_closed';
 				break;
 
 			case 'pending_to_cancelled':
-				$event = 'booking_cancelled';
-				break;
-
 			case 'confirmed_to_cancelled':
 				$event = 'booking_cancelled';
 				break;
@@ -322,10 +335,10 @@ class rtbNotifications {
 						<tr>
 							<?php if ( $multiple_locations ) { $term = get_term( $booking_object->location ); echo ( ! is_wp_error( $term ) ? "<td>{$term->name}</td>" : '<td></td>' ); } ?>
 							<td><?php echo ( new DateTime( $booking_object->date ) )->format( 'H:i:s' ); ?></td>
-							<td><?php echo $booking_object->party; ?></td>
-							<td><?php echo $booking_object->name; ?></td>
-							<td><?php echo $booking_object->email; ?></td>
-							<td><?php echo $booking_object->phone; ?></td>
+							<td><?php echo esc_html( $booking_object->party ); ?></td>
+							<td><?php echo esc_html( $booking_object->name ); ?></td>
+							<td><?php echo esc_html( $booking_object->email ); ?></td>
+							<td><?php echo esc_html( $booking_object->phone ); ?></td>
 							<?php if ( $display_table ) { $table = implode(', ', $booking_object->table ); echo "<td>{$table}</td>"; } ?>
 							<td><?php echo $rtb_controller->cpts->booking_statuses[$booking_object->post_status]['label'] ?></td>
 							<td>
@@ -524,6 +537,8 @@ class rtbNotifications {
 	 * @since 0.0.1
 	 */
 	public function event( $event ) {
+
+		if ( $this->notifications_disabled ) { return; }
 
 		foreach( $this->notifications as $notification ) {
 

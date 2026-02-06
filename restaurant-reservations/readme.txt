@@ -1,8 +1,8 @@
 === Five Star Restaurant Reservations - WordPress Booking Plugin ===
 Contributors: Rustaurius
-Tested Up To: 6.8
+Tested Up To: 6.9
 Tags: reservation, reservations, restaurant reservations, reservation form, restaurant, restaurant booking, restaurant reservation form, restaurant booking form, restaurant booking system, reservation system, online reservations, online restaurant booking, dinner reservations, restaurant form, gutenberg reservations, gutenberg restaurant reservations, gutenberg restaurant booking, mobile reservations, responsive reservations, table reservations, open table, book table, reserve table, easy reservations, simple reservations, quick restaurant reservations, custom reservation form, custom restaurant reservations
-Stable tag: 2.7.3
+Stable tag: 2.7.11
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -301,6 +301,34 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 - [Our Support Center](https://www.fivestarplugins.com/support-center/)
 
 == Changelog ==
+
+= 2.7.11 (2026-02-04) =
+- Added the ability to disable/enable individual tables.
+- Fix for party size field not populating correctly when max party option was set to any size.
+
+= 2.7.10 (2026-02-02) =
+- Added a time limit/window to reminder, late-arrival and post-reservation notifications (3 hours for reminder and post-reservation, 1 hour for late-arrival), to make sure notifications aren't sent when they shouldn't be. If notifications aren't sent within that time frame, then they will be skipped for a particular booking.
+- Looking up and cancelling a booking now require an assigned unique booking code by default, in addition to the email address.
+
+= 2.7.9 (2026-01-09) =
+- Patch for low priority/no impact CSRF vulnerability reported by Patchstack.
+
+= 2.7.8 (2025-12-18) =
+- Fix: When updating a booking from the admin, notifications were being sent all the time instead of only when the "Send notifications" box was checked.
+- Modified: Added more status change triggers for sending notifications after updating a booking via the admin (so, now, notifications can also be sent if moving a booking from confirmed to closed, from closed to confirmed and from cancelled to confirmed).
+
+= 2.7.7 (2025-12-02) =
+- Tested with WordPress 6.9.
+- Fixed an issue related to reported Wordfence vulnerability.
+
+= 2.7.6 (2025-11-17) =
+- Added a new "Admin Ignore Schedule" option, so admins can create bookings outside their created scheduling rules and exceptions.
+
+= 2.7.5 (2025-10-20) =
+- Fixed an issue causing an error to sometimes display when clicking the "proceed to deposit" button in the booking form when using the Stripe gateway.
+
+= 2.7.4 (2025-10-16) =
+- Update to increase security related to payments and displaying payment summary information.
 
 = 2.7.3 (2025-09-23) =
 - Updated admin notice capability.

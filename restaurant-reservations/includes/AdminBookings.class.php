@@ -927,6 +927,7 @@ class rtbAdminBookings {
 		// from $rtb_notifications to the empty array.
 		global $rtb_controller;
 		$rtb_controller->notifications->notifications = apply_filters( 'rtb_admin_disabled_notifications_exemption', array(), $rtb_controller->notifications->notifications );
+		$rtb_controller->notifications->notifications_disabled = true;
 	}
 }
 } // endif;

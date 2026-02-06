@@ -270,6 +270,7 @@ input[name="rtb_modification_email"] {
 }
 label[for="rtb_modification_email"] {
 	margin-right: 12px;
+	margin-bottom: 8px;
 }
 .rtb-find-reservation-button {
 	position: relative;

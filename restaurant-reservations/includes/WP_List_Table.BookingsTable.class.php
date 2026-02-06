@@ -885,6 +885,11 @@ class rtbBookingsTable extends WP_List_Table {
 			return;
 		}
 
+		$nonce        = isset( $_POST['_wpnonce'] ) ? $_POST['_wpnonce'] : '';
+		if ( ! wp_verify_nonce( $nonce, 'bulk-' . $this->_args['plural'] ) ) {
+		    return;
+		}
+
 		if ( !current_user_can( 'manage_bookings' ) ) {
 			return;
 		}

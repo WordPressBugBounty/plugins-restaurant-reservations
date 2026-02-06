@@ -95,7 +95,9 @@ class rtbCron {
 		$time_interval = $this->get_time_interval( 'time-reminder-user' );
 		
 		$start_time_seconds = time() - ( $time_interval + 3600 );
-		$end_time_seconds = time() + $time_interval;
+		
+		$max_late_window = 3 * HOUR_IN_SECONDS;
+		$end_time_seconds = time() + ( $time_interval - $max_late_window );
 
 		$bookings = $this->get_booking_posts( $start_time_seconds, $end_time_seconds );
  		
@@ -146,7 +148,9 @@ class rtbCron {
 		$time_interval = $this->get_time_interval( 'time-late-user' );
 
 		$start_time_seconds = time() - ( $time_interval + 3600 );
-		$end_time_seconds = time() - $time_interval;
+		
+		$max_late_window = 1 * HOUR_IN_SECONDS;
+		$end_time_seconds = time() + ( $time_interval - $max_late_window );
 
 		$bookings = $this->get_booking_posts( $start_time_seconds, $end_time_seconds );
 
@@ -197,7 +201,9 @@ class rtbCron {
 		$time_interval = $this->get_time_interval( 'time-post-reservation-follow-up-user' );
 
 		$start_time_seconds = time() - ( $time_interval + 3600 );
-		$end_time_seconds = time() - $time_interval;
+		
+		$max_late_window = 3 * HOUR_IN_SECONDS;
+		$end_time_seconds = time() + ( $time_interval - $max_late_window );
 
 		$bookings = $this->get_booking_posts( $start_time_seconds, $end_time_seconds );
 		
