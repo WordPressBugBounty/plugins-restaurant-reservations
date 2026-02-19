@@ -1,9 +1,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Five Star Restaurant Reservations\n"
-"POT-Creation-Date: 2024-03-18 14:53-0400\n"
-"PO-Revision-Date: 2020-08-20 11:03-0400\n"
+"Project-Id-Version: Five Star Restaurant Reservations v2.7.12\n"
+"POT-Creation-Date: 2026-02-19 14:25-0500\n"
+"PO-Revision-Date: 2026-02-18 15:21-0500\n"
 "Last-Translator: \n"
 "Language-Team: Five Star Plugins\n"
 "Language: en\n"
@@ -11,21 +11,22 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4.2\n"
+"X-Generator: Poedit 3.8\n"
 "X-Poedit-Basepath: ..\n"
-"X-Poedit-KeywordsList: __;_e;_x\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_x;_n;_n_noop:1,2\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: assets/js/block-booking-form.js:9 includes/Settings.class.php:1338
+#: assets/js/block-booking-form.js:9 includes/Settings.class.php:1525
 #: includes/WP_Widget.BookingFormWidget.class.php:25
 #: includes/patterns/booking-form.php:6
 msgid "Booking Form"
 msgstr ""
 
 #: assets/js/block-booking-form.js:32 includes/Export.CSV.class.php:154
-#: includes/MailChimp.class.php:115 includes/MultipleLocations.class.php:108
-#: includes/MultipleLocations.class.php:442
-#: includes/Notifications.class.php:287 includes/Settings.class.php:533
+#: includes/MailChimp.class.php:117 includes/MultipleLocations.class.php:107
+#: includes/MultipleLocations.class.php:441
+#: includes/Notifications.class.php:310 includes/Settings.class.php:546
 msgid "Location"
 msgstr ""
 
@@ -256,8 +257,8 @@ msgstr ""
 #: includes/AdminBookings.class.php:67 includes/AdminBookings.class.php:68
 #: includes/CustomPostTypes.class.php:50 includes/CustomPostTypes.class.php:52
 #: includes/CustomPostTypes.class.php:53
-#: includes/WP_List_Table.BookingsTable.class.php:138
-#: restaurant-reservations.php:433
+#: includes/WP_List_Table.BookingsTable.class.php:162
+#: restaurant-reservations.php:503
 msgid "Bookings"
 msgstr ""
 
@@ -270,20 +271,20 @@ msgstr ""
 msgid "Add New"
 msgstr ""
 
-#: includes/AdminBookings.class.php:170 restaurant-reservations.php:509
+#: includes/AdminBookings.class.php:170 restaurant-reservations.php:579
 msgid "Add Booking"
 msgstr ""
 
 #: includes/AdminBookings.class.php:173 includes/AdminBookings.class.php:214
 #: includes/AdminBookings.class.php:259 includes/Editor.class.php:448
-#: includes/Settings.class.php:606
-#: lib/simple-admin-pages/classes/AdminPageSetting.InfiniteTable.class.php:201
+#: includes/Settings.class.php:620
+#: lib/simple-admin-pages/classes/AdminPageSetting.InfiniteTable.class.php:205
 msgid "Cancel"
 msgstr ""
 
 #: includes/AdminBookings.class.php:194 includes/AdminBookings.class.php:211
-#: includes/WP_List_Table.BookingsTable.class.php:639
-#: includes/WP_List_Table.BookingsTable.class.php:789
+#: includes/WP_List_Table.BookingsTable.class.php:718
+#: includes/WP_List_Table.BookingsTable.class.php:868
 msgid "Send Email"
 msgstr ""
 
@@ -292,10 +293,10 @@ msgid "Subject"
 msgstr ""
 
 #: includes/AdminBookings.class.php:205 includes/Export.CSV.class.php:85
-#: includes/MailChimp.class.php:98 includes/Notifications.class.php:307
-#: includes/Settings.class.php:550
-#: includes/WP_List_Table.BookingsTable.class.php:674
-#: includes/template-functions.php:438
+#: includes/MailChimp.class.php:100 includes/Notifications.class.php:330
+#: includes/Settings.class.php:563
+#: includes/WP_List_Table.BookingsTable.class.php:753
+#: includes/template-functions.php:455
 msgid "Message"
 msgstr ""
 
@@ -305,7 +306,7 @@ msgstr ""
 
 #: includes/AdminBookings.class.php:275 includes/AdminBookings.class.php:301
 #: includes/AdminBookings.class.php:331 includes/AdminBookings.class.php:344
-#: includes/Editor.class.php:481 includes/Settings.class.php:537
+#: includes/Editor.class.php:481 includes/Settings.class.php:550
 msgid "Close"
 msgstr ""
 
@@ -340,9 +341,9 @@ msgid ""
 "email notifications."
 msgstr ""
 
-#: includes/AdminBookings.class.php:480 includes/AdminBookings.class.php:866
-#: includes/Editor.class.php:497 includes/Helper.class.php:45
-#: restaurant-reservations.php:714
+#: includes/AdminBookings.class.php:480 includes/AdminBookings.class.php:870
+#: includes/Editor.class.php:497 includes/Helper.class.php:54
+#: restaurant-reservations.php:839 restaurant-reservations.php:891
 #, php-format
 msgid "You have been logged out. Please %slogin again%s."
 msgstr ""
@@ -359,30 +360,30 @@ msgid ""
 "The booking could not be retrieved. Please reload the page and try again."
 msgstr ""
 
-#: includes/AdminBookings.class.php:624
+#: includes/AdminBookings.class.php:628
 msgid ""
 "Unable to trash this post. Please try again. If you continue to have "
 "trouble, please refresh the page."
 msgstr ""
 
-#: includes/AdminBookings.class.php:664
+#: includes/AdminBookings.class.php:668
 msgid "Please enter a message before sending the email."
 msgstr ""
 
-#: includes/AdminBookings.class.php:673
+#: includes/AdminBookings.class.php:677
 msgid ""
 "The email could not be sent because some critical information was missing."
 msgstr ""
 
-#: includes/AdminBookings.class.php:719
+#: includes/AdminBookings.class.php:723
 msgid "You must select at least one column to display."
 msgstr ""
 
-#: includes/AdminBookings.class.php:775
+#: includes/AdminBookings.class.php:779
 msgid "No IP or email address could be found for this ban request."
 msgstr ""
 
-#: includes/AdminBookings.class.php:836
+#: includes/AdminBookings.class.php:840
 msgid "No email address could be found for this delete request."
 msgstr ""
 
@@ -390,15 +391,19 @@ msgstr ""
 msgid "Invalid"
 msgstr ""
 
-#: includes/Ajax.class.php:85
+#: includes/Ajax.class.php:98
 msgid "The email you entered is not valid."
 msgstr ""
 
-#: includes/Ajax.class.php:155
+#: includes/Ajax.class.php:107 includes/Ajax.class.php:194
+msgid "The cancellation code you entered is not valid."
+msgstr ""
+
+#: includes/Ajax.class.php:182
 msgid "Unkown error. Please try again"
 msgstr ""
 
-#: includes/Ajax.class.php:168 includes/Ajax.class.php:175
+#: includes/Ajax.class.php:207 includes/Ajax.class.php:214
 msgid "No booking matches the information that was sent."
 msgstr ""
 
@@ -418,7 +423,7 @@ msgid ""
 msgstr ""
 
 #: includes/CustomPostTypes.class.php:51
-#: includes/WP_List_Table.BookingsTable.class.php:137
+#: includes/WP_List_Table.BookingsTable.class.php:161
 msgid "Booking"
 msgstr ""
 
@@ -426,7 +431,7 @@ msgstr ""
 msgid "Add New Booking"
 msgstr ""
 
-#: includes/CustomPostTypes.class.php:56 restaurant-reservations.php:510
+#: includes/CustomPostTypes.class.php:56 restaurant-reservations.php:580
 msgid "Edit Booking"
 msgstr ""
 
@@ -455,7 +460,7 @@ msgid "All Bookings"
 msgstr ""
 
 #: includes/CustomPostTypes.class.php:88 includes/CustomPostTypes.class.php:89
-#: includes/Field.Controller.class.php:147
+#: includes/Field.Controller.class.php:154
 msgid "Field"
 msgstr ""
 
@@ -505,107 +510,207 @@ msgstr ""
 msgid "Pending"
 msgstr ""
 
+#: includes/CustomPostTypes.class.php:121
+#, php-format
+msgid "Pending <span class=\"count\">(%s)</span>"
+msgid_plural "Pending <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
 #: includes/CustomPostTypes.class.php:125
 msgid "Confirmed"
 msgstr ""
+
+#: includes/CustomPostTypes.class.php:132
+#, php-format
+msgid "Confirmed <span class=\"count\">(%s)</span>"
+msgid_plural "Confirmed <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
 
 #: includes/CustomPostTypes.class.php:136
 msgid "Closed"
 msgstr ""
 
-#: includes/CustomPostTypes.class.php:169 includes/Settings.class.php:607
+#: includes/CustomPostTypes.class.php:143
+#, php-format
+msgid "Closed <span class=\"count\">(%s)</span>"
+msgid_plural "Closed <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/CustomPostTypes.class.php:169 includes/Settings.class.php:621
 msgid "Cancelled"
 msgstr ""
 
-#: includes/CustomPostTypes.class.php:194 includes/Settings.class.php:612
+#: includes/CustomPostTypes.class.php:176
+#, php-format
+msgid "Cancelled <span class=\"count\">(%s)</span>"
+msgid_plural "Cancelled <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/CustomPostTypes.class.php:194 includes/Settings.class.php:626
 msgid "Arrived"
 msgstr ""
+
+#: includes/CustomPostTypes.class.php:201
+#, php-format
+msgid "Arrived <span class=\"count\">(%s)</span>"
+msgid_plural "Arrived <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
 
 #: includes/CustomPostTypes.class.php:218
 msgid "Payment Failed"
 msgstr ""
 
+#: includes/CustomPostTypes.class.php:225
+#, php-format
+msgid "Payment Failed <span class=\"count\">(%s)</span>"
+msgid_plural "Payment Failed <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
 #: includes/CustomPostTypes.class.php:230 includes/load-customizer.php:1043
 msgid "Payment Pending"
 msgstr ""
 
-#: includes/Dashboard.class.php:86
+#: includes/CustomPostTypes.class.php:237
+#, php-format
+msgid "Payment Pending <span class=\"count\">(%s)</span>"
+msgid_plural "Payment Pending <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/Dashboard.class.php:83
+#: includes/Dashboard_affiliate_links.class.php:86
 #, php-format
 msgid ""
 "<a href=\"%s\" target=\"_blank\">Visit our website</a> to learn how to "
 "upgrade to premium."
 msgstr ""
 
-#: includes/Dashboard.class.php:94
+#: includes/Dashboard.class.php:90
+#: includes/Dashboard_affiliate_links.class.php:94
 msgid ""
 "Thanks for being a premium user! <strong>If you're looking to upgrade to our "
 "ultimate version, enter your new product key below.</strong>"
 msgstr ""
 
-#: includes/Dashboard.class.php:137
+#: includes/Dashboard.class.php:102 includes/Helper.class.php:142
+msgid "YouTube Tutorials"
+msgstr ""
+
+#: includes/Dashboard.class.php:105 includes/Dashboard.class.php:112
+#: includes/Dashboard.class.php:119 includes/Dashboard.class.php:126
+msgid "View"
+msgstr ""
+
+#: includes/Dashboard.class.php:109 includes/Helper.class.php:137
+msgid "Documentation"
+msgstr ""
+
+#: includes/Dashboard.class.php:116
+msgid "Plugin FAQs"
+msgstr ""
+
+#: includes/Dashboard.class.php:123
+msgid "Get Support"
+msgstr ""
+
+#: includes/Dashboard.class.php:132
+#: includes/Dashboard_affiliate_links.class.php:137
 msgid "Bookings Summary"
 msgstr ""
 
-#: includes/Dashboard.class.php:142 includes/Export.CSV.class.php:79
-#: includes/MultipleLocations.class.php:886
-#: includes/MultipleLocations.class.php:889 includes/Settings.class.php:534
-#: includes/Settings.class.php:978 includes/Settings.class.php:982
-#: includes/WP_List_Table.BookingsTable.class.php:557
+#: includes/Dashboard.class.php:136
+#: includes/Dashboard_affiliate_links.class.php:142
+#: includes/Export.CSV.class.php:79 includes/Settings.class.php:547
+#: includes/Settings.class.php:1114 includes/Settings.class.php:1118
+#: includes/Settings.class.php:2931 includes/Settings.class.php:2935
+#: includes/WP_List_Table.BookingsTable.class.php:636
 msgid "Date"
 msgstr ""
 
-#: includes/Dashboard.class.php:143 includes/Export.CSV.class.php:82
-#: includes/Notifications.class.php:289 includes/Settings.class.php:541
-#: includes/Settings.class.php:614 includes/Settings.class.php:836
-#: includes/WP_List_Table.BookingsTable.class.php:559
+#: includes/Dashboard.class.php:137
+#: includes/Dashboard_affiliate_links.class.php:143
+#: includes/Export.CSV.class.php:82 includes/Notifications.class.php:312
+#: includes/Settings.class.php:554 includes/Settings.class.php:628
+#: includes/Settings.class.php:850
+#: includes/WP_List_Table.BookingsTable.class.php:638
 msgid "Party"
 msgstr ""
 
-#: includes/Dashboard.class.php:144 includes/Export.CSV.class.php:81
-#: includes/MailChimp.class.php:95 includes/Notifications.class.php:290
-#: includes/Settings.class.php:546 includes/Settings.class.php:615
-#: includes/Settings.class.php:837
-#: includes/WP_List_Table.BookingsTable.class.php:560
+#: includes/Dashboard.class.php:138
+#: includes/Dashboard_affiliate_links.class.php:144
+#: includes/Export.CSV.class.php:81 includes/MailChimp.class.php:97
+#: includes/Notifications.class.php:313 includes/Settings.class.php:559
+#: includes/Settings.class.php:629 includes/Settings.class.php:851
+#: includes/WP_List_Table.BookingsTable.class.php:423
+#: includes/WP_List_Table.BookingsTable.class.php:639
 msgid "Name"
 msgstr ""
 
-#: includes/Dashboard.class.php:145 includes/Notifications.class.php:294
-#: includes/Settings.class.php:619 includes/Settings.class.php:841
-#: includes/WP_List_Table.BookingsTable.class.php:563
+#: includes/Dashboard.class.php:139
+#: includes/Dashboard_affiliate_links.class.php:145
+#: includes/Notifications.class.php:317 includes/Settings.class.php:633
+#: includes/Settings.class.php:855
+#: includes/WP_List_Table.BookingsTable.class.php:642
 msgid "Status"
 msgstr ""
 
-#: includes/Dashboard.class.php:157
+#: includes/Dashboard.class.php:151
+#: includes/Dashboard_affiliate_links.class.php:157
 msgid ""
 "No bookings to display yet. Create a booking for it to be displayed here."
 msgstr ""
 
-#: includes/Dashboard.class.php:260
+#: includes/Dashboard.class.php:191
+#: includes/Dashboard_affiliate_links.class.php:264
+msgid "Select version to trial"
+msgstr ""
+
+#: includes/Dashboard.class.php:192
+#: includes/Dashboard_affiliate_links.class.php:265
+#: includes/Settings.class.php:2277 includes/Settings.class.php:2292
+#: includes/Settings.class.php:2308
+msgid "Premium"
+msgstr ""
+
+#: includes/Dashboard.class.php:193
+#: includes/Dashboard_affiliate_links.class.php:266
+#: includes/Settings.class.php:2261
+msgid "Ultimate"
+msgstr ""
+
+#: includes/Dashboard.class.php:194
+#: includes/Dashboard_affiliate_links.class.php:267
+msgid "SMS messaging will not work in the ultimate version trial."
+msgstr ""
+
+#: includes/Dashboard.class.php:195
+#: includes/Dashboard_affiliate_links.class.php:268
+msgid "Select"
+msgstr ""
+
+#: includes/Dashboard.class.php:223
+msgid "What People Are Saying"
+msgstr ""
+
+#: includes/Dashboard.class.php:254
+msgid "Other plugins by Etoile"
+msgstr ""
+
+#: includes/Dashboard_affiliate_links.class.php:260
 #, php-format
 msgid ""
 "<a href=\"%s\" target=\"_blank\">Visit our website</a> to learn how to get a "
 "free 7-day trial of the premium plugin."
 msgstr ""
 
-#: includes/Dashboard.class.php:264
-msgid "Select version to trial"
-msgstr ""
-
-#: includes/Dashboard.class.php:265 includes/Settings.class.php:2084
-#: includes/Settings.class.php:2099 includes/Settings.class.php:2115
-msgid "Premium"
-msgstr ""
-
-#: includes/Dashboard.class.php:266 includes/Settings.class.php:2068
-msgid "Ultimate"
-msgstr ""
-
-#: includes/Dashboard.class.php:267
-msgid "SMS messaging will not work in the ultimate version trial."
-msgstr ""
-
-#: includes/Dashboard.class.php:268
-msgid "Select"
+#: includes/Dashboard_affiliate_links.class.php:340
+msgid "Learn More"
 msgstr ""
 
 #: includes/DeactivationSurvey.class.php:58
@@ -627,12 +732,12 @@ msgid "Skip and Deactivate"
 msgstr ""
 
 #: includes/Editor.class.php:51 includes/Editor.class.php:52
-#: restaurant-reservations.php:446
+#: restaurant-reservations.php:516
 msgid "Custom Fields"
 msgstr ""
 
 #: includes/Editor.class.php:104 includes/Editor.class.php:304
-#: lib/simple-admin-pages/classes/AdminPageSetting.InfiniteTable.class.php:202
+#: lib/simple-admin-pages/classes/AdminPageSetting.InfiniteTable.class.php:206
 msgid "Save"
 msgstr ""
 
@@ -668,7 +773,7 @@ msgid ""
 "custom fields will be removed. This action can not be undone."
 msgstr ""
 
-#: includes/Editor.class.php:114 restaurant-reservations.php:511
+#: includes/Editor.class.php:114 restaurant-reservations.php:581
 msgid ""
 "An unspecified error occurred. Please try again. If the problem persists, "
 "try logging out and logging back in."
@@ -721,7 +826,7 @@ msgstr ""
 msgid "Field Type"
 msgstr ""
 
-#: includes/Editor.class.php:418 includes/Field.Controller.class.php:183
+#: includes/Editor.class.php:418 includes/Field.Controller.class.php:190
 msgid "Options"
 msgstr ""
 
@@ -831,24 +936,25 @@ msgstr ""
 
 #: includes/Export.CSV.class.php:80
 #: includes/InstallationWalkthrough.class.php:357
-#: includes/MultipleLocations.class.php:890
-#: includes/Notifications.class.php:288 includes/Settings.class.php:538
-#: includes/Settings.class.php:613 includes/Settings.class.php:835
-#: includes/Settings.class.php:983
+#: includes/Notifications.class.php:311 includes/Settings.class.php:551
+#: includes/Settings.class.php:627 includes/Settings.class.php:849
+#: includes/Settings.class.php:1119 includes/Settings.class.php:2936
 msgid "Time"
 msgstr ""
 
-#: includes/Export.CSV.class.php:83 includes/MailChimp.class.php:172
-#: includes/Notifications.class.php:291 includes/Settings.class.php:547
-#: includes/Settings.class.php:616 includes/Settings.class.php:838
-#: includes/WP_List_Table.BookingsTable.class.php:561
+#: includes/Export.CSV.class.php:83 includes/MailChimp.class.php:174
+#: includes/Notifications.class.php:314 includes/Settings.class.php:560
+#: includes/Settings.class.php:630 includes/Settings.class.php:852
+#: includes/WP_List_Table.BookingsTable.class.php:427
+#: includes/WP_List_Table.BookingsTable.class.php:640
 msgid "Email"
 msgstr ""
 
-#: includes/Export.CSV.class.php:84 includes/Notifications.class.php:292
-#: includes/Settings.class.php:548 includes/Settings.class.php:617
-#: includes/Settings.class.php:839
-#: includes/WP_List_Table.BookingsTable.class.php:562
+#: includes/Export.CSV.class.php:84 includes/Notifications.class.php:315
+#: includes/Settings.class.php:561 includes/Settings.class.php:631
+#: includes/Settings.class.php:853
+#: includes/WP_List_Table.BookingsTable.class.php:431
+#: includes/WP_List_Table.BookingsTable.class.php:641
 msgid "Phone"
 msgstr ""
 
@@ -860,26 +966,26 @@ msgstr ""
 msgid "Data Privacy Consent"
 msgstr ""
 
-#: includes/Export.CSV.class.php:213 includes/Settings.class.php:622
-#: includes/Settings.class.php:1272
+#: includes/Export.CSV.class.php:213 includes/Settings.class.php:636
+#: includes/Settings.class.php:1459
 #: includes/integrations/business-profile.php:293
 msgid "Yes"
 msgstr ""
 
-#: includes/Export.CSV.class.php:213 includes/Settings.class.php:623
-#: includes/Settings.class.php:1271
+#: includes/Export.CSV.class.php:213 includes/Settings.class.php:637
+#: includes/Settings.class.php:1458
 #: includes/integrations/business-profile.php:294
 msgid "No"
 msgstr ""
 
 #: includes/Export.CSV.class.php:232 includes/Export.PDF.class.php:232
-#: includes/Settings.class.php:542
+#: includes/Settings.class.php:555
 msgid "Table(s)"
 msgstr ""
 
-#: includes/Export.CSV.class.php:267 includes/Settings.class.php:608
-#: includes/Settings.class.php:2597
-#: includes/WP_List_Table.BookingsTable.class.php:566
+#: includes/Export.CSV.class.php:267 includes/Settings.class.php:622
+#: includes/Settings.class.php:2825
+#: includes/WP_List_Table.BookingsTable.class.php:645
 msgid "Deposit"
 msgstr ""
 
@@ -922,8 +1028,8 @@ msgid "Bookings as of %s"
 msgstr ""
 
 #: includes/Export.class.php:118
-#: includes/WP_List_Table.BookingsTable.class.php:245
-#: includes/WP_List_Table.BookingsTable.class.php:247
+#: includes/WP_List_Table.BookingsTable.class.php:285
+#: includes/WP_List_Table.BookingsTable.class.php:287
 msgid "*"
 msgstr ""
 
@@ -972,36 +1078,36 @@ msgstr ""
 msgid "There are no bookings which match your export request."
 msgstr ""
 
-#: includes/Field.Controller.class.php:170
+#: includes/Field.Controller.class.php:177
 msgid "Text"
 msgstr ""
 
-#: includes/Field.Controller.class.php:173
+#: includes/Field.Controller.class.php:180
 msgid "Small"
 msgstr ""
 
-#: includes/Field.Controller.class.php:177
+#: includes/Field.Controller.class.php:184
 msgid "Large"
 msgstr ""
 
-#: includes/Field.Controller.class.php:186
+#: includes/Field.Controller.class.php:193
 msgid "Dropdown"
 msgstr ""
 
-#: includes/Field.Controller.class.php:190
+#: includes/Field.Controller.class.php:197
 msgid "Checkbox"
 msgstr ""
 
-#: includes/Field.Controller.class.php:194
+#: includes/Field.Controller.class.php:201
 msgid "Radio"
 msgstr ""
 
-#: includes/Field.Controller.class.php:200
-#: includes/Field.Controller.class.php:203
+#: includes/Field.Controller.class.php:207
+#: includes/Field.Controller.class.php:210
 msgid "Confirm"
 msgstr ""
 
-#: includes/Field.Controller.class.php:543
+#: includes/Field.Controller.class.php:550
 #, php-format
 msgid "%s Checked"
 msgstr ""
@@ -1036,12 +1142,111 @@ msgstr ""
 msgid "The option you selected is not valid. Please make another choice."
 msgstr ""
 
-#: includes/Helper.class.php:59 includes/PaymentGatewayStripe.class.php:198
-#: includes/PaymentGatewayStripe.class.php:292
-#: includes/PaymentGatewayStripe.class.php:389
+#: includes/Helper.class.php:68 includes/PaymentGatewayStripe.class.php:202
+#: includes/PaymentGatewayStripe.class.php:295
+#: includes/PaymentGatewayStripe.class.php:393
 msgid ""
 "The request has been rejected because it does not appear to have come from "
 "this site."
+msgstr ""
+
+#: includes/Helper.class.php:147
+msgid "Support Center"
+msgstr ""
+
+#: includes/Helper.class.php:189
+msgid ""
+"Easily view, filter, and manage all your restaurant bookings in one place. "
+"You can confirm, reject, email, or edit bookings individually or in bulk, "
+"and export them by day, upcoming, or a specific date range. Export formats "
+"include PDF, Excel, and iCal, with filters for booking statuses like "
+"pending, confirmed, closed, or arrived."
+msgstr ""
+
+#: includes/Helper.class.php:218 includes/Helper.class.php:223
+msgid ""
+"Set your weekly availability for accepting bookings and define custom "
+"scheduling rules for holidays or special events. Control how far in advance "
+"or how last-minute bookings can be made, and customize options like time "
+"intervals, date pre-selection, and the first day of the week."
+msgstr ""
+
+#: includes/Helper.class.php:236
+msgid ""
+"Adjust essential booking form settings such as party size limits, required "
+"contact fields, and default messages. You can enable auto-confirmation, "
+"guest cancellations, and configure redirects for different booking outcomes. "
+"Additional options let you manage privacy, spam protection, and how long "
+"reservation data is stored."
+msgstr ""
+
+#: includes/Helper.class.php:245
+msgid ""
+"Set seat and reservation limits to control capacity during peak times, and "
+"configure auto-confirmation rules based on party size or total bookings. "
+"Enable front-end table selection and create customizable table and section "
+"layouts, including an optional table layout graphic. Additional tools let "
+"you configure a guest check-in form, connect MailChimp, and manage access to "
+"the booking view page."
+msgstr ""
+
+#: includes/Helper.class.php:262
+msgid ""
+"Configure email and SMS alerts for every stage of the booking process, "
+"including pending, confirmed, cancelled, and completed reservations. "
+"Customize message content using template tags, set reply-to details, and "
+"control which notifications are sent to admins and customers. You can also "
+"enable daily summary emails and automate reminders or follow-ups with "
+"flexible timing options."
+msgstr ""
+
+#: includes/Helper.class.php:275
+msgid ""
+"You can require guests to pay a deposit when booking, choosing between "
+"PayPal or Stripe as the payment gateway. Deposits can be set per "
+"reservation, guest, or table, with flexible rules for when and how much to "
+"charge. Stripe also supports advanced options like Strong Customer "
+"Authentication and payment holds."
+msgstr ""
+
+#: includes/Helper.class.php:284
+msgid ""
+"Customize the look and feel of your reservation form. You can pick from "
+"different layouts like Default, Minimal, or Contemporary, and adjust fonts, "
+"colors, and sizes for section titles, labels, and buttons. There are also "
+"detailed color controls for all buttons, including normal and hover states, "
+"so your booking form matches your restaurant’s brand perfectly."
+msgstr ""
+
+#: includes/Helper.class.php:289
+msgid ""
+"Customize or translate all the wording in the plugin. You can easily change "
+"labels to suit your brand’s voice or translate the plugin into a different "
+"language without needing extra translation plugins. Plus, the plugin is "
+"fully localized, so it works seamlessly with third-party translation tools "
+"if needed."
+msgstr ""
+
+#: includes/Helper.class.php:302
+msgid ""
+"In the Export settings, you can choose your preferred paper size for PDFs, "
+"with A4 as the default. For PDF generation, select between mPDF (better "
+"visuals) or TCPDF (more compatible). You can also customize the date format "
+"used in Excel or CSV exports, which is handy if you need a specific machine-"
+"readable date style different from your WordPress default."
+msgstr ""
+
+#: includes/Helper.class.php:307
+msgid ""
+"Tailor your booking form to collect important details like special seating "
+"requests, dietary needs, and more."
+msgstr ""
+
+#: includes/Helper.class.php:312
+msgid ""
+"You can manage your app API keys by adding new keys and controlling access. "
+"Additionally, there’s an error log that displays the 10 most recent error "
+"notifications from the last week, helping you monitor any issues."
 msgstr ""
 
 #: includes/Import.class.php:46 includes/Import.class.php:47
@@ -1099,42 +1304,44 @@ msgid "File must be .csv, .xls or .xlsx"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:169
-#: includes/MultipleLocations.class.php:898 includes/Settings.class.php:991
+#: includes/Settings.class.php:1127 includes/Settings.class.php:2944
 msgid "Never"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:170
-#: includes/MultipleLocations.class.php:899 includes/Settings.class.php:992
+#: includes/Settings.class.php:1128 includes/Settings.class.php:2945
 msgid "Every day"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:171
-#: includes/MultipleLocations.class.php:900 includes/Settings.class.php:993
+#: includes/Settings.class.php:1129 includes/Settings.class.php:2946
 #, php-format
 msgid "%s on the %s week of the month"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:172
-#: includes/MultipleLocations.class.php:901 includes/Settings.class.php:994
+#: includes/Settings.class.php:1130 includes/Settings.class.php:2947
 #, php-format
 msgid "%s week of the month"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:173
 #: includes/InstallationWalkthrough.class.php:362
-#: includes/MultipleLocations.class.php:891
-#: includes/MultipleLocations.class.php:902 includes/Settings.class.php:984
-#: includes/Settings.class.php:995
+#: includes/Settings.class.php:1120 includes/Settings.class.php:1131
+#: includes/Settings.class.php:2880 includes/Settings.class.php:2937
+#: includes/Settings.class.php:2948 includes/Settings.class.php:2960
 msgid "All day"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:174
-#: includes/MultipleLocations.class.php:903 includes/Settings.class.php:996
+#: includes/Settings.class.php:1132 includes/Settings.class.php:2884
+#: includes/Settings.class.php:2949
 msgid "Ends at"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:175
-#: includes/MultipleLocations.class.php:904 includes/Settings.class.php:997
+#: includes/Settings.class.php:1133 includes/Settings.class.php:2888
+#: includes/Settings.class.php:2950
 msgid "Starts at"
 msgstr ""
 
@@ -1188,7 +1395,7 @@ msgid ""
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:221
-#: includes/MultipleLocations.class.php:883 includes/Settings.class.php:975
+#: includes/Settings.class.php:1111 includes/Settings.class.php:2928
 msgid "Add new scheduling rule"
 msgstr ""
 
@@ -1232,27 +1439,27 @@ msgid "Any Time"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:258
-#: includes/Settings.class.php:1057
+#: includes/Settings.class.php:1193
 msgid "From 1 day in advance"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:259
-#: includes/Settings.class.php:1058
+#: includes/Settings.class.php:1194
 msgid "From 1 week in advance"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:260
-#: includes/Settings.class.php:1059
+#: includes/Settings.class.php:1195
 msgid "From 2 weeks in advance"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:261
-#: includes/Settings.class.php:1060
+#: includes/Settings.class.php:1196
 msgid "From 30 days in advance"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:262
-#: includes/Settings.class.php:1062
+#: includes/Settings.class.php:1198
 msgid "From 90 days in advance"
 msgstr ""
 
@@ -1261,37 +1468,37 @@ msgid "Late Bookings:"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:268
-#: includes/Settings.class.php:1078
+#: includes/Settings.class.php:1214 includes/Settings.class.php:1237
 msgid "Up to the last minute"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:269
-#: includes/Settings.class.php:1079
+#: includes/Settings.class.php:1215
 msgid "At least 15 minutes in advance"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:270
-#: includes/Settings.class.php:1080
+#: includes/Settings.class.php:1216 includes/Settings.class.php:1238
 msgid "At least 30 minutes in advance"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:271
-#: includes/Settings.class.php:1081
+#: includes/Settings.class.php:1217
 msgid "At least 45 minutes in advance"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:272
-#: includes/Settings.class.php:1082
+#: includes/Settings.class.php:1218 includes/Settings.class.php:1239
 msgid "At least 1 hour in advance"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:273
-#: includes/Settings.class.php:1083
+#: includes/Settings.class.php:1219 includes/Settings.class.php:1240
 msgid "At least 4 hours in advance"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:274
-#: includes/Settings.class.php:1084
+#: includes/Settings.class.php:1220 includes/Settings.class.php:1241
 msgid "At least 24 hours in advance"
 msgstr ""
 
@@ -1304,22 +1511,22 @@ msgid "Time Interval:"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:281
-#: includes/Settings.class.php:1122
+#: includes/Settings.class.php:1280
 msgid "Every 30 minutes"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:282
-#: includes/Settings.class.php:1123
+#: includes/Settings.class.php:1281
 msgid "Every 15 minutes"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:283
-#: includes/Settings.class.php:1124
+#: includes/Settings.class.php:1282
 msgid "Every 10 minutes"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:284
-#: includes/Settings.class.php:1125
+#: includes/Settings.class.php:1283
 msgid "Every 5 minutes"
 msgstr ""
 
@@ -1336,44 +1543,44 @@ msgid "Skip Setup"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:330
-#: includes/MultipleLocations.class.php:884 includes/Settings.class.php:976
+#: includes/Settings.class.php:1112 includes/Settings.class.php:2929
 msgid "Weekly"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:337
-#: includes/MultipleLocations.class.php:887 includes/Settings.class.php:980
+#: includes/Settings.class.php:1116 includes/Settings.class.php:2933
 msgid "Days of the week"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:371
-#: includes/MultipleLocations.class.php:892 includes/Settings.class.php:985
+#: includes/Settings.class.php:1121 includes/Settings.class.php:2938
 msgid "Start"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:378
-#: includes/MultipleLocations.class.php:893 includes/Settings.class.php:986
+#: includes/Settings.class.php:1122 includes/Settings.class.php:2939
 msgid "End"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:386
-#: includes/MultipleLocations.class.php:894 includes/Settings.class.php:987
+#: includes/Settings.class.php:1123 includes/Settings.class.php:2940
 #, php-format
 msgid "All day long. Want to %sset a time slot%s?"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:402
 #: includes/InstallationWalkthrough.class.php:405
-#: includes/MultipleLocations.class.php:895 includes/Settings.class.php:988
+#: includes/Settings.class.php:1124 includes/Settings.class.php:2941
 msgid "Open and close this rule"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:408
-#: includes/MultipleLocations.class.php:896 includes/Settings.class.php:989
+#: includes/Settings.class.php:1125 includes/Settings.class.php:2942
 msgid "Delete rule"
 msgstr ""
 
 #: includes/InstallationWalkthrough.class.php:411
-#: includes/MultipleLocations.class.php:897 includes/Settings.class.php:990
+#: includes/Settings.class.php:1126 includes/Settings.class.php:2943
 msgid "Delete scheduling rule"
 msgstr ""
 
@@ -1408,277 +1615,95 @@ msgid ""
 "and try again."
 msgstr ""
 
-#: includes/MailChimp.class.php:94
+#: includes/MailChimp.class.php:96
 msgid "Date/Time of Booking"
 msgstr ""
 
-#: includes/MailChimp.class.php:96
+#: includes/MailChimp.class.php:98
 msgid "Party Size"
 msgstr ""
 
-#: includes/MailChimp.class.php:97
+#: includes/MailChimp.class.php:99
 msgid "Phone Number"
 msgstr ""
 
-#: includes/MailChimp.class.php:168
+#: includes/MailChimp.class.php:170
 msgid "Booking Form Data"
 msgstr ""
 
-#: includes/MailChimp.class.php:169
+#: includes/MailChimp.class.php:171
 msgid "MailChimp List Field"
 msgstr ""
 
-#: includes/MailChimp.class.php:170
+#: includes/MailChimp.class.php:172
 msgid ""
-"Connect information from the booking request to <a href=\"http://kb."
-"mailchimp.com/article/getting-started-with-merge-tags\" "
+"Connect information from the booking request to <a href=\"http://"
+"kb.mailchimp.com/article/getting-started-with-merge-tags\" "
 "target=\"_blank\">merge fields</a> in your MailChimp list."
 msgstr ""
 
-#: includes/MailChimp.class.php:171
+#: includes/MailChimp.class.php:173
 msgid ""
 "There was an unexpected error when trying to retrieve the list's merge "
 "fields."
 msgstr ""
 
-#: includes/MailChimp.class.php:173
+#: includes/MailChimp.class.php:175
 msgid "The email field is automatically merged."
 msgstr ""
 
-#: includes/MailChimp.class.php:461
+#: includes/MailChimp.class.php:463
 msgid ""
 "The subscription request has been rejected because it does not appear to "
 "have come from this site."
 msgstr ""
 
-#: includes/MultipleLocations.class.php:336
+#: includes/MultipleLocations.class.php:335
 msgid "All Locations"
 msgstr ""
 
-#: includes/MultipleLocations.class.php:394
+#: includes/MultipleLocations.class.php:393
 msgid "Please select a location for your booking."
 msgstr ""
 
-#: includes/MultipleLocations.class.php:401
+#: includes/MultipleLocations.class.php:400
 msgid "The location you selected is not valid. Please select another location."
 msgstr ""
 
-#: includes/MultipleLocations.class.php:510
+#: includes/MultipleLocations.class.php:509
 msgid "Reservations"
 msgstr ""
 
-#: includes/MultipleLocations.class.php:723
+#: includes/MultipleLocations.class.php:722
 msgid "Location for which this booking was made."
 msgstr ""
 
-#: includes/MultipleLocations.class.php:840
-msgid "Global"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:862
-msgid "Select Schedule Location"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:874
-msgid "Schedule Location"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:875
-msgid ""
-"Select which location the schedule will apply to. If a specific location "
-"doesn't have a schedule set, then it will fall back to the global schedule "
-"when booking."
-msgstr ""
-
-#: includes/MultipleLocations.class.php:885 includes/Settings.class.php:977
-msgid "Monthly"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:888 includes/Settings.class.php:981
-msgid "Weeks of the month"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:905 includes/Settings.class.php:998
-#: includes/WP_List_Table.BookingsTable.class.php:246
-msgid "&mdash;"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:916 includes/Settings.class.php:1009
-msgid "Schedule"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:917 includes/Settings.class.php:1010
-msgid "Define the weekly schedule during which you accept bookings."
-msgstr ""
-
-#: includes/MultipleLocations.class.php:919 includes/Settings.class.php:1012
-msgid "Mo"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:920 includes/Settings.class.php:1013
-msgid "Tu"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:921 includes/Settings.class.php:1014
-msgid "We"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:922 includes/Settings.class.php:1015
-msgid "Th"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:923 includes/Settings.class.php:1016
-msgid "Fr"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:924 includes/Settings.class.php:1017
-msgid "Sa"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:925 includes/Settings.class.php:1018
-msgid "Su"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:943 includes/Settings.class.php:1036
-msgid "Exceptions"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:944 includes/Settings.class.php:1037
-msgid ""
-"Define special opening hours for holidays, events or other needs. Leave the "
-"time empty if you're closed all day."
-msgstr ""
-
-#: includes/MultipleLocations.class.php:961
-msgid "Select Advanced Settings Location"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:973
-msgid "Seat Restrictions Location"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:974
-msgid ""
-"Select which location the restrictions will apply to. If a specific location "
-"doesn't have restrictions set, then the global total number will be used as "
-"a fall-back."
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1004
-msgid "Max Reservations"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1005
-msgid ""
-"How many reservations, if enabled, should be allowed at the same time at "
-"this location? Set dining block length to change how long a meal typically "
-"lasts."
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1018
-msgid "Max People"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1019
-msgid ""
-"How many people, if enabled, should be allowed to be present at this "
-"restaurant location at the same time? Set dining block length to change how "
-"long a meal typically lasts. May not work correctly if max reservations is "
-"set."
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1036
-msgid "Sections"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1037
-msgid "Add Section"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1038
-#: includes/MultipleLocations.class.php:1070
-#: includes/WP_List_Table.BookingsTable.class.php:785
-msgid "Delete"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1039
-msgid ""
-"Use this area to sections for your tables. These can help your guests to "
-"book a table in their preferred area."
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1045
-msgid "Section ID"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1050
-msgid "Section Name"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1055
-msgid "Description"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1068
-msgid "Tables"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1069
-msgid "Add Table"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1071
-msgid ""
-"Use this area to create tables that can each be customized. This information "
-"will be used to let customers select a table that meets their requirements "
-"(party size, date/time available)."
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1078
-msgid "Table Number"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1083
-msgid "Min. People"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1088
-msgid "Max. People"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1093
-msgid "Section"
-msgstr ""
-
-#: includes/MultipleLocations.class.php:1099
-msgid "Combines With"
-msgstr ""
-
-#: includes/Notification.class.php:122
+#: includes/Notification.class.php:130
 msgid "booking page"
 msgstr ""
 
-#: includes/Notifications.class.php:278
+#: includes/Notifications.class.php:301
 msgid "There are currently no bookings today."
 msgstr ""
 
-#: includes/Notifications.class.php:282
+#: includes/Notifications.class.php:305
 msgid "Please find a summary of today's reservations in the table below."
 msgstr ""
 
-#: includes/Notifications.class.php:293 includes/Settings.class.php:618
-#: includes/Settings.class.php:840
-#: includes/WP_List_Table.BookingsTable.class.php:567
+#: includes/Notifications.class.php:316 includes/Settings.class.php:632
+#: includes/Settings.class.php:854
+#: includes/WP_List_Table.BookingsTable.class.php:435
+#: includes/WP_List_Table.BookingsTable.class.php:646
 msgid "Table"
 msgstr ""
 
-#: includes/Notifications.class.php:295 includes/Settings.class.php:620
-#: includes/Settings.class.php:842
-#: includes/WP_List_Table.BookingsTable.class.php:570
+#: includes/Notifications.class.php:318 includes/Settings.class.php:634
+#: includes/Settings.class.php:856
+#: includes/WP_List_Table.BookingsTable.class.php:649
 msgid "Details"
 msgstr ""
 
-#: includes/Notifications.class.php:354
+#: includes/Notifications.class.php:377
 msgid "Daily Email Summary"
 msgstr ""
 
@@ -1690,49 +1715,49 @@ msgstr ""
 msgid "Stripe"
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:294
+#: includes/PaymentGatewayStripe.class.php:297
 msgid "Invalid booking."
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:370
+#: includes/PaymentGatewayStripe.class.php:374
 msgid "Payment Intent generated succsssfully"
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:408
+#: includes/PaymentGatewayStripe.class.php:412
 msgid "Invalid submission. Please contact admin"
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:432
+#: includes/PaymentGatewayStripe.class.php:437
 msgid "Payment charge failed. Please try again"
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:546
+#: includes/PaymentGatewayStripe.class.php:551
 msgid "Payment on Hold"
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:547
+#: includes/PaymentGatewayStripe.class.php:552
 msgid "Payment has been held on the card, but not charged yet."
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:553
+#: includes/PaymentGatewayStripe.class.php:558
 msgid "Held Payment Captured"
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:554
+#: includes/PaymentGatewayStripe.class.php:559
 msgid "Payment has been captured."
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:567
+#: includes/PaymentGatewayStripe.class.php:572
 msgid "Charge Payment on Hold"
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:613
-#: includes/PaymentGatewayStripe.class.php:622
+#: includes/PaymentGatewayStripe.class.php:618
+#: includes/PaymentGatewayStripe.class.php:627
 #, php-format
 msgid "Five Star RTB: Stripe Payment capture failed. Reason: %s"
 msgstr ""
 
-#: includes/PaymentGatewayStripe.class.php:638
+#: includes/PaymentGatewayStripe.class.php:643
 #, php-format
 msgid "Unable to find the Booking for ID %s"
 msgstr ""
@@ -1741,340 +1766,344 @@ msgstr ""
 msgid "Please select a valid payment gateway."
 msgstr ""
 
-#: includes/PaymentManager.class.php:419
+#: includes/PaymentManager.class.php:440
 msgid "Invalid gateweay selected. Please contact us for the confirmation."
 msgstr ""
 
-#: includes/Settings.class.php:480
+#: includes/Settings.class.php:493
 msgid "View/Cancel a Reservation"
 msgstr ""
 
-#: includes/Settings.class.php:484
+#: includes/Settings.class.php:497
 msgid "View/Cancel Reservation or Settle Deposit"
 msgstr ""
 
-#: includes/Settings.class.php:491
+#: includes/Settings.class.php:504
 msgid ""
 "Thanks, your booking request is waiting to be confirmed. Updates will be "
 "sent to the email address you provided."
 msgstr ""
 
-#: includes/Settings.class.php:492
+#: includes/Settings.class.php:505
 msgid ""
 "Thanks, your booking request has been automatically confirmed. We look "
 "forward to seeing you soon!"
 msgstr ""
 
-#: includes/Settings.class.php:493
+#: includes/Settings.class.php:506
 msgid "mmmm d, yyyy"
 msgstr ""
 
-#: includes/Settings.class.php:494
+#: includes/Settings.class.php:507
 msgid "h:i A"
 msgstr ""
 
-#: includes/Settings.class.php:495
+#: includes/Settings.class.php:508
 msgid "30"
 msgstr ""
 
-#: includes/Settings.class.php:529
+#: includes/Settings.class.php:542
 msgid "Sign up for our mailing list."
 msgstr ""
 
-#: includes/Settings.class.php:532
+#: includes/Settings.class.php:545
 msgid "Book a table"
 msgstr ""
 
-#: includes/Settings.class.php:535
-#: includes/WP_List_Table.BookingsTable.class.php:342
+#: includes/Settings.class.php:548
+#: includes/WP_List_Table.BookingsTable.class.php:382
 msgid "Today"
 msgstr ""
 
-#: includes/Settings.class.php:536 includes/Settings.class.php:539
+#: includes/Settings.class.php:549 includes/Settings.class.php:552
 msgid "Clear"
 msgstr ""
 
-#: includes/Settings.class.php:540
+#: includes/Settings.class.php:553
 msgid ""
 "There are currently no times available for booking on your selected date."
 msgstr ""
 
-#: includes/Settings.class.php:543
+#: includes/Settings.class.php:556
 msgid "min."
 msgstr ""
 
-#: includes/Settings.class.php:544
+#: includes/Settings.class.php:557
 msgid "max."
 msgstr ""
 
-#: includes/Settings.class.php:545
+#: includes/Settings.class.php:558
 msgid "Contact Details"
 msgstr ""
 
-#: includes/Settings.class.php:549
+#: includes/Settings.class.php:562
 msgid "Add a Message"
 msgstr ""
 
-#: includes/Settings.class.php:551
+#: includes/Settings.class.php:564
 msgid "Request Booking"
 msgstr ""
 
-#: includes/Settings.class.php:552
+#: includes/Settings.class.php:565
 msgid "Table Layout"
 msgstr ""
 
-#: includes/Settings.class.php:554
+#: includes/Settings.class.php:567
 msgid "Please enter the date you would like to book."
 msgstr ""
 
-#: includes/Settings.class.php:555
+#: includes/Settings.class.php:568
 msgid ""
 "The date you entered is not valid. Please select from one of the dates in "
 "the calendar."
 msgstr ""
 
-#: includes/Settings.class.php:556
+#: includes/Settings.class.php:569
 msgid "Please enter the time you would like to book."
 msgstr ""
 
-#: includes/Settings.class.php:557
+#: includes/Settings.class.php:570
 msgid ""
 "The time you entered is not valid. Please select from one of the times "
 "provided."
 msgstr ""
 
-#: includes/Settings.class.php:558
+#: includes/Settings.class.php:571
 #, php-format
 msgid "Sorry, bookings can not be made more than %s days in advance."
 msgstr ""
 
-#: includes/Settings.class.php:559
+#: includes/Settings.class.php:572
 msgid "Sorry, bookings can not be made in the past."
 msgstr ""
 
-#: includes/Settings.class.php:560
+#: includes/Settings.class.php:573
 msgid "Sorry, bookings can not be made for the same day."
 msgstr ""
 
-#: includes/Settings.class.php:561
+#: includes/Settings.class.php:574
 #, php-format
 msgid "Sorry, bookings must be made more than %s days in advance."
 msgstr ""
 
-#: includes/Settings.class.php:562
+#: includes/Settings.class.php:575
 #, php-format
 msgid "Sorry, bookings must be made more than %s hours in advance."
 msgstr ""
 
-#: includes/Settings.class.php:563
+#: includes/Settings.class.php:576
 #, php-format
 msgid "Sorry, bookings must be made more than %s minutes in advance."
 msgstr ""
 
-#: includes/Settings.class.php:564
+#: includes/Settings.class.php:577
 msgid "Sorry, no bookings are being accepted then."
 msgstr ""
 
-#: includes/Settings.class.php:565
+#: includes/Settings.class.php:578
 msgid "Sorry, no bookings are being accepted on that date."
 msgstr ""
 
-#: includes/Settings.class.php:566
+#: includes/Settings.class.php:579
 msgid "Sorry, no bookings are being accepted at that time."
 msgstr ""
 
-#: includes/Settings.class.php:567
+#: includes/Settings.class.php:580
 msgid "Please enter a name for this booking."
 msgstr ""
 
-#: includes/Settings.class.php:568
+#: includes/Settings.class.php:581
 msgid "Please let us know how many people will be in your party."
 msgstr ""
 
-#: includes/Settings.class.php:569
+#: includes/Settings.class.php:582
 #, php-format
 msgid "We only accept bookings for parties of up to %d people."
 msgstr ""
 
-#: includes/Settings.class.php:570
+#: includes/Settings.class.php:583
 #, php-format
 msgid "We only accept bookings for parties of more than %d people."
 msgstr ""
 
-#: includes/Settings.class.php:571
+#: includes/Settings.class.php:584
 msgid "Please enter an email address so we can confirm your booking."
 msgstr ""
 
-#: includes/Settings.class.php:572
+#: includes/Settings.class.php:585
 msgid "Please enter a valid email address so we can confirm your booking."
 msgstr ""
 
-#: includes/Settings.class.php:573
+#: includes/Settings.class.php:586
 msgid "Please provide a phone number so we can confirm your booking."
 msgstr ""
 
-#: includes/Settings.class.php:574
+#: includes/Settings.class.php:587
 msgid "Please select a table for your booking."
 msgstr ""
 
-#: includes/Settings.class.php:575
+#: includes/Settings.class.php:588
 msgid "Please select a valid table for your booking."
 msgstr ""
 
-#: includes/Settings.class.php:576
+#: includes/Settings.class.php:589
 msgid "No table available at this time. Please change your selection."
 msgstr ""
 
-#: includes/Settings.class.php:577
+#: includes/Settings.class.php:590
 msgid "Please fill out the reCAPTCHA box before submitting."
 msgstr ""
 
-#: includes/Settings.class.php:578
+#: includes/Settings.class.php:591
 msgid "Please fill out the reCAPTCHA box again and re-submit."
 msgstr ""
 
-#: includes/Settings.class.php:579
+#: includes/Settings.class.php:592
 msgid " If you encounter reCAPTCHA error multiple times, please contact us."
 msgstr ""
 
-#: includes/Settings.class.php:580
+#: includes/Settings.class.php:593
 msgid "Please complete this field to request a booking."
 msgstr ""
 
-#: includes/Settings.class.php:581
+#: includes/Settings.class.php:594
 msgid ""
 "Your booking has been rejected. Please call us if you would like to make a "
 "booking."
 msgstr ""
 
-#: includes/Settings.class.php:582
+#: includes/Settings.class.php:595
 msgid ""
 "The maximum number of reservations for that timeslot has been reached. "
 "Please select a different timeslot."
 msgstr ""
 
-#: includes/Settings.class.php:583
+#: includes/Settings.class.php:596
 msgid ""
 "With your party, the maximum number of seats for that timeslot would be "
 "exceeded. Please select a different timeslot or reduce your party size."
 msgstr ""
 
-#: includes/Settings.class.php:584
+#: includes/Settings.class.php:597
 msgid ""
 "Your booking and personal information exactly matches another booking. If "
 "this was not caused by refreshing the page, please call us to make a booking."
 msgstr ""
 
-#: includes/Settings.class.php:585
+#: includes/Settings.class.php:598
 msgid ""
 "Something went wrong. Please try again and, if the issue persists, please "
 "contact us."
 msgstr ""
 
-#: includes/Settings.class.php:587
+#: includes/Settings.class.php:600
 msgid "Payment Gateway"
 msgstr ""
 
-#: includes/Settings.class.php:588
+#: includes/Settings.class.php:601
 msgid "Proceed to Deposit"
 msgstr ""
 
-#: includes/Settings.class.php:589
+#: includes/Settings.class.php:602
 msgid "Request Booking or Proceed to Deposit"
 msgstr ""
 
-#: includes/Settings.class.php:590
+#: includes/Settings.class.php:603
 msgid "Pay via PayPal"
 msgstr ""
 
-#: includes/Settings.class.php:591
+#: includes/Settings.class.php:604
 msgid "Deposit Required: "
 msgstr ""
 
-#: includes/Settings.class.php:592
+#: includes/Settings.class.php:605
 msgid ""
 "We are only placing a hold for the above amount on your payment instrument. "
 "You will be charged later."
 msgstr ""
 
-#: includes/Settings.class.php:593
+#: includes/Settings.class.php:606
 msgid "Payment Details"
 msgstr ""
 
-#: includes/Settings.class.php:594
+#: includes/Settings.class.php:607
 msgid "Card Number"
 msgstr ""
 
-#: includes/Settings.class.php:595
+#: includes/Settings.class.php:608
 msgid "CVC"
 msgstr ""
 
-#: includes/Settings.class.php:596
+#: includes/Settings.class.php:609
 msgid "Expiration (MM/YYYY)"
 msgstr ""
 
-#: includes/Settings.class.php:597
+#: includes/Settings.class.php:610
 msgid ""
 "Please wait. Do not refresh until the button enables or the page reloads."
 msgstr ""
 
-#: includes/Settings.class.php:598
+#: includes/Settings.class.php:611
 msgid "Make Deposit"
 msgstr ""
 
-#: includes/Settings.class.php:601
+#: includes/Settings.class.php:614
 msgid "Make a Reservation"
 msgstr ""
 
-#: includes/Settings.class.php:602
+#: includes/Settings.class.php:615
 msgid "Use the form below to find your reservation"
 msgstr ""
 
-#: includes/Settings.class.php:603
+#: includes/Settings.class.php:616
 msgid "Email:"
 msgstr ""
 
-#: includes/Settings.class.php:604
+#: includes/Settings.class.php:617
+msgid "Modification Code:"
+msgstr ""
+
+#: includes/Settings.class.php:618
 msgid "Find Reservations"
 msgstr ""
 
-#: includes/Settings.class.php:605
+#: includes/Settings.class.php:619
 msgid "No bookings were found for the email address you entered."
 msgstr ""
 
-#: includes/Settings.class.php:609
+#: includes/Settings.class.php:623
 msgid "guest"
 msgstr ""
 
-#: includes/Settings.class.php:610
+#: includes/Settings.class.php:624
 msgid "guests"
 msgstr ""
 
-#: includes/Settings.class.php:621
+#: includes/Settings.class.php:635
 msgid "Set reservation status to 'Arrived'?"
 msgstr ""
 
-#: includes/Settings.class.php:625
+#: includes/Settings.class.php:639
 msgid "Cancel booking"
 msgstr ""
 
-#: includes/Settings.class.php:626
+#: includes/Settings.class.php:640
 msgid "View pending bookings"
 msgstr ""
 
-#: includes/Settings.class.php:627
+#: includes/Settings.class.php:641
 msgid "Confirm this booking"
 msgstr ""
 
-#: includes/Settings.class.php:628
+#: includes/Settings.class.php:642
 msgid "Reject this booking"
 msgstr ""
 
-#: includes/Settings.class.php:639
+#: includes/Settings.class.php:653
 msgid "New Booking Request"
 msgstr ""
 
-#: includes/Settings.class.php:640
+#: includes/Settings.class.php:654
 msgid ""
 "A new booking request has been made at {site_name}:\n"
 "\n"
@@ -2091,12 +2120,12 @@ msgid ""
 "<em>This message was sent by {site_link} on {current_time}.</em>"
 msgstr ""
 
-#: includes/Settings.class.php:658 includes/Settings.class.php:714
+#: includes/Settings.class.php:672 includes/Settings.class.php:728
 #, php-format
 msgid "Your booking at %s is pending"
 msgstr ""
 
-#: includes/Settings.class.php:659 includes/Settings.class.php:715
+#: includes/Settings.class.php:673 includes/Settings.class.php:729
 msgid ""
 "Thanks {user_name},\n"
 "\n"
@@ -2117,11 +2146,11 @@ msgid ""
 "<em>This message was sent by {site_link} on {current_time}.</em>"
 msgstr ""
 
-#: includes/Settings.class.php:678
+#: includes/Settings.class.php:692
 msgid "New Confirmed Booking Request"
 msgstr ""
 
-#: includes/Settings.class.php:679
+#: includes/Settings.class.php:693
 msgid ""
 "A new confirmed booking has been made at {site_name}:\n"
 "\n"
@@ -2138,11 +2167,11 @@ msgid ""
 "<em>This message was sent by {site_link} on {current_time}.</em>"
 msgstr ""
 
-#: includes/Settings.class.php:697
+#: includes/Settings.class.php:711
 msgid "Booking Request Cancelled"
 msgstr ""
 
-#: includes/Settings.class.php:698
+#: includes/Settings.class.php:712
 msgid ""
 "A booking request has been cancelled at {site_name}:\n"
 "\n"
@@ -2157,12 +2186,12 @@ msgid ""
 "<em>This message was sent by {site_link} on {current_time}.</em>"
 msgstr ""
 
-#: includes/Settings.class.php:734
+#: includes/Settings.class.php:748
 #, php-format
 msgid "Your booking at %s is confirmed"
 msgstr ""
 
-#: includes/Settings.class.php:735
+#: includes/Settings.class.php:749
 msgid ""
 "Hi {user_name},\n"
 "\n"
@@ -2179,12 +2208,12 @@ msgid ""
 "<em>This message was sent by {site_link} on {current_time}.</em>"
 msgstr ""
 
-#: includes/Settings.class.php:752
+#: includes/Settings.class.php:766
 #, php-format
 msgid "Your booking at %s was not accepted"
 msgstr ""
 
-#: includes/Settings.class.php:753
+#: includes/Settings.class.php:767
 msgid ""
 "Hi {user_name},\n"
 "\n"
@@ -2200,12 +2229,12 @@ msgid ""
 "<em>This message was sent by {site_link} on {current_time}.</em>"
 msgstr ""
 
-#: includes/Settings.class.php:769
+#: includes/Settings.class.php:783
 #, php-format
 msgid "Your reservation at %s was cancelled"
 msgstr ""
 
-#: includes/Settings.class.php:770
+#: includes/Settings.class.php:784
 msgid ""
 "Hi {user_name},\n"
 "\n"
@@ -2222,222 +2251,315 @@ msgid ""
 "<em>This message was sent by {site_link} on {current_time}.</em>"
 msgstr ""
 
-#: includes/Settings.class.php:788
+#: includes/Settings.class.php:802
 #, php-format
 msgid "Reminder: Your reservation at %s"
 msgstr ""
 
-#: includes/Settings.class.php:789
+#: includes/Settings.class.php:803
 msgid "Reminder: You have a reservation {date} for {party} at {site_name}"
 msgstr ""
 
-#: includes/Settings.class.php:795
+#: includes/Settings.class.php:809
 #, php-format
 msgid "You're late for your booking at %s"
 msgstr ""
 
-#: includes/Settings.class.php:796
+#: includes/Settings.class.php:810
 msgid "You had a reservation {date} for {party} at {site_name}"
 msgstr ""
 
-#: includes/Settings.class.php:802
+#: includes/Settings.class.php:816
 #, php-format
 msgid "Thanks for dining at %s"
 msgstr ""
 
-#: includes/Settings.class.php:803
+#: includes/Settings.class.php:817
 msgid ""
 "We just wanted to thank you for dining at {site_name} on {date}. Would you "
 "like to book another meal with us? You can do so on our {booking_page_link}."
 msgstr ""
 
-#: includes/Settings.class.php:809
+#: includes/Settings.class.php:823
 #, php-format
 msgid "Update regarding your booking at %s"
 msgstr ""
 
-#: includes/Settings.class.php:944 includes/Settings.class.php:945
-#: restaurant-reservations.php:439
+#: includes/Settings.class.php:960 includes/Settings.class.php:987
+#: includes/WP_List_Table.BookingsTable.class.php:404
+#: includes/WP_List_Table.BookingsTable.class.php:515
+msgid "All"
+msgstr ""
+
+#: includes/Settings.class.php:1074 includes/Settings.class.php:1075
+#: restaurant-reservations.php:509
 msgid "Settings"
 msgstr ""
 
-#: includes/Settings.class.php:957
+#: includes/Settings.class.php:1091
 msgid "Booking Schedule"
 msgstr ""
 
-#: includes/Settings.class.php:968
+#: includes/Settings.class.php:1104
 msgid "Scheduling Options"
 msgstr ""
 
-#: includes/Settings.class.php:979
+#: includes/Settings.class.php:1113 includes/Settings.class.php:2930
+msgid "Monthly"
+msgstr ""
+
+#: includes/Settings.class.php:1115 includes/Settings.class.php:2932
 msgid "Date Range"
 msgstr ""
 
-#: includes/Settings.class.php:999
+#: includes/Settings.class.php:1117 includes/Settings.class.php:2934
+msgid "Weeks of the month"
+msgstr ""
+
+#: includes/Settings.class.php:1134 includes/Settings.class.php:2892
+#: includes/Settings.class.php:2951
+#: includes/WP_List_Table.BookingsTable.class.php:286
+msgid "&mdash;"
+msgstr ""
+
+#: includes/Settings.class.php:1135 includes/Settings.class.php:2952
 msgid "From Today"
 msgstr ""
 
-#: includes/Settings.class.php:1000
+#: includes/Settings.class.php:1136 includes/Settings.class.php:2953
 msgid "Upto Indefinite"
 msgstr ""
 
-#: includes/Settings.class.php:1029
+#: includes/Settings.class.php:1145 includes/Settings.class.php:2968
+msgid "Schedule"
+msgstr ""
+
+#: includes/Settings.class.php:1146 includes/Settings.class.php:2969
+msgid "Define the weekly schedule during which you accept bookings."
+msgstr ""
+
+#: includes/Settings.class.php:1148 includes/Settings.class.php:2843
+#: includes/Settings.class.php:2971
+msgid "Mo"
+msgstr ""
+
+#: includes/Settings.class.php:1149 includes/Settings.class.php:2844
+#: includes/Settings.class.php:2972
+msgid "Tu"
+msgstr ""
+
+#: includes/Settings.class.php:1150 includes/Settings.class.php:2845
+#: includes/Settings.class.php:2973
+msgid "We"
+msgstr ""
+
+#: includes/Settings.class.php:1151 includes/Settings.class.php:2846
+#: includes/Settings.class.php:2974
+msgid "Th"
+msgstr ""
+
+#: includes/Settings.class.php:1152 includes/Settings.class.php:2847
+#: includes/Settings.class.php:2975
+msgid "Fr"
+msgstr ""
+
+#: includes/Settings.class.php:1153 includes/Settings.class.php:2848
+#: includes/Settings.class.php:2976
+msgid "Sa"
+msgstr ""
+
+#: includes/Settings.class.php:1154 includes/Settings.class.php:2849
+#: includes/Settings.class.php:2977
+msgid "Su"
+msgstr ""
+
+#: includes/Settings.class.php:1165 includes/Settings.class.php:2990
 msgid "Closed all day"
 msgstr ""
 
-#: includes/Settings.class.php:1052
+#: includes/Settings.class.php:1172 includes/Settings.class.php:2998
+msgid "Exceptions"
+msgstr ""
+
+#: includes/Settings.class.php:1173 includes/Settings.class.php:2999
+msgid ""
+"Define special opening hours for holidays, events or other needs. Leave the "
+"time empty if you're closed all day."
+msgstr ""
+
+#: includes/Settings.class.php:1188
 msgid "Early Bookings"
 msgstr ""
 
-#: includes/Settings.class.php:1053
+#: includes/Settings.class.php:1189
 msgid ""
 "Select how early customers can make their booking. (Administrators and "
 "Booking Managers are not restricted by this setting.)"
 msgstr ""
 
-#: includes/Settings.class.php:1056
+#: includes/Settings.class.php:1192
 msgid "Any time"
 msgstr ""
 
-#: includes/Settings.class.php:1061
+#: includes/Settings.class.php:1197
 msgid "From 60 days in advance"
 msgstr ""
 
-#: includes/Settings.class.php:1074
+#: includes/Settings.class.php:1210
 msgid "Late Bookings"
 msgstr ""
 
-#: includes/Settings.class.php:1075
+#: includes/Settings.class.php:1211
 msgid ""
 "Select how late customers can make their booking. (Administrators and "
 "Booking Managers are not restricted by this setting.)"
 msgstr ""
 
-#: includes/Settings.class.php:1085
+#: includes/Settings.class.php:1221
 msgid "Block same-day bookings"
 msgstr ""
 
-#: includes/Settings.class.php:1097
+#: includes/Settings.class.php:1233
+msgid "Late Cancellations"
+msgstr ""
+
+#: includes/Settings.class.php:1234
+msgid ""
+"Select how late customers can cancel their booking. (Administrators and "
+"Booking Managers are not restricted by this setting.)"
+msgstr ""
+
+#: includes/Settings.class.php:1255
 msgid "Date Pre-Selection"
 msgstr ""
 
-#: includes/Settings.class.php:1098
+#: includes/Settings.class.php:1256
 msgid ""
 "When the booking form is loaded, should it automatically attempt to select a "
 "valid date?"
 msgstr ""
 
-#: includes/Settings.class.php:1101
+#: includes/Settings.class.php:1259
 msgid "Select today if valid"
 msgstr ""
 
-#: includes/Settings.class.php:1102
+#: includes/Settings.class.php:1260
 msgid "Select today or next valid date"
 msgstr ""
 
-#: includes/Settings.class.php:1103
+#: includes/Settings.class.php:1261
 msgid "Leave empty"
 msgstr ""
 
-#: includes/Settings.class.php:1114
+#: includes/Settings.class.php:1272
 msgid "Time Interval"
 msgstr ""
 
-#: includes/Settings.class.php:1115
+#: includes/Settings.class.php:1273
 msgid "Select the number of minutes between each available time."
 msgstr ""
 
-#: includes/Settings.class.php:1118
+#: includes/Settings.class.php:1276
 msgid "Every 180 minutes"
 msgstr ""
 
-#: includes/Settings.class.php:1119
+#: includes/Settings.class.php:1277
 msgid "Every 120 minutes"
 msgstr ""
 
-#: includes/Settings.class.php:1120
+#: includes/Settings.class.php:1278
 msgid "Every 90 minutes"
 msgstr ""
 
-#: includes/Settings.class.php:1121
+#: includes/Settings.class.php:1279
 msgid "Every 60 minutes"
 msgstr ""
 
-#: includes/Settings.class.php:1137
+#: includes/Settings.class.php:1295
 msgid "Week Starts On"
 msgstr ""
 
-#: includes/Settings.class.php:1138
+#: includes/Settings.class.php:1296
 msgid "Select the first day of the week"
 msgstr ""
 
-#: includes/Settings.class.php:1141
+#: includes/Settings.class.php:1299
 msgid "Sunday"
 msgstr ""
 
-#: includes/Settings.class.php:1142
+#: includes/Settings.class.php:1300
 msgid "Monday"
 msgstr ""
 
-#: includes/Settings.class.php:1151
+#: includes/Settings.class.php:1311
+msgid "Admin Ignore Schedule"
+msgstr ""
+
+#: includes/Settings.class.php:1312
+msgid ""
+"Allows bookings to be made at any time at all via the admin, ignoring all "
+"scheduling rules."
+msgstr ""
+
+#: includes/Settings.class.php:1325
 msgid "Basic"
 msgstr ""
 
-#: includes/Settings.class.php:1162 includes/Settings.class.php:1596
+#: includes/Settings.class.php:1338 includes/Settings.class.php:1784
 msgid "General"
 msgstr ""
 
-#: includes/Settings.class.php:1173
+#: includes/Settings.class.php:1349
 msgid "Booking Page"
 msgstr ""
 
-#: includes/Settings.class.php:1174
+#: includes/Settings.class.php:1350
 msgid ""
 "Select a page on your site to automatically display the booking form and "
 "confirmation message."
 msgstr ""
 
-#: includes/Settings.class.php:1192
+#: includes/Settings.class.php:1368 includes/Settings.class.php:3060
 msgid "Min Party Size"
 msgstr ""
 
-#: includes/Settings.class.php:1193
+#: includes/Settings.class.php:1369 includes/Settings.class.php:3061
 msgid "Set a minimum allowed party size for bookings."
 msgstr ""
 
-#: includes/Settings.class.php:1205
+#: includes/Settings.class.php:1381 includes/Settings.class.php:3075
 msgid "Max Party Size"
 msgstr ""
 
-#: includes/Settings.class.php:1206
+#: includes/Settings.class.php:1382 includes/Settings.class.php:3076
 msgid "Set a maximum allowed party size for bookings."
 msgstr ""
 
-#: includes/Settings.class.php:1218
+#: includes/Settings.class.php:1394
 msgid "Blank Party Option"
 msgstr ""
 
-#: includes/Settings.class.php:1219
+#: includes/Settings.class.php:1395
 msgid ""
 "Include a blank option in the party size dropdown, so that users are forced "
 "to make a selection."
 msgstr ""
 
-#: includes/Settings.class.php:1229
+#: includes/Settings.class.php:1405 includes/Settings.class.php:3090
 msgid "Automatically Confirm Below Party Size"
 msgstr ""
 
-#: includes/Settings.class.php:1230
+#: includes/Settings.class.php:1406 includes/Settings.class.php:3091
 msgid ""
 "Set a maximum party size below which all bookings will be automatically "
 "confirmed."
 msgstr ""
 
-#: includes/Settings.class.php:1243
+#: includes/Settings.class.php:1419
 msgid "Let Guests View and Cancel Bookings"
 msgstr ""
 
-#: includes/Settings.class.php:1244
+#: includes/Settings.class.php:1420
 msgid ""
 "Adds an option to your booking form that lets guests view and/or cancel "
 "their upcoming bookings. If you have deposits enabled, then guests can also "
@@ -2445,11 +2567,21 @@ msgid ""
 "time of the initial booking."
 msgstr ""
 
-#: includes/Settings.class.php:1254
+#: includes/Settings.class.php:1430
+msgid "Disable Cancellation Code Required"
+msgstr ""
+
+#: includes/Settings.class.php:1431
+msgid ""
+"By default, cancelling or modifying a reservation requires a code as well as "
+"the user's email address, to prevent malicious cancellation activity."
+msgstr ""
+
+#: includes/Settings.class.php:1441
 msgid "Show Cancelled Bookings in Admin"
 msgstr ""
 
-#: includes/Settings.class.php:1255
+#: includes/Settings.class.php:1442
 msgid ""
 "By default, cancelled bookings will only show on the admin bookings screen "
 "if you have the above \"Let Guests View and Cancel Bookings\" option "
@@ -2458,73 +2590,73 @@ msgid ""
 "have added a cancel link to your customer emails.)"
 msgstr ""
 
-#: includes/Settings.class.php:1267
+#: includes/Settings.class.php:1454
 msgid "Require Phone"
 msgstr ""
 
-#: includes/Settings.class.php:1268
+#: includes/Settings.class.php:1455
 msgid "Don't accept booking requests without a phone number."
 msgstr ""
 
-#: includes/Settings.class.php:1283
+#: includes/Settings.class.php:1470
 msgid "Pending Confirmation Message"
 msgstr ""
 
-#: includes/Settings.class.php:1284
+#: includes/Settings.class.php:1471
 msgid ""
 "Enter the message to display when a booking request is made and is set to "
 "pending confirmation."
 msgstr ""
 
-#: includes/Settings.class.php:1295
+#: includes/Settings.class.php:1482
 msgid "Confirmed Booking Message"
 msgstr ""
 
-#: includes/Settings.class.php:1296
+#: includes/Settings.class.php:1483
 msgid ""
 "Enter the message to display when a booking is made that has been "
 "automatically confirmed."
 msgstr ""
 
-#: includes/Settings.class.php:1307
+#: includes/Settings.class.php:1494
 msgid "Pending Redirect Page"
 msgstr ""
 
-#: includes/Settings.class.php:1308
+#: includes/Settings.class.php:1495
 msgid ""
 "Input the URL of the page you want the booking form to redirect to after a "
 "reservation is made that is set to pending. This overrides the \"Pending "
 "Confirmation Message\" text/option."
 msgstr ""
 
-#: includes/Settings.class.php:1318
+#: includes/Settings.class.php:1505
 msgid "Confirmed Redirect Page"
 msgstr ""
 
-#: includes/Settings.class.php:1319
+#: includes/Settings.class.php:1506
 msgid ""
 "Input the URL of the page you want the booking form to redirect to after a "
 "reservation is made that is automatically confirmed. This overrides the "
 "\"Confirmed Booking Message\" text/option."
 msgstr ""
 
-#: includes/Settings.class.php:1329
+#: includes/Settings.class.php:1516
 msgid "Cancellation Redirect Page"
 msgstr ""
 
-#: includes/Settings.class.php:1330
+#: includes/Settings.class.php:1517
 msgid ""
 "Input the URL of the page you want the cancellation form to redirect to when "
-"someone cancels their reservation. Only applicable if the \"Allow "
-"Cancellations\" option above is enabled. If left blank, it will display a "
-"success message instead of redirecting."
+"someone cancels their reservation. Only applicable if the \"Let Guests View "
+"and Cancel Bookings\" option above is enabled. If left blank, it will "
+"display a success message instead of redirecting."
 msgstr ""
 
-#: includes/Settings.class.php:1349
+#: includes/Settings.class.php:1536
 msgid "Date Format"
 msgstr ""
 
-#: includes/Settings.class.php:1350
+#: includes/Settings.class.php:1537
 #, php-format
 msgid ""
 "Define how the date is formatted on the booking form. %sFormatting rules%s. "
@@ -2532,11 +2664,11 @@ msgid ""
 "in notification messages, modify your general %sWordPress Settings%s."
 msgstr ""
 
-#: includes/Settings.class.php:1361
+#: includes/Settings.class.php:1548
 msgid "Time Format"
 msgstr ""
 
-#: includes/Settings.class.php:1362
+#: includes/Settings.class.php:1549
 #, php-format
 msgid ""
 "Define how the time is formatted on the booking form. %sFormatting rules%s. "
@@ -2544,56 +2676,56 @@ msgid ""
 "in notification messages, modify your general %sWordPress Settings%s."
 msgstr ""
 
-#: includes/Settings.class.php:1373
+#: includes/Settings.class.php:1560
 msgid "Display Unavailable Time Slots"
 msgstr ""
 
-#: includes/Settings.class.php:1374
+#: includes/Settings.class.php:1561
 msgid ""
 "Display any time slots (greyed out) which are not available for booking on "
 "the front end."
 msgstr ""
 
-#: includes/Settings.class.php:1386
+#: includes/Settings.class.php:1573
 msgid "Language"
 msgstr ""
 
-#: includes/Settings.class.php:1387
+#: includes/Settings.class.php:1574
 msgid ""
 "Select a language to use for the booking form datepicker if it is different "
 "than your WordPress language setting."
 msgstr ""
 
-#: includes/Settings.class.php:1399
+#: includes/Settings.class.php:1586
 msgid "Refresh Bookings Page"
 msgstr ""
 
-#: includes/Settings.class.php:1400
+#: includes/Settings.class.php:1587
 msgid ""
 "After how many minutes should the Bookings page be automatically refreshed? "
 "The minimum is 1 minute and you can disable it by inputting 0 or leaving it "
 "empty."
 msgstr ""
 
-#: includes/Settings.class.php:1408
+#: includes/Settings.class.php:1595
 msgid "Security"
 msgstr ""
 
-#: includes/Settings.class.php:1419
+#: includes/Settings.class.php:1606
 msgid "Banned Email Addresses"
 msgstr ""
 
-#: includes/Settings.class.php:1420
+#: includes/Settings.class.php:1607
 msgid ""
 "You can block bookings from specific email addresses. Enter each email "
 "address on a separate line."
 msgstr ""
 
-#: includes/Settings.class.php:1430
+#: includes/Settings.class.php:1617
 msgid "Banned IP Addresses"
 msgstr ""
 
-#: includes/Settings.class.php:1431
+#: includes/Settings.class.php:1618
 msgid ""
 "You can block bookings from specific IP addresses. Enter each IP address on "
 "a separate line. Be aware that many internet providers rotate their IP "
@@ -2603,15 +2735,15 @@ msgid ""
 "block several people."
 msgstr ""
 
-#: includes/Settings.class.php:1439
+#: includes/Settings.class.php:1626
 msgid "Captcha"
 msgstr ""
 
-#: includes/Settings.class.php:1450
+#: includes/Settings.class.php:1637
 msgid "Enable Google reCAPTCHA v2"
 msgstr ""
 
-#: includes/Settings.class.php:1451
+#: includes/Settings.class.php:1638
 #, php-format
 msgid ""
 "Adds Google's reCAPTCHA code to your form, to verify guests before they can "
@@ -2619,176 +2751,176 @@ msgid ""
 "configure this feature."
 msgstr ""
 
-#: includes/Settings.class.php:1461
+#: includes/Settings.class.php:1648
 msgid "Google Site Key"
 msgstr ""
 
-#: includes/Settings.class.php:1462
+#: includes/Settings.class.php:1649
 msgid "The site key provided to you by Google"
 msgstr ""
 
-#: includes/Settings.class.php:1472
+#: includes/Settings.class.php:1659
 msgid "Google Secret Key"
 msgstr ""
 
-#: includes/Settings.class.php:1473
+#: includes/Settings.class.php:1660
 msgid "The secret key provided to you by Google"
 msgstr ""
 
-#: includes/Settings.class.php:1481
+#: includes/Settings.class.php:1668
 msgid "Privacy"
 msgstr ""
 
-#: includes/Settings.class.php:1492
+#: includes/Settings.class.php:1679
 msgid "Disable IP Capture"
 msgstr ""
 
-#: includes/Settings.class.php:1493
+#: includes/Settings.class.php:1680
 msgid ""
 "This turns off the feature that captures the IP address of the device making "
 "the booking."
 msgstr ""
 
-#: includes/Settings.class.php:1503
+#: includes/Settings.class.php:1690
 msgid "Require Consent"
 msgstr ""
 
-#: includes/Settings.class.php:1504
+#: includes/Settings.class.php:1691
 msgid ""
 "Require customers to consent to the collection of their details when making "
 "a booking. This may be required to comply with privacy laws in your country."
 msgstr ""
 
-#: includes/Settings.class.php:1514
+#: includes/Settings.class.php:1701
 msgid "Consent Statement"
 msgstr ""
 
-#: includes/Settings.class.php:1515
+#: includes/Settings.class.php:1702
 msgid ""
 "Enter the statement you would like customers to confirm when making a "
 "booking."
 msgstr ""
 
-#: includes/Settings.class.php:1525
+#: includes/Settings.class.php:1712
 msgid "Privacy Statement Page"
 msgstr ""
 
-#: includes/Settings.class.php:1526
+#: includes/Settings.class.php:1713
 msgid ""
 "Select a page on your site which contains a privacy statement. If selected, "
 "it will be linked to in your consent statement."
 msgstr ""
 
-#: includes/Settings.class.php:1544
+#: includes/Settings.class.php:1731
 msgid "Delete Reservation Data Days"
 msgstr ""
 
-#: includes/Settings.class.php:1545
+#: includes/Settings.class.php:1732
 msgid ""
 "Sets the approximate number of days booking data should be stored for. Leave "
 "blank to keep booking data indefinitely."
 msgstr ""
 
-#: includes/Settings.class.php:1554 includes/Settings.class.php:2051
+#: includes/Settings.class.php:1741 includes/Settings.class.php:2244
 msgid "Notifications"
 msgstr ""
 
-#: includes/Settings.class.php:1565
+#: includes/Settings.class.php:1753
 msgid "Daily Summary"
 msgstr ""
 
-#: includes/Settings.class.php:1576
+#: includes/Settings.class.php:1764
 msgid "Summary Email Address"
 msgstr ""
 
-#: includes/Settings.class.php:1577
+#: includes/Settings.class.php:1765
 msgid ""
 "The email address, if any, where a daily summary of upcoming reservations "
 "should be emailed."
 msgstr ""
 
-#: includes/Settings.class.php:1587
+#: includes/Settings.class.php:1775
 msgid "Summary Email Send Time"
 msgstr ""
 
-#: includes/Settings.class.php:1588
+#: includes/Settings.class.php:1776
 msgid ""
 "What time should the summary email be sent at? This is based on your "
 "WordPress timezone setting."
 msgstr ""
 
-#: includes/Settings.class.php:1607
+#: includes/Settings.class.php:1795
 msgid "Reply-To Name"
 msgstr ""
 
-#: includes/Settings.class.php:1608
+#: includes/Settings.class.php:1796
 msgid ""
 "The name which should appear in the Reply-To field of a user notification "
 "email"
 msgstr ""
 
-#: includes/Settings.class.php:1619
+#: includes/Settings.class.php:1807
 msgid "Reply-To Email Address"
 msgstr ""
 
-#: includes/Settings.class.php:1620
+#: includes/Settings.class.php:1808
 msgid ""
 "The email address which should appear in the Reply-To field of a user "
 "notification email."
 msgstr ""
 
-#: includes/Settings.class.php:1631
+#: includes/Settings.class.php:1819
 msgid "Admin Notification"
 msgstr ""
 
-#: includes/Settings.class.php:1632
+#: includes/Settings.class.php:1820
 msgid ""
 "Send an email notification to an administrator when a new booking is "
 "requested."
 msgstr ""
 
-#: includes/Settings.class.php:1642
+#: includes/Settings.class.php:1830
 msgid "Admin New Confirmed Notification"
 msgstr ""
 
-#: includes/Settings.class.php:1643
+#: includes/Settings.class.php:1831
 msgid ""
 "Send an email notification to an administrator when a new confirmed booking "
 "is made."
 msgstr ""
 
-#: includes/Settings.class.php:1653
+#: includes/Settings.class.php:1841
 msgid "Admin Cancellation Notification"
 msgstr ""
 
-#: includes/Settings.class.php:1654
+#: includes/Settings.class.php:1842
 msgid ""
 "Send an email notification to an administrator when a booking is cancelled."
 msgstr ""
 
-#: includes/Settings.class.php:1664
+#: includes/Settings.class.php:1852
 msgid "Admin Email Address"
 msgstr ""
 
-#: includes/Settings.class.php:1665
+#: includes/Settings.class.php:1853
 msgid "The email address where admin notifications should be sent."
 msgstr ""
 
-#: includes/Settings.class.php:1674
+#: includes/Settings.class.php:1862
 msgid "Notification Emails"
 msgstr ""
 
-#: includes/Settings.class.php:1676
+#: includes/Settings.class.php:1864
 msgid ""
 "Adjust the messages that are emailed to users and admins during the booking "
 "process."
 msgstr ""
 
-#: includes/Settings.class.php:1686
+#: includes/Settings.class.php:1874
 msgid "Template Tags"
 msgstr ""
 
-#: includes/Settings.class.php:1688
+#: includes/Settings.class.php:1876
 msgid ""
 "Use the following tags to automatically add booking information to the "
 "emails. Tags labeled with an asterisk (*) can be used in the email subject "
@@ -2796,211 +2928,211 @@ msgid ""
 "best results."
 msgstr ""
 
-#: includes/Settings.class.php:1699
+#: includes/Settings.class.php:1887
 msgid "Admin Notification Subject (Pending Booking)"
 msgstr ""
 
-#: includes/Settings.class.php:1700
+#: includes/Settings.class.php:1888
 msgid "The email subject for admin notifications."
 msgstr ""
 
-#: includes/Settings.class.php:1711
+#: includes/Settings.class.php:1899
 msgid "Admin Notification Email (Pending Booking)"
 msgstr ""
 
-#: includes/Settings.class.php:1712
+#: includes/Settings.class.php:1900
 msgid ""
 "Enter the email an admin should receive when an initial booking request is "
 "made."
 msgstr ""
 
-#: includes/Settings.class.php:1723
+#: includes/Settings.class.php:1911
 msgid "Admin Notification Subject (Auto Confirmed Booking)"
 msgstr ""
 
-#: includes/Settings.class.php:1724
+#: includes/Settings.class.php:1912
 msgid ""
 "The email subject for admin notifications for automatically-confirmed "
 "bookings."
 msgstr ""
 
-#: includes/Settings.class.php:1735
+#: includes/Settings.class.php:1923
 msgid "Admin Notification Email (Auto Confirmed Booking)"
 msgstr ""
 
-#: includes/Settings.class.php:1736
+#: includes/Settings.class.php:1924
 msgid ""
 "Enter the email an admin should receive when an automatically-confirmed "
 "booking is made."
 msgstr ""
 
-#: includes/Settings.class.php:1747
+#: includes/Settings.class.php:1935
 msgid "Admin Booking Cancelled Subject"
 msgstr ""
 
-#: includes/Settings.class.php:1748
+#: includes/Settings.class.php:1936
 msgid "The email subject for admin notifications when a booking is cancelled."
 msgstr ""
 
-#: includes/Settings.class.php:1759
+#: includes/Settings.class.php:1947
 msgid "Admin Booking Cancelled Email"
 msgstr ""
 
-#: includes/Settings.class.php:1760
+#: includes/Settings.class.php:1948
 msgid "Enter the email an admin should receive when a booking is cancelled."
 msgstr ""
 
-#: includes/Settings.class.php:1771
+#: includes/Settings.class.php:1959
 msgid "New Request Email Subject"
 msgstr ""
 
-#: includes/Settings.class.php:1772
+#: includes/Settings.class.php:1960
 msgid ""
 "The email subject a user should receive when they make an initial booking "
 "request."
 msgstr ""
 
-#: includes/Settings.class.php:1783 includes/load-customizer.php:276
+#: includes/Settings.class.php:1971 includes/load-customizer.php:276
 msgid "New Request Email"
 msgstr ""
 
-#: includes/Settings.class.php:1784
+#: includes/Settings.class.php:1972
 msgid ""
 "Enter the email a user should receive when they make an initial booking "
 "request."
 msgstr ""
 
-#: includes/Settings.class.php:1795
+#: includes/Settings.class.php:1983
 msgid "Confirmed Email Subject"
 msgstr ""
 
-#: includes/Settings.class.php:1796
+#: includes/Settings.class.php:1984
 msgid ""
 "The email subject a user should receive when their booking has been "
 "confirmed."
 msgstr ""
 
-#: includes/Settings.class.php:1807 includes/load-customizer.php:316
+#: includes/Settings.class.php:1995 includes/load-customizer.php:316
 msgid "Confirmed Email"
 msgstr ""
 
-#: includes/Settings.class.php:1808
+#: includes/Settings.class.php:1996
 msgid ""
 "Enter the email a user should receive when their booking has been confirmed."
 msgstr ""
 
-#: includes/Settings.class.php:1819
+#: includes/Settings.class.php:2007
 msgid "Rejected Email Subject"
 msgstr ""
 
-#: includes/Settings.class.php:1820
+#: includes/Settings.class.php:2008
 msgid ""
 "The email subject a user should receive when their booking has been rejected."
 msgstr ""
 
-#: includes/Settings.class.php:1831 includes/load-customizer.php:356
+#: includes/Settings.class.php:2019 includes/load-customizer.php:356
 msgid "Rejected Email"
 msgstr ""
 
-#: includes/Settings.class.php:1832
+#: includes/Settings.class.php:2020
 msgid ""
 "Enter the email a user should receive when their booking has been rejected."
 msgstr ""
 
-#: includes/Settings.class.php:1843
+#: includes/Settings.class.php:2031
 msgid "Booking Cancelled Email Subject"
 msgstr ""
 
-#: includes/Settings.class.php:1844
+#: includes/Settings.class.php:2032
 msgid ""
 "The email subject a user should receive when they have cancelled their "
 "booking."
 msgstr ""
 
-#: includes/Settings.class.php:1855
+#: includes/Settings.class.php:2043
 msgid "Booking Cancelled Email"
 msgstr ""
 
-#: includes/Settings.class.php:1856
+#: includes/Settings.class.php:2044
 msgid "Enter the email a user should receive when they cancel their booking."
 msgstr ""
 
-#: includes/Settings.class.php:1867
+#: includes/Settings.class.php:2055
 msgid "Admin Update Subject"
 msgstr ""
 
-#: includes/Settings.class.php:1868
+#: includes/Settings.class.php:2056
 #, php-format
 msgid ""
 "The email subject a user should receive when an admin sends them a custom "
 "email message from the %sbookings panel%s."
 msgstr ""
 
-#: includes/Settings.class.php:1882 includes/Settings.class.php:2033
+#: includes/Settings.class.php:2069 includes/Settings.class.php:2226
 msgid "Advanced"
 msgstr ""
 
-#: includes/Settings.class.php:1903 includes/Settings.class.php:2068
+#: includes/Settings.class.php:2092 includes/Settings.class.php:2261
 msgid "Payments"
 msgstr ""
 
-#: includes/Settings.class.php:1924 includes/Settings.class.php:2084
+#: includes/Settings.class.php:2114 includes/Settings.class.php:2277
 msgid "Export"
 msgstr ""
 
-#: includes/Settings.class.php:1945 includes/Settings.class.php:2099
+#: includes/Settings.class.php:2136 includes/Settings.class.php:2292
 msgid "Labelling"
 msgstr ""
 
-#: includes/Settings.class.php:1966 includes/Settings.class.php:2115
+#: includes/Settings.class.php:2158 includes/Settings.class.php:2308
 msgid "Styling"
 msgstr ""
 
-#: includes/Settings.class.php:2011
+#: includes/Settings.class.php:2204
 msgid "The premium version also gives you access to the following features:"
 msgstr ""
 
-#: includes/Settings.class.php:2013
+#: includes/Settings.class.php:2206
 msgid "Multiple Form Layouts"
 msgstr ""
 
-#: includes/Settings.class.php:2014
+#: includes/Settings.class.php:2207
 msgid "Custom Booking Fields"
 msgstr ""
 
-#: includes/Settings.class.php:2015
+#: includes/Settings.class.php:2208
 msgid "Advanced Email Designer"
 msgstr ""
 
-#: includes/Settings.class.php:2016
+#: includes/Settings.class.php:2209
 msgid "Set Table and Seat Restrictions"
 msgstr ""
 
-#: includes/Settings.class.php:2017
+#: includes/Settings.class.php:2210
 msgid "Automatic Booking Confirmation"
 msgstr ""
 
-#: includes/Settings.class.php:2018
+#: includes/Settings.class.php:2211
 msgid "Bookings Page for Staff"
 msgstr ""
 
-#: includes/Settings.class.php:2019
+#: includes/Settings.class.php:2212
 msgid "Export Bookings"
 msgstr ""
 
-#: includes/Settings.class.php:2020
+#: includes/Settings.class.php:2213
 msgid "Email Support"
 msgstr ""
 
-#: includes/Settings.class.php:2023
+#: includes/Settings.class.php:2216
 msgid "UPGRADE NOW"
 msgstr ""
 
-#: includes/Settings.class.php:2033 includes/Settings.class.php:2051
+#: includes/Settings.class.php:2226 includes/Settings.class.php:2244
 msgid "Premium/Ultimate"
 msgstr ""
 
-#: includes/Settings.class.php:2034
+#: includes/Settings.class.php:2227
 msgid ""
 "The advanced options let you set a maximum number of reservations or people, "
 "enable automatic confirmation of bookings, configure a view bookings page "
@@ -3011,7 +3143,7 @@ msgid ""
 "when they book and/or manage the tables in the admin."
 msgstr ""
 
-#: includes/Settings.class.php:2052
+#: includes/Settings.class.php:2245
 msgid ""
 "The email template designer uses the WordPress customizer to let you modify "
 "the look and structure of the notification emails. The reminders section "
@@ -3021,273 +3153,436 @@ msgid ""
 "booking time has passed."
 msgstr ""
 
-#: includes/Settings.class.php:2069
+#: includes/Settings.class.php:2262
 msgid ""
 "The payment options let you require a deposit for bookings, either via "
 "PayPal or Stripe. Deposits can be made conditional on a minimum party size "
 "or only for certain days/times."
 msgstr ""
 
-#: includes/Settings.class.php:2085
+#: includes/Settings.class.php:2278
 msgid ""
 "You can export all your bookings to a PDF file, for use by your staff to "
 "manage upcoming bookings, for accounting purposes etc."
 msgstr ""
 
-#: includes/Settings.class.php:2100
+#: includes/Settings.class.php:2293
 msgid ""
 "The labelling options let you change the wording of the different labels "
 "that appear on the front end of the plugin. You can use this to translate "
 "them, customize the wording for your purpose, etc."
 msgstr ""
 
-#: includes/Settings.class.php:2116
+#: includes/Settings.class.php:2309
 msgid ""
 "The styling options let you choose a booking form layout and modify the "
 "colors, font family, font size and borders of the various elements found in "
 "the booking form."
 msgstr ""
 
-#: includes/Settings.class.php:2143
+#: includes/Settings.class.php:2336
 msgid "Any size"
 msgstr ""
 
-#: includes/Settings.class.php:2469
+#: includes/Settings.class.php:2692
 msgid "Email of the user who made the booking"
 msgstr ""
 
-#: includes/Settings.class.php:2470
+#: includes/Settings.class.php:2693
 msgid "* Name of the user who made the booking"
 msgstr ""
 
-#: includes/Settings.class.php:2471
+#: includes/Settings.class.php:2694
 msgid "* Number of people booked"
 msgstr ""
 
-#: includes/Settings.class.php:2472
+#: includes/Settings.class.php:2695
 msgid "* Date and time of the booking"
 msgstr ""
 
-#: includes/Settings.class.php:2473
+#: includes/Settings.class.php:2696
 msgid "Phone number if supplied with the request"
 msgstr ""
 
-#: includes/Settings.class.php:2474
+#: includes/Settings.class.php:2697
 msgid "Message added to the request"
 msgstr ""
 
-#: includes/Settings.class.php:2475
+#: includes/Settings.class.php:2698
+msgid ""
+"The code needed to cancel or modify a booking, if that setting is not "
+"disabled."
+msgstr ""
+
+#: includes/Settings.class.php:2699
 msgid "The ID of the booking"
 msgstr ""
 
-#: includes/Settings.class.php:2476
+#: includes/Settings.class.php:2700
 msgid "A link to the bookings page on the front-end of the site."
 msgstr ""
 
-#: includes/Settings.class.php:2477
+#: includes/Settings.class.php:2701
 msgid "The URL of the bookings page on the front-end of the site."
 msgstr ""
 
-#: includes/Settings.class.php:2478
+#: includes/Settings.class.php:2702
 msgid ""
 "A link that a guest can use to cancel their booking if cancellations are "
 "enabled"
 msgstr ""
 
-#: includes/Settings.class.php:2479
+#: includes/Settings.class.php:2703
 msgid "The URL of the cancellations link, if cancellations are enabled"
 msgstr ""
 
-#: includes/Settings.class.php:2480
+#: includes/Settings.class.php:2704
 msgid "A link to the admin panel showing pending bookings"
 msgstr ""
 
-#: includes/Settings.class.php:2481
+#: includes/Settings.class.php:2705
 msgid "The URL of the admin panel showing pending bookings"
 msgstr ""
 
-#: includes/Settings.class.php:2482
+#: includes/Settings.class.php:2706
 msgid ""
 "A link to confirm this booking. Only include this in admin notifications"
 msgstr ""
 
-#: includes/Settings.class.php:2483
+#: includes/Settings.class.php:2707
 msgid ""
 "The URL to confirm this booking. Only include this in admin notifications"
 msgstr ""
 
-#: includes/Settings.class.php:2484
+#: includes/Settings.class.php:2708
 msgid "A link to reject this booking. Only include this in admin notifications"
 msgstr ""
 
-#: includes/Settings.class.php:2485
+#: includes/Settings.class.php:2709
 msgid ""
 "The URL to reject this booking. Only include this in admin notifications"
 msgstr ""
 
-#: includes/Settings.class.php:2486
+#: includes/Settings.class.php:2710
 msgid "* The name of this website"
 msgstr ""
 
-#: includes/Settings.class.php:2487
+#: includes/Settings.class.php:2711
 msgid "A link to the homepage of this website"
 msgstr ""
 
-#: includes/Settings.class.php:2488
+#: includes/Settings.class.php:2712
 msgid "The URL of the homepage of this website"
 msgstr ""
 
-#: includes/Settings.class.php:2489
+#: includes/Settings.class.php:2713
 msgid "Current date and time"
 msgstr ""
 
-#: includes/Settings.class.php:2490
+#: includes/Settings.class.php:2714
 msgid "The table(s) for the booking"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:331
+#: includes/Settings.class.php:3104
+msgid "Dining Block Length"
+msgstr ""
+
+#: includes/Settings.class.php:3105
+msgid ""
+"How long, in minutes, does a meal generally last? This setting affects a how "
+"long a slot and/or seat unavailable for after someone makes a reservation."
+msgstr ""
+
+#: includes/Settings.class.php:3118
+msgid "Max Reservations"
+msgstr ""
+
+#: includes/Settings.class.php:3119
+msgid ""
+"How many reservations, if enabled, should be allowed at the same time at "
+"this location? Set dining block length to change how long a meal typically "
+"lasts."
+msgstr ""
+
+#: includes/Settings.class.php:3132
+msgid "Max People"
+msgstr ""
+
+#: includes/Settings.class.php:3133
+msgid ""
+"How many people, if enabled, should be allowed to be present at this "
+"restaurant location at the same time? Set dining block length to change how "
+"long a meal typically lasts. May not work correctly if max reservations is "
+"set."
+msgstr ""
+
+#: includes/Settings.class.php:3146
+msgid "Automatically Confirm Below Reservation Number"
+msgstr ""
+
+#: includes/Settings.class.php:3147
+msgid ""
+"Set a maximum number of reservations at one time below which all bookings "
+"will be automatically confirmed."
+msgstr ""
+
+#: includes/Settings.class.php:3160
+msgid "Automatically Confirm Below Seats Number"
+msgstr ""
+
+#: includes/Settings.class.php:3161
+msgid ""
+"Set a maximum number of seats at one time below which all bookings will be "
+"automatically confirmed."
+msgstr ""
+
+#: includes/Settings.class.php:3174
+msgid "Sections"
+msgstr ""
+
+#: includes/Settings.class.php:3175
+msgid "Add Section"
+msgstr ""
+
+#: includes/Settings.class.php:3176 includes/Settings.class.php:3213
+#: includes/WP_List_Table.BookingsTable.class.php:864
+msgid "Delete"
+msgstr ""
+
+#: includes/Settings.class.php:3177
+msgid ""
+"Use this area to sections for your tables. These can help your guests to "
+"book a table in their preferred area."
+msgstr ""
+
+#: includes/Settings.class.php:3183 includes/Settings.class.php:3221
+msgid "Disabled"
+msgstr ""
+
+#: includes/Settings.class.php:3188
+msgid "Section ID"
+msgstr ""
+
+#: includes/Settings.class.php:3193
+msgid "Section Name"
+msgstr ""
+
+#: includes/Settings.class.php:3198
+msgid "Description"
+msgstr ""
+
+#: includes/Settings.class.php:3211
+msgid "Tables"
+msgstr ""
+
+#: includes/Settings.class.php:3212
+msgid "Add Table"
+msgstr ""
+
+#: includes/Settings.class.php:3214
+msgid ""
+"Use this area to create tables that can each be customized. This information "
+"will be used to let customers select a table that meets their requirements "
+"(party size, date/time available)."
+msgstr ""
+
+#: includes/Settings.class.php:3226
+msgid "Table Number"
+msgstr ""
+
+#: includes/Settings.class.php:3231
+msgid "Min. People"
+msgstr ""
+
+#: includes/Settings.class.php:3236
+msgid "Max. People"
+msgstr ""
+
+#: includes/Settings.class.php:3241
+msgid "Section"
+msgstr ""
+
+#: includes/Settings.class.php:3247
+msgid "Combines With"
+msgstr ""
+
+#: includes/WP_List_Table.BookingsTable.class.php:371
 msgid "Upcoming"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:353
+#: includes/WP_List_Table.BookingsTable.class.php:393
 msgid "Past"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:364
-#: includes/WP_List_Table.BookingsTable.class.php:441
-msgid "All"
-msgstr ""
-
-#: includes/WP_List_Table.BookingsTable.class.php:406
+#: includes/WP_List_Table.BookingsTable.class.php:480
 msgid "Start Date:"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:407
+#: includes/WP_List_Table.BookingsTable.class.php:481
 msgid "Start Date"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:408
+#: includes/WP_List_Table.BookingsTable.class.php:482
 msgid "Start Time"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:411
+#: includes/WP_List_Table.BookingsTable.class.php:485
 msgid "End Date:"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:412
+#: includes/WP_List_Table.BookingsTable.class.php:486
 msgid "End Date"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:413
+#: includes/WP_List_Table.BookingsTable.class.php:487
 msgid "End Time"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:416
+#: includes/WP_List_Table.BookingsTable.class.php:490
 msgid "Apply"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:419
+#: includes/WP_List_Table.BookingsTable.class.php:493
 msgid "Clear Filter"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:449
-#: includes/WP_List_Table.BookingsTable.class.php:618
-#: includes/WP_List_Table.BookingsTable.class.php:662
+#: includes/WP_List_Table.BookingsTable.class.php:517
+#, php-format
+msgid "All <span class=\"count\">(%s)</span>"
+msgid_plural "All <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/WP_List_Table.BookingsTable.class.php:523
+#: includes/WP_List_Table.BookingsTable.class.php:697
+#: includes/WP_List_Table.BookingsTable.class.php:741
 msgid "Trash"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:558
+#: includes/WP_List_Table.BookingsTable.class.php:525
+#, php-format
+msgid "Trash <span class=\"count\">(%s)</span>"
+msgid_plural "Trash <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/WP_List_Table.BookingsTable.class.php:637
 msgid "ID"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:585
+#: includes/WP_List_Table.BookingsTable.class.php:664
 msgid "Submitted By"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:613
+#: includes/WP_List_Table.BookingsTable.class.php:692
 msgid "Loading"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:617
+#: includes/WP_List_Table.BookingsTable.class.php:696
 msgid "Edit"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:681
+#: includes/WP_List_Table.BookingsTable.class.php:760
 msgid "Payment Failure Reason"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:682
+#: includes/WP_List_Table.BookingsTable.class.php:761
 msgid "Unknown payment failure reason. Check with payment processor."
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:688
+#: includes/WP_List_Table.BookingsTable.class.php:767
 msgid "Reservation confirmed by:"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:707
+#: includes/WP_List_Table.BookingsTable.class.php:786
 msgid "Unknown IP"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:708
+#: includes/WP_List_Table.BookingsTable.class.php:787
 msgid "Unknown Date"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:719
+#: includes/WP_List_Table.BookingsTable.class.php:798
 msgid "Ban"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:722
+#: includes/WP_List_Table.BookingsTable.class.php:801
 msgid "Delete Customer"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:786
+#: includes/WP_List_Table.BookingsTable.class.php:865
 msgid "Set To Confirmed"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:787
+#: includes/WP_List_Table.BookingsTable.class.php:866
 msgid "Set To Pending Review"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:788
+#: includes/WP_List_Table.BookingsTable.class.php:867
 msgid "Set To Closed"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:1049
+#: includes/WP_List_Table.BookingsTable.class.php:991
+#, php-format
+msgid "%d booking deleted successfully."
+msgstr ""
+
+#: includes/WP_List_Table.BookingsTable.class.php:994
+#, php-format
+msgid "%d booking confirmed."
+msgstr ""
+
+#: includes/WP_List_Table.BookingsTable.class.php:997
+#, php-format
+msgid "%d booking set to pending."
+msgstr ""
+
+#: includes/WP_List_Table.BookingsTable.class.php:1000
+#, php-format
+msgid "%d booking closed."
+msgstr ""
+
+#: includes/WP_List_Table.BookingsTable.class.php:1012
+#, php-format
+msgid "%d booking had errors and could not be processed."
+msgstr ""
+
+#: includes/WP_List_Table.BookingsTable.class.php:1133
 msgid "You're viewing bookings that have been moved to the trash."
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:1051
+#: includes/WP_List_Table.BookingsTable.class.php:1135
 #, php-format
 msgid "You're viewing bookings that have been marked as %s."
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:1056
+#: includes/WP_List_Table.BookingsTable.class.php:1140
 #, php-format
 msgid "Only bookings from %s are being shown."
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:1058
+#: includes/WP_List_Table.BookingsTable.class.php:1142
 msgid "Only today's bookings are being shown."
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:1060
+#: includes/WP_List_Table.BookingsTable.class.php:1144
 msgid "Only upcoming bookings are being shown."
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:1067
+#: includes/WP_List_Table.BookingsTable.class.php:1151
 #, php-format
-msgid "There are %d bookings with a total of %d guests in this date range."
+msgid "There are %d bookings with a total of %s guests in this date range."
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:1228
+#: includes/WP_List_Table.BookingsTable.class.php:1354
 msgid "Party Size Auto-Confirm"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:1232
+#: includes/WP_List_Table.BookingsTable.class.php:1358
 msgid "Max Reservations Auto-Confirm"
 msgstr ""
 
-#: includes/WP_List_Table.BookingsTable.class.php:1236
+#: includes/WP_List_Table.BookingsTable.class.php:1362
 msgid "Max Seats Auto-Confirm"
 msgstr ""
 
@@ -3555,11 +3850,11 @@ msgid ""
 "\"%s\" Please contact the site administrator for assistance."
 msgstr ""
 
-#: includes/template-functions.php:171
+#: includes/template-functions.php:182
 msgid "Your reservation has been successfully cancelled."
 msgstr ""
 
-#: lib/simple-admin-pages/classes/AdminPage.class.php:173
+#: lib/simple-admin-pages/classes/AdminPage.class.php:189
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
@@ -3571,46 +3866,61 @@ msgstr ""
 msgid "Upload Image"
 msgstr ""
 
-#: lib/simple-admin-pages/classes/AdminPageSetting.Ordering.class.php:85
+#: lib/simple-admin-pages/classes/AdminPageSetting.Ordering.class.php:87
 msgid "Restore Default Order"
 msgstr ""
 
-#: restaurant-reservations.php:287
+#: restaurant-reservations.php:317
 msgid "Booking Manager"
 msgstr ""
 
-#: restaurant-reservations.php:419
-msgid "MENU"
+#: restaurant-reservations.php:491
+msgid "Menu"
 msgstr ""
 
-#: restaurant-reservations.php:427
+#: restaurant-reservations.php:497
 msgid "Dashboard"
 msgstr ""
 
-#: restaurant-reservations.php:601
+#: restaurant-reservations.php:675
 msgid "Try Premium"
 msgstr ""
 
-#: restaurant-reservations.php:604
+#: restaurant-reservations.php:678
 msgid "View the help documentation for Restaurant Reservations"
 msgstr ""
 
-#: restaurant-reservations.php:604
+#: restaurant-reservations.php:678
 msgid "Help"
 msgstr ""
 
-#: restaurant-reservations.php:694
+#: restaurant-reservations.php:819
 msgid ""
 "You're using the Five-Star Restaurant Reservations premium version, but the "
 "premium helper plugin is not active."
 msgstr ""
 
-#: restaurant-reservations.php:696
+#: restaurant-reservations.php:821
 #, php-format
 msgid ""
 "Please re-activate the helper plugin, or <a target='_blank' "
 "href='%s'>download and install it</a> if the plugin is no longer installed "
 "to ensure continued access to the premium features of the plugin."
+msgstr ""
+
+#: restaurant-reservations.php:868
+msgid ""
+"Want to improve your search rankings? Try our new <strong>AI Image Alt Text</"
+"strong> plugin!"
+msgstr ""
+
+#: restaurant-reservations.php:869
+#, php-format
+msgid ""
+"As a thank you to our customers, for a limited time you can get a "
+"<strong>free pro license</strong>! Try the <a target='_blank' href='%s'>free "
+"version</a> today or use code <code>early_adopter_pro</code> to <a "
+"target='_blank' href='%s'>get your pro version license</a>!"
 msgstr ""
 
 #: templates/mpdf.php:135 templates/tcpdf.php:41

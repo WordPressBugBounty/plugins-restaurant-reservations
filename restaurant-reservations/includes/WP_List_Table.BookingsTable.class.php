@@ -200,7 +200,7 @@ class rtbBookingsTable extends WP_List_Table {
 		foreach ( $rtb_controller->cpts->booking_statuses as $status => $data ) {
 			$this->booking_statuses[ $status ] = array(
 				'label' => $data['label'],
-				'count' => $data['label_count']['singular']
+				'count' => $data['label_count']
 			);
 		}
 	}
@@ -517,7 +517,7 @@ class rtbBookingsTable extends WP_List_Table {
 				'All <span class="count">(%s)</span>', 
 				'All <span class="count">(%s)</span>', 
 				'restaurant-reservations' 
-			)[ 'singular' ]
+			)
 		);
 		$this->booking_statuses[ 'trash' ] = array( 
 			'label' => __( 'Trash', 'restaurant-reservations' ),
@@ -525,7 +525,7 @@ class rtbBookingsTable extends WP_List_Table {
 				'Trash <span class="count">(%s)</span>', 
 				'Trash <span class="count">(%s)</span>', 
 				'restaurant-reservations' 
-			)[ 'singular' ]
+			)
 		);
 
 		ksort( $this->booking_statuses );
@@ -548,12 +548,17 @@ class rtbBookingsTable extends WP_List_Table {
 			      ) 
 			    );
 
+			$count = (int) $this->booking_counts[ $status ];
+
 			$views[ $status ] = sprintf(
-		    '<a href="%s"%s>%s</a>', 
-		    $url, 
-		    $current === $status ? ' class="current"' : '', 
-		    sprintf( $data['count'], $this->booking_counts[ $status ] )
-		  );
+				'<a href="%s"%s>%s</a>',
+				$url,
+				$current === $status ? ' class="current"' : '',
+				sprintf(
+					translate_nooped_plural( $data['count'], $count, 'restaurant-reservations' ),
+					number_format_i18n( $count )
+				)
+			);
 		}
 
 		return apply_filters( 'rtb_bookings_table_views_status', $views );

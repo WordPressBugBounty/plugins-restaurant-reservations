@@ -117,8 +117,8 @@ class rtbCustomPostTypes {
 		$this->booking_statuses['pending'] = array(
 			'label'						=> _x( 'Pending', 'Booking status when it is pending review', 'restaurant-reservations' ),
 			'default'					=> true, // Whether or not this status is part of WP Core
-			'user_selectable'	=> true, // Whether or not a user can set a booking to this status
-			'label_count' 		=> _n_noop( 'Pending <span class="count">(%s)</span>', 'Pending <span class="count">(%s)</span>'),
+			'user_selectable'			=> true, // Whether or not a user can set a booking to this status
+			'label_count' 				=> _n_noop( 'Pending <span class="count">(%s)</span>', 'Pending <span class="count">(%s)</span>', 'restaurant-reservations' ),
 		);
 
 		$this->booking_statuses['confirmed'] = array (
