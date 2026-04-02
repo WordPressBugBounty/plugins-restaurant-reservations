@@ -3,9 +3,6 @@
 .rtb-clear {
 	clear: both;
 }
-.rtb-hidden {
-	display: none;
-}
 .rtb-booking-form {
 	position: relative;
 	/*float: left;*/
@@ -112,23 +109,73 @@
 
 /* VIEW BOOKINGS TABLE AND ARRIVAL LIGHTBOX */
 
-.rtb-view-bookings-table {
-	margin-top: 24px;
-	border-collapse: collapse;
+.rtb-view-bookings-form-date-selector {
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 6px 16px;
+	background: transparent;
 }
-.rtb-view-bookings-table,
-.rtb-view-bookings-table tr,
+
+.rtb-view-bookings-no-bookings-today {
+	display: flex;
+	margin-top: 24px;
+}
+.rtb-view-bookings-table {
+	width: 100%;
+	margin-top: 24px;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 14px;
+}
 .rtb-view-bookings-table th,
 .rtb-view-bookings-table td {
-	border: 1px solid #ccc;
+	padding: 6px 16px;
+}
+.rtb-view-bookings-table-column-arrived,
+.rtb-view-bookings-table-column-time,
+.rtb-view-bookings-table-column-party,
+.rtb-view-bookings-table-column-table {
+	width: 1%;
+	white-space: nowrap;
 }
 .rtb-view-bookings-table th {
 	font-weight: bold;
 	text-align: center;
+	border: 1px solid #ddd;
+	border-left: none;
+}
+.rtb-view-bookings-table th:first-child {
+	border-left: 1px solid #ddd;
+	border-top-left-radius: 8px;
+}
+.rtb-view-bookings-table th:last-child {
+	border-top-right-radius: 8px;
+}
+.rtb-view-bookings-table td {
+	text-align: center;
+	border: 1px solid #ddd;
+	border-left: none;
+	border-top: none;
+}
+.rtb-view-bookings-table td:first-child {
+	border-left: 1px solid #ddd;
+}
+.rtb-view-bookings-table tbody tr:last-child td:first-child {
+	border-bottom-left-radius: 8px;
+}
+.rtb-view-bookings-table tbody tr:last-child td:last-child {
+	border-bottom-right-radius: 8px;
 }
 
+.rtb-view-bookings-table td.rtb-view-bookings-table-column-details {
+	text-align: left;
+}
 .rtb-view-booking-details-label {
 	font-weight: 600;
+}
+.rtb-view-bookings-table .rtb-view-booking-details {
+	list-style-type: none;
+	padding-left: 0;
 }
 
 @media screen and (max-width: 900px) {
@@ -147,7 +194,6 @@
 .rtb-edit-view-booking {
 	width: 20px;
 	height: 20px;
-	margin-left: calc(50% - 10px);
 }
 .rtb-edit-view-booking[disabled] {
 	opacity: .75;
@@ -172,7 +218,7 @@
     background: #fff;
 	font-size: 18px;
 	text-align: center;
-	border-radius: 2px;
+	border-radius: 8px;
 	box-shadow: 0 0 4px #555;
 }
 .rtb-view-bookings-form-confirmation-div-inside {
@@ -196,7 +242,7 @@
 	padding: 8px 0;
 	background: #222;
 	color: #fff;
-	border-radius: 2px;
+	border-radius: 8px;
 	cursor: pointer;
 	transition: background .35s;
 }
@@ -212,8 +258,8 @@
 	padding: 6px 0;
 	background: transparent;
 	color: #222;
-	border: 2px solid #222;
-	border-radius: 2px;
+	border: 1px solid #222;
+	border-radius: 8px;
 	cursor: pointer;
 	transition: background .35s, border-color .35s;
 }
@@ -228,19 +274,22 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	top: 0;
-	right: 0;
-	width: 32px;
-	height: 32px;
-	background: #555;
-	color: #fff;
-	border-bottom-left-radius: 2px;
-	font-size: 15px;
+	top: 16px;
+	right: 16px;
+	width: 24px;
+	height: 24px;
+	color: #222;
+	border: 1px solid #222;
+	border-radius: 1000px;
+	font-size: 14px;
+	text-transform: uppercase;
 	cursor: pointer;
-	transition: background .35s;
+	opacity: .5;
+	transition: opacity .35s;
+	z-index: 4;
 }
 #rtb-view-bookings-form-close:hover {
-	background: #222;
+	opacity: 1;
 }
 
 @media screen and (max-width: 568px) {
@@ -447,4 +496,8 @@ label[for="rtb_modification_email"] {
 	.rtb-tables-graphic-container {
 		width: 100% !important;
 	}
+}
+
+.rtb-hidden {
+	display: none;
 }

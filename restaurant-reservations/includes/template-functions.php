@@ -388,6 +388,8 @@ function rtb_print_view_bookings_form( $args = array() ) {
 
 	$custom_fields = rtb_get_custom_fields();
 
+	$bookings = $query->get_bookings();
+
 	ob_start();
 
 	?>
@@ -412,105 +414,112 @@ function rtb_print_view_bookings_form( $args = array() ) {
 		<?php do_action( 'rtb_view_bookings_form_filters', $args ); ?>
 	</div>
 
-	<div class='rtb-view-bookings-form-confirmation-div rtb-hidden'>
-		<div class='rtb-view-bookings-form-confirmation-div-inside'>
-			<div id="rtb-view-bookings-form-close"><span>x</span></div>
-			<div class='rtb-view-bookings-form-confirmation-div-title'>
-				<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-set-status-arrived' ) ); ?>
-			</div>
-			<div class='rtb-view-bookings-form-confirmation-accept'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-arrived-yes' ) ); ?></div>
-			<div class='rtb-view-bookings-form-confirmation-decline'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-arrived-no' ) ); ?></div>
+	<?php if ( empty( $bookings ) ) { ?> 
+		<div class='rtb-view-bookings-no-bookings-today'>
+			<?php _e( 'There are no bookings today. Please select a different date from the dropdown above.', 'restaurant-reservations' ); ?>
 		</div>
-	</div>
-	<div class='rtb-view-bookings-form-confirmation-background-div rtb-hidden'></div>
+	<?php } else { ?>
 
- 	<table class='rtb-view-bookings-table'>
-		<thead>
-			<tr>
-				<?php if ( $rtb_controller->settings->get_setting( 'view-bookings-arrivals' ) ) {?> <th><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-arrived' ) ); ?></th><?php } ?>
-				<?php if ( in_array( 'time', $view_bookings_columns ) ) {?><th><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-time' ) ); ?></th><?php } ?>
-				<?php if ( in_array( 'party', $view_bookings_columns ) ) {?><th><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-party' ) ); ?></th><?php } ?>
-				<?php if ( in_array( 'name', $view_bookings_columns ) ) {?><th><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-name' ) ); ?></th><?php } ?>
-				<?php if ( in_array( 'email', $view_bookings_columns ) ) {?><th><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-email' ) ); ?></th><?php } ?>
-				<?php if ( in_array( 'phone', $view_bookings_columns ) ) {?><th><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-phone' ) ); ?></th><?php } ?>
-				<?php if ( in_array( 'table', $view_bookings_columns ) and $display_table ) {?> <th><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-table' ) ); ?></th><?php } ?>
-				<?php if ( in_array( 'status', $view_bookings_columns ) ) {?><th><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-status' ) ); ?></th><?php } ?>
-				<?php if ( in_array( 'details', $view_bookings_columns ) ) {?><th><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-details' ) ); ?></th><?php } ?>
-
-				<?php foreach ( $custom_fields as $custom_field ) { ?>
-
-					<?php if ( in_array( $custom_field->slug, $view_bookings_columns ) ) { ?><th><?php echo esc_html( $custom_field->title ); ?></th><?php } ?>
-
-				<?php } ?>
-			</tr>
-		</thead>
-		<tbody>
-			<?php foreach ( $query->get_bookings() as $booking_object ) {
-
-				$details = array();
-
-				if ( trim( $booking_object->message ) ) {
-
-					$details[] = array(
-						'label' => __( 'Message', 'restaurant-reservations' ),
-						'value' => esc_html( $booking_object->message ),
-					);
-				}
-
-				$details = apply_filters( 'rtb_bookings_table_column_details', $details, $booking_object );
-
-				?>
-
+		<div class='rtb-view-bookings-form-confirmation-div rtb-hidden'>
+			<div class='rtb-view-bookings-form-confirmation-div-inside'>
+				<div id="rtb-view-bookings-form-close"><span>x</span></div>
+				<div class='rtb-view-bookings-form-confirmation-div-title'>
+					<?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-set-status-arrived' ) ); ?>
+				</div>
+				<div class='rtb-view-bookings-form-confirmation-accept'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-arrived-yes' ) ); ?></div>
+				<div class='rtb-view-bookings-form-confirmation-decline'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-arrived-no' ) ); ?></div>
+			</div>
+		</div>
+		<div class='rtb-view-bookings-form-confirmation-background-div rtb-hidden'></div>
+	
+	 	<table class='rtb-view-bookings-table'>
+			<thead>
 				<tr>
-					<?php if ( $rtb_controller->settings->get_setting( 'view-bookings-arrivals' ) ) {?>
-						<?php if ( $booking_object->post_status != 'arrived' ) : ?><td><input type='checkbox' class='rtb-edit-view-booking' data-bookingid='<?php echo $booking_object->ID; ?>' /></td>
-						<?php else : ?><td><input type='checkbox' class='rtb-edit-view-booking' checked disabled /></td>
-						<?php endif; ?>
-					<?php } ?>
-					<?php if ( in_array( 'time', $view_bookings_columns ) ) {?><td><?php echo ( new DateTime( $booking_object->date, wp_timezone() ) )->format( get_option( 'time_format' ) ); ?></td><?php } ?>
-					<?php if ( in_array( 'party', $view_bookings_columns ) ) {?><td><?php echo esc_html( $booking_object->party ); ?></td><?php } ?>
-					<?php if ( in_array( 'name', $view_bookings_columns ) ) {?><td><?php echo esc_html( $booking_object->name ); ?></td><?php } ?>
-					<?php if ( in_array( 'email', $view_bookings_columns ) ) {?><td><?php echo esc_html( $booking_object->email ); ?></td><?php } ?>
-					<?php if ( in_array( 'phone', $view_bookings_columns ) ) {?><td><?php echo esc_html( $booking_object->phone ); ?></td><?php } ?>
-					<?php if ( in_array( 'table', $view_bookings_columns ) and $display_table ) { ?><td><?php echo esc_html( implode(', ', $booking_object->table ) ); ?></td><?php } ?>
-					<?php if ( in_array( 'status', $view_bookings_columns ) ) {?><td><?php echo esc_html( $rtb_controller->cpts->booking_statuses[$booking_object->post_status]['label'] ); ?></td><?php } ?>
-					<?php if ( in_array( 'details', $view_bookings_columns ) ) { ?>
-
-						<td>
-							<ul class='rtb-view-booking-details'>
-
-								<?php foreach ( $details as $detail ) { ?>
-
-									<li>
-										<label class='rtb-view-booking-details-label'>
-											<?php echo esc_html( $detail['label'] ); ?>
-										</label>
-										<span class='rtb-view-booking-details-value'>
-											<?php echo esc_html( $detail['value'] ); ?>
-										</span>
-									</li>
-								<?php } ?>
-
-							</ul>
-						</td>
-
-					<?php } ?>
-
+					<?php if ( $rtb_controller->settings->get_setting( 'view-bookings-arrivals' ) ) {?> <th class='rtb-view-bookings-table-column-arrived'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-arrived' ) ); ?></th><?php } ?>
+					<?php if ( in_array( 'time', $view_bookings_columns ) ) {?><th class='rtb-view-bookings-table-column-time'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-time' ) ); ?></th><?php } ?>
+					<?php if ( in_array( 'party', $view_bookings_columns ) ) {?><th class='rtb-view-bookings-table-column-party'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-party' ) ); ?></th><?php } ?>
+					<?php if ( in_array( 'name', $view_bookings_columns ) ) {?><th class='rtb-view-bookings-table-column-name'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-name' ) ); ?></th><?php } ?>
+					<?php if ( in_array( 'email', $view_bookings_columns ) ) {?><th class='rtb-view-bookings-table-column-email'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-email' ) ); ?></th><?php } ?>
+					<?php if ( in_array( 'phone', $view_bookings_columns ) ) {?><th class='rtb-view-bookings-table-column-phone'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-phone' ) ); ?></th><?php } ?>
+					<?php if ( in_array( 'table', $view_bookings_columns ) and $display_table ) {?> <th class='rtb-view-bookings-table-column-table'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-table' ) ); ?></th><?php } ?>
+					<?php if ( in_array( 'status', $view_bookings_columns ) ) {?><th class='rtb-view-bookings-table-column-status'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-status' ) ); ?></th><?php } ?>
+					<?php if ( in_array( 'details', $view_bookings_columns ) ) {?><th class='rtb-view-bookings-table-column-details'><?php echo esc_html( $rtb_controller->settings->get_setting( 'label-view-details' ) ); ?></th><?php } ?>
+	
 					<?php foreach ( $custom_fields as $custom_field ) { ?>
-
-						<?php if ( ! in_array( $custom_field->slug, $view_bookings_columns ) ) { continue; } ?>
-						
-						<?php if ( ! isset( $booking_object->custom_fields[ $custom_field->slug ] ) ) { echo '<td></td>'; continue; } ?>
-
-						<td>
-							<?php echo wp_kses_post( $rtb_controller->fields->get_display_value( $booking_object->custom_fields[ $custom_field->slug ], $custom_field ) ); ?>
-						</td>
-
+	
+						<?php if ( in_array( $custom_field->slug, $view_bookings_columns ) ) { ?><th><?php echo esc_html( $custom_field->title ); ?></th><?php } ?>
+	
 					<?php } ?>
 				</tr>
-			<?php } ?>
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				<?php foreach ( $bookings as $booking_object ) {
+	
+					$details = array();
+	
+					if ( trim( $booking_object->message ) ) {
+	
+						$details[] = array(
+							'label' => __( 'Message:', 'restaurant-reservations' ),
+							'value' => esc_html( $booking_object->message ),
+						);
+					}
+	
+					$details = apply_filters( 'rtb_bookings_table_column_details', $details, $booking_object );
+	
+					?>
+	
+					<tr>
+						<?php if ( $rtb_controller->settings->get_setting( 'view-bookings-arrivals' ) ) {?>
+							<?php if ( $booking_object->post_status != 'arrived' ) : ?><td class='rtb-view-bookings-table-column-arrived'><input type='checkbox' class='rtb-edit-view-booking' data-bookingid='<?php echo $booking_object->ID; ?>' /></td>
+							<?php else : ?><td><input type='checkbox' class='rtb-edit-view-booking' checked disabled /></td>
+							<?php endif; ?>
+						<?php } ?>
+						<?php if ( in_array( 'time', $view_bookings_columns ) ) {?><td class='rtb-view-bookings-table-column-time'><?php echo ( new DateTime( $booking_object->date, wp_timezone() ) )->format( get_option( 'time_format' ) ); ?></td><?php } ?>
+						<?php if ( in_array( 'party', $view_bookings_columns ) ) {?><td class='rtb-view-bookings-table-column-party'><?php echo esc_html( $booking_object->party ); ?></td><?php } ?>
+						<?php if ( in_array( 'name', $view_bookings_columns ) ) {?><td class='rtb-view-bookings-table-column-name'><?php echo esc_html( $booking_object->name ); ?></td><?php } ?>
+						<?php if ( in_array( 'email', $view_bookings_columns ) ) {?><td class='rtb-view-bookings-table-column-email'><?php echo esc_html( $booking_object->email ); ?></td><?php } ?>
+						<?php if ( in_array( 'phone', $view_bookings_columns ) ) {?><td class='rtb-view-bookings-table-column-phone'><?php echo esc_html( $booking_object->phone ); ?></td><?php } ?>
+						<?php if ( in_array( 'table', $view_bookings_columns ) and $display_table ) { ?><td class='rtb-view-bookings-table-column-table'><?php echo esc_html( implode(', ', $booking_object->table ) ); ?></td><?php } ?>
+						<?php if ( in_array( 'status', $view_bookings_columns ) ) {?><td class='rtb-view-bookings-table-column-status'><?php echo esc_html( $rtb_controller->cpts->booking_statuses[$booking_object->post_status]['label'] ); ?></td><?php } ?>
+						<?php if ( in_array( 'details', $view_bookings_columns ) ) { ?>
+	
+							<td class='rtb-view-bookings-table-column-details'>
+								<ul class='rtb-view-booking-details'>
+	
+									<?php foreach ( $details as $detail ) { ?>
+	
+										<li>
+											<label class='rtb-view-booking-details-label'>
+												<?php echo esc_html( $detail['label'] ); ?>
+											</label>
+											<span class='rtb-view-booking-details-value'>
+												<?php echo esc_html( $detail['value'] ); ?>
+											</span>
+										</li>
+									<?php } ?>
+	
+								</ul>
+							</td>
+	
+						<?php } ?>
+	
+						<?php foreach ( $custom_fields as $custom_field ) { ?>
+	
+							<?php if ( ! in_array( $custom_field->slug, $view_bookings_columns ) ) { continue; } ?>
+							
+							<?php if ( ! isset( $booking_object->custom_fields[ $custom_field->slug ] ) ) { echo '<td></td>'; continue; } ?>
+	
+							<td>
+								<?php echo wp_kses_post( $rtb_controller->fields->get_display_value( $booking_object->custom_fields[ $custom_field->slug ], $custom_field ) ); ?>
+							</td>
+	
+						<?php } ?>
+					</tr>
+				<?php } ?>
+			</tbody>
+		</table>
+	<?php } ?>
 
 </div>
 

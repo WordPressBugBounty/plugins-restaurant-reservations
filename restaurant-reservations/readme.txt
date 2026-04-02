@@ -2,7 +2,7 @@
 Contributors: Rustaurius
 Tested Up To: 6.9
 Tags: reservation, reservations, restaurant reservations, reservation form, restaurant, restaurant booking, restaurant reservation form, restaurant booking form, restaurant booking system, reservation system, online reservations, online restaurant booking, dinner reservations, restaurant form, gutenberg reservations, gutenberg restaurant reservations, gutenberg restaurant booking, mobile reservations, responsive reservations, table reservations, open table, book table, reserve table, easy reservations, simple reservations, quick restaurant reservations, custom reservation form, custom restaurant reservations
-Stable tag: 2.7.13
+Stable tag: 2.7.14
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -301,6 +301,10 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 - [Our Support Center](https://www.fivestarplugins.com/support-center/)
 
 == Changelog ==
+
+= 2.7.14 (2026-04-02) =
+- Updated styling for the view bookings form/table.
+- The view bookings form now displays a message when there are no bookings on the selected date instead of showing an empty table.
 
 = 2.7.13 (2026-02-19) =
 - Fixed an issue with translations for certain localized strings in the admin not being applied.
