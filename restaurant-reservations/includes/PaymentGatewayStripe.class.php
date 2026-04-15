@@ -217,7 +217,7 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
     $token = sanitize_text_field( $_POST['stripeToken'] );
 
     // JPY currency does not have any decimal palces
-    $payment_amount = $rtb_controller->settings->get_setting( 'rtb-currency' ) != 'JPY' ? ( intval( $_POST['payment_amount'] ) * 100 ) : intval( $_POST['payment_amount'] );
+    $payment_amount = $rtb_controller->settings->get_setting( 'rtb-currency' ) != 'JPY' ? $booking->calculate_deposit() * 100 : $booking->calculate_deposit();
 
     try {
 

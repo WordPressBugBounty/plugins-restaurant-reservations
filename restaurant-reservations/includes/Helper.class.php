@@ -176,7 +176,7 @@ class rtbHelper {
   }
 
   public static function should_button_display() {
-    global $post;
+    
     $page = isset( $_GET['page'] ) ? sanitize_text_field( $_GET['page'] ) : '';
     if ( isset( $_GET['post'] ) ) {
       $post = get_post( intval( $_GET['post'] ) );
@@ -296,7 +296,7 @@ class rtbHelper {
   }
 
   public static function get_page_details() {
-    global $post;
+    
     $tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : '';
     $page = isset( $_GET['page'] ) ? sanitize_text_field( $_GET['page'] ) : '';
     if ( isset( $_GET['post'] ) ) {
