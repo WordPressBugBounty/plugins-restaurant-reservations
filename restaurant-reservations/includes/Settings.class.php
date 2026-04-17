@@ -3259,6 +3259,8 @@ If you were not the one to cancel this booking, please contact us.
 
 	public function check_location_timeslot_party_rules() {
 		
+		if ( ! is_array( $this->settings ) ) { return false; }
+
 		foreach ( array_keys( $this->settings ) as $key ) {
     		if ( substr( $key, -strlen( '-party-size' ) ) === '-party-size' ) { return true; }
     		if ( substr( $key, -strlen( '-party-size-min' ) ) === '-party-size-min' ) { return true; }

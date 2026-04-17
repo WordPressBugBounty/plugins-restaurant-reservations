@@ -28,9 +28,11 @@ class rtbHelper {
   }
 
   private static function aiaa_is_active() {
+  
     if ( defined( 'AIT_AIAA_VERSION' ) ) { return true; }
-    if ( class_exists( 'AIT_AIAA_Plugin' ) ) { return true; }
-    if ( has_filter( 'ait_aiaa_third_party_information' ) ) { return true; }
+  
+    if ( class_exists( 'AIT_AIAA_Settings' ) ) { return true; }
+  
     return false;
   }
 
