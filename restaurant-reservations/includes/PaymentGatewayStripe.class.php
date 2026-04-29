@@ -455,7 +455,7 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
    */
   public function valid_payment( $booking ) {
 
-    return sanitize_text_field( $_POST['payment_id'] ) == $booking->stripe_payment_intent_id;
+    return ! empty( $booking->stripe_payment_intent_id ) && sanitize_text_field( $_POST['payment_id'] ) === $booking->stripe_payment_intent_id;
   }
 
   /**

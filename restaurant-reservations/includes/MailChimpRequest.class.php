@@ -71,14 +71,30 @@ class mcrftbMailChimpRequest {
 
 		$url = $this->api_url . $endpoint;
 
-		$args = array(
-			'headers' => array(
-				'Authorization' => 'MailChimpForRestaurantReservations ' . $this->api_key,
-			),
-		);
+		if ( strpos( $endpoint, 'members' ) !== false ) {
 
-		if ( !empty( $params ) ) {
-			$args['body'] = $params;
+			$args = array(
+			    'headers' => array(
+			        'Authorization' => 'MailChimpForRestaurantReservations ' . $this->api_key,
+			        'Content-Type'  => 'application/json',
+			    ),
+			);
+			
+			if ( !empty( $params ) ) {
+			    $args['body'] = wp_json_encode( $params );
+			}
+		}
+		else {
+
+			$args = array(
+			    'headers' => array(
+			        'Authorization' => 'MailChimpForRestaurantReservations ' . $this->api_key,
+			    ),
+			);
+			
+			if ( !empty( $params ) ) {
+			    $args['body'] = $params;
+			}
 		}
 
 		$args = apply_filters( 'mcfrtb_mailchimp_api_request_args', $args, $endpoint, $method, $params );

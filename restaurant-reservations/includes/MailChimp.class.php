@@ -18,6 +18,9 @@ class mcfrtbInit {
 
 	public $merge_fields = array();
 
+	// mcrftbMailChimpRequest
+	public $mc;
+
 	public function __construct() {
 		global $rtb_controller;
 
