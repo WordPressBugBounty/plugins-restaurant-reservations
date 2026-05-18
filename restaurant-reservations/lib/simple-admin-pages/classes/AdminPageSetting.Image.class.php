@@ -7,7 +7,7 @@
  * @package Simple Admin Pages
  */
 
-class sapAdminPageSettingImage_2_7_0_rtb extends sapAdminPageSetting_2_7_0_rtb {
+class sapAdminPageSettingImage_2_7_4_rtb extends sapAdminPageSetting_2_7_4_rtb {
 
 	public $sanitize_callback = 'absint';
 

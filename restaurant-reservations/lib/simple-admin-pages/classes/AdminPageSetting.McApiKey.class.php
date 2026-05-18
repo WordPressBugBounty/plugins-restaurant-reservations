@@ -14,7 +14,7 @@
  *
  */
 
-class mcfrtbAdminPageSettingMcApiKey_2_7_0_rtb {
+class mcfrtbAdminPageSettingMcApiKey_2_7_4_rtb {
 
 	// Page defaults
 	public $id; // used in form fields and database to track and store setting

@@ -1061,7 +1061,7 @@ If you were not the one to cancel this booking, please contact us.
 		require_once( RTB_PLUGIN_DIR . '/lib/simple-admin-pages/simple-admin-pages.php' );
 		$sap = sap_initialize_library(
 			$args = array(
-				'version'       => '2.7.0.rtb',
+				'version'       => '2.7.4.rtb',
 				'theme'			=> 'blue',
 				'lib_url'       => RTB_PLUGIN_URL . '/lib/simple-admin-pages/',
 			)

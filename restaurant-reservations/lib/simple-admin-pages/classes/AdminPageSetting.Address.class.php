@@ -7,7 +7,7 @@
  * @package Simple Admin Pages
  */
 
-class sapAdminPageSettingAddress_2_7_0_rtb extends sapAdminPageSetting_2_7_0_rtb {
+class sapAdminPageSettingAddress_2_7_4_rtb extends sapAdminPageSetting_2_7_4_rtb {
 
 	/*
 	 * Size of this textarea
@@ -142,7 +142,7 @@ class sapAdminPageSettingAddress_2_7_0_rtb extends sapAdminPageSetting_2_7_0_rtb
 					<a href="#" class="sap-get-coords">
 						<?php echo esc_html( $this->strings['retrieve'] ); ?>
 					</a>
-					<?php echo $this->strings['sep-action-links']; ?>
+					<?php echo wp_kses_post( $this->strings['sep-action-links'] ); ?>
 					<a href="#" class="sap-remove-coords">
 						<?php echo esc_html( $this->strings['remove'] ); ?>
 					</a>

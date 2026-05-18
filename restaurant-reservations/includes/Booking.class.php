@@ -55,6 +55,7 @@ class rtbBooking {
 	public $date;
 	public $message;
 	public $post_status;
+	public $filter;
 
 	// location
 	public $location;

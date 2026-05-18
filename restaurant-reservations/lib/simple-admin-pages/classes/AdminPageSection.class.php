@@ -7,7 +7,7 @@
  * @package Simple Admin Pages
  */
 
-class sapAdminPageSection_2_7_0_rtb {
+class sapAdminPageSection_2_7_4_rtb {
 
 	// Page defaults
 	public $id; // unique id for this section
@@ -27,6 +27,7 @@ class sapAdminPageSection_2_7_0_rtb {
 	public $settings_type_toggle_options; // optional toggle at the top of the page for switching available options
 	public $show_submit_button; // whether or not to display options save button
 	public $callback; // optional function to call to display a particular section
+	public $page_id; // page id parameter
 
 	// Array to store errors
 	public $errors = array();
@@ -145,7 +146,7 @@ class sapAdminPageSection_2_7_0_rtb {
 
 			<?php echo ( isset($this->purchase_link ) ? "<div class='sap-premium-options-table-overlay'>" : '' ); ?>
 				<div class="section-disabled">
-					<img src="<?php echo plugins_url( '../img/options-asset-lock.png', __FILE__ ); ?>" alt="Upgrade to Premium">
+					<img src="<?php echo esc_attr( plugins_url( '../img/options-asset-lock.png', __FILE__ ) ); ?>" alt="Upgrade to Premium">
 					<p>Access this section by upgrading to <?php echo ( ! empty( $this->ultimate_needed ) ? 'ultimate' : 'premium' ); ?></p>
 					<a href="<?php echo esc_url( add_query_arg( 'utm_content', $this->id, $this->purchase_link ) ); ?>" class="sap-dashboard-get-premium-widget-button" target="_blank">UPGRADE NOW</a>
 				</div>

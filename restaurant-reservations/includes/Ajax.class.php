@@ -332,8 +332,7 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 			// If the restaurant is closed that day
 			// If Enable Max Reservation not set
-			if ( 1 > count( $hours ) or ! $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $location_slug ) ) {
-				
+			if ( empty( $hours ) or ! $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $location_slug ) ) {				
 				$finalize_response( $hours );
 			}
 
@@ -763,7 +762,7 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 			$hours = $this->get_opening_hours();
 			
 			// If the restaurant is closed that day, return false
-			if ( 1 > count( $hours ) ) { die(); }
+			if ( empty( $hours ) ) { die(); }
 
 			// If no time is selected, return false
 			if ( ! $this->time ) { die(); }

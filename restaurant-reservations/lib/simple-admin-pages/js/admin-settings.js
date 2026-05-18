@@ -57,9 +57,14 @@ jQuery(document).ready(function() {
 
                     if ( input_element.length ) {
 
-                        if ( input_element.attr( 'type' ) === 'checkbox' ) { var option_value = input_element.is(':checked') ? input_element.val() : false; }
-                        else { var option_value = input_element.val(); }
-                    }
+                        if (input_element.is(':checkbox')) {
+                            option_value = input_element.is(':checked') ? input_element.val() : false;
+                        } else if (input_element.is(':radio')) {
+                            option_value = jQuery('[name="' + check_option + '"]:checked').val() || false;
+                        } else {
+                            option_value = input_element.val();
+                        }
+                    } //console.log( option_value );
 
                     var values_to_check = Array.isArray( conditional_on_value[ index ] ) ? conditional_on_value[ index ] : [ conditional_on_value[ index ] ];
                     //console.log( values_to_check ); console.log( values_to_check.includes( option_value ) ); console.log( option_value == true  ); console.log( values_to_check.includes( true ) );
@@ -234,7 +239,7 @@ jQuery( document ).ready( function() {
         
         var this_tr = jQuery( this );
         var this_description = this_tr.find( 'td .description' );
-        var this_th = this_tr.find( 'th' );
+        var this_th = this_tr.find( '> th' );
 
         this_description.appendTo( this_th );
     } );

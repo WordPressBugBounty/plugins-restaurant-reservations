@@ -16,7 +16,7 @@
  * @package Simple Admin Pages
  */
 
-abstract class sapAdminPageSetting_2_7_0_rtb {
+abstract class sapAdminPageSetting_2_7_4_rtb {
 
 	// Page defaults
 	public $id; // used in form fields and database to track and store setting
@@ -33,6 +33,8 @@ abstract class sapAdminPageSetting_2_7_0_rtb {
 	public $conditional_display = true; // whether this setting should be displayed based on its conditional settings
 	public $setting_type; // optional setting type, only displays for selected type
 	public $setting_type_value; // the value for the type of setting that should be displayed
+	public $min; // min value for a setting
+	public $max; // max value for a setting
 	
 
 	/**
@@ -230,10 +232,10 @@ abstract class sapAdminPageSetting_2_7_0_rtb {
 
 		if ( $val === null ) {
 			$option_group_value = get_option( $this->page );
-			$val = isset( $option_group_value[ $this->id ] ) ? $option_group_value[ $this->id ] : '';
+			$val = isset( $option_group_value[ $this->id ] ) ? $option_group_value[ $this->id ] : null;
 		}
 
-		$this->value = $this->esc_value( $val );
+		$this->value = $val !== null ? $this->esc_value( $val ) : null;
 	}
 
 	/**

@@ -19,7 +19,7 @@
  * @package Simple Admin Pages
  */
 
-class sapAdminPageSettingRadio_2_7_0_rtb extends sapAdminPageSetting_2_7_0_rtb {
+class sapAdminPageSettingRadio_2_7_4_rtb extends sapAdminPageSetting_2_7_4_rtb {
 
 	public $sanitize_callback = 'sanitize_text_field';
 

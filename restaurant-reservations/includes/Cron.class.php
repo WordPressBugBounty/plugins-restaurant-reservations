@@ -342,6 +342,8 @@ class rtbCron {
 
 		$late_arrival_time = $rtb_controller->settings->get_setting( $setting );
 
+		if ( empty( $late_arrival_time ) ) { return 0; }
+
 		$count = intval( substr( $late_arrival_time, 0, strpos( $late_arrival_time, "_" ) ) );
 		$unit = substr( $late_arrival_time, strpos( $late_arrival_time, "_" ) + 1 );
 

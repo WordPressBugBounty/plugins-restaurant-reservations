@@ -19,7 +19,7 @@
  * @package Simple Admin Pages
  */
 
-class sapAdminPageSettingSelectTaxonomy_2_7_0_rtb extends sapAdminPageSetting_2_7_0_rtb {
+class sapAdminPageSettingSelectTaxonomy_2_7_4_rtb extends sapAdminPageSetting_2_7_4_rtb {
 
 	public $sanitize_callback = 'intval';
 
@@ -41,7 +41,9 @@ class sapAdminPageSettingSelectTaxonomy_2_7_0_rtb extends sapAdminPageSetting_2_
 	 */
 	public function display_setting() {
 
-		$terms = get_terms( $this->taxonomies, $this->args );
+		$this->args['taxonomy'] = $this->taxonomies;
+
+		$terms = get_terms( $this->args );
 
 		?>
 
