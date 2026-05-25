@@ -865,7 +865,8 @@ if ( ! class_exists( 'rtbMultipleLocations', false ) ) {
 				$data[$idx]['schedule_closed'] = $rtb_controller->settings->get_setting( 'schedule-closed', $slug );
 				$data[$idx]['enable_max_reservations'] = is_admin() && current_user_can( 'manage_bookings' ) ? false : $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $slug );
 				$data[$idx]['max_people'] = is_admin() && current_user_can( 'manage_bookings' ) ? 100 : $rtb_controller->settings->get_setting( 'rtb-max-people-count', $slug );
-
+				$data[$idx]['allow_past'] = is_admin() && current_user_can( 'manage_bookings' );
+				
 				// Also override initial instance of rtb_pickadate to apply location data
 				if( $is_location_specific_shortcode ) {
 					add_filter( 'rtb_pickadate_args', function( $variable_list ) use ( $data, $idx ) {

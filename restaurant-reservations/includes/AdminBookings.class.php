@@ -29,6 +29,9 @@ class rtbAdminBookings {
 		// Print the modals
 		add_action( 'admin_footer-toplevel_page_rtb-bookings', array( $this, 'print_modals' ) );
 
+		// Pass location data to the booking form script on the admin bookings page
+		add_action( 'admin_enqueue_scripts', array( $this, 'localize_booking_form_script' ) );
+
 		// Receive Ajax requests
 		add_action( 'wp_ajax_nopriv_rtb-admin-booking-modal' , array( $this , 'nopriv_ajax' ) );
 		add_action( 'wp_ajax_rtb-admin-booking-modal', array( $this, 'booking_modal_ajax' ) );
@@ -928,6 +931,22 @@ class rtbAdminBookings {
 		global $rtb_controller;
 		$rtb_controller->notifications->notifications = apply_filters( 'rtb_admin_disabled_notifications_exemption', array(), $rtb_controller->notifications->notifications );
 		$rtb_controller->notifications->notifications_disabled = true;
+	}
+
+	/**
+	 * Pass location data to the rtb-booking-form script on the admin bookings page.
+	 *
+	 * @since 2.7.19
+	 */
+	public function localize_booking_form_script( $hook ) {
+
+		if ( $hook !== 'toplevel_page_rtb-bookings' ) { return; }
+
+		global $rtb_controller;
+
+		if ( empty( $rtb_controller->locations ) || empty( $rtb_controller->locations->post_type ) ) { return; }
+
+		apply_filters( 'rtb_booking_form_init', array() );
 	}
 }
 } // endif;
