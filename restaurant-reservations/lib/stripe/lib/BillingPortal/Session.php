@@ -2,7 +2,7 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\BillingPortal;
+namespace rtbStripe\BillingPortal;
 
 /**
  * The Billing customer portal is a Stripe-hosted UI for subscription and billing
@@ -26,7 +26,7 @@ namespace Stripe\BillingPortal;
  *
  * @property string $id Unique identifier for the object.
  * @property string $object String representing the object's type. Objects of the same type share the same value.
- * @property string|\Stripe\BillingPortal\Configuration $configuration The configuration used by this session, describing the features available.
+ * @property string|\rtbStripe\BillingPortal\Configuration $configuration The configuration used by this session, describing the features available.
  * @property int $created Time at which the object was created. Measured in seconds since the Unix epoch.
  * @property string $customer The ID of the customer for this session.
  * @property bool $livemode Has the value <code>true</code> if the object exists in live mode or the value <code>false</code> if the object exists in test mode.
@@ -34,9 +34,9 @@ namespace Stripe\BillingPortal;
  * @property string $return_url The URL to redirect customers to when they click on the portal's link to return to your website.
  * @property string $url The short-lived URL of the session that gives customers access to the customer portal.
  */
-class Session extends \Stripe\ApiResource
+class Session extends \rtbStripe\ApiResource
 {
     const OBJECT_NAME = 'billing_portal.session';
 
-    use \Stripe\ApiOperations\Create;
+    use \rtbStripe\ApiOperations\Create;
 }

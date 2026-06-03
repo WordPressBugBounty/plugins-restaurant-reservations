@@ -2,20 +2,20 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class OrderReturnService extends \Stripe\Service\AbstractService
+class OrderReturnService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of your order returns. The returns are returned sorted by
      * creation date, with the most recently created return appearing first.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -29,11 +29,11 @@ class OrderReturnService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\OrderReturn
+     * @return \rtbStripe\OrderReturn
      */
     public function retrieve($id, $params = null, $opts = null)
     {

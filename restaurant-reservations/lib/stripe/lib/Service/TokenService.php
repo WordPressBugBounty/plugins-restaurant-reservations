@@ -2,9 +2,9 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class TokenService extends \Stripe\Service\AbstractService
+class TokenService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Creates a single-use token that represents a bank account’s details. This token
@@ -13,11 +13,11 @@ class TokenService extends \Stripe\Service\AbstractService
      * account</a>.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Token
+     * @return \rtbStripe\Token
      */
     public function create($params = null, $opts = null)
     {
@@ -29,11 +29,11 @@ class TokenService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Token
+     * @return \rtbStripe\Token
      */
     public function retrieve($id, $params = null, $opts = null)
     {

@@ -2,20 +2,20 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class ChargeService extends \Stripe\Service\AbstractService
+class ChargeService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of charges you’ve previously created. The charges are returned in
      * sorted order, with the most recent charges appearing first.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -33,11 +33,11 @@ class ChargeService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Charge
+     * @return \rtbStripe\Charge
      */
     public function capture($id, $params = null, $opts = null)
     {
@@ -52,11 +52,11 @@ class ChargeService extends \Stripe\Service\AbstractService
      * completed successfully).
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Charge
+     * @return \rtbStripe\Charge
      */
     public function create($params = null, $opts = null)
     {
@@ -71,11 +71,11 @@ class ChargeService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Charge
+     * @return \rtbStripe\Charge
      */
     public function retrieve($id, $params = null, $opts = null)
     {
@@ -88,11 +88,11 @@ class ChargeService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Charge
+     * @return \rtbStripe\Charge
      */
     public function update($id, $params = null, $opts = null)
     {

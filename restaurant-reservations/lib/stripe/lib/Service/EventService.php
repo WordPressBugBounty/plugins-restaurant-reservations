@@ -2,9 +2,9 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class EventService extends \Stripe\Service\AbstractService
+class EventService extends \rtbStripe\Service\AbstractService
 {
     /**
      * List events, going back up to 30 days. Each event data is rendered according to
@@ -14,11 +14,11 @@ class EventService extends \Stripe\Service\AbstractService
      * <code>Stripe-Version</code> header).
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -31,11 +31,11 @@ class EventService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Event
+     * @return \rtbStripe\Event
      */
     public function retrieve($id, $params = null, $opts = null)
     {

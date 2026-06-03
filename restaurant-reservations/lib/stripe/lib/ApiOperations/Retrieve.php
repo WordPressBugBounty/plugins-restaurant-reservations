@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe\ApiOperations;
+namespace rtbStripe\ApiOperations;
 
 /**
  * Trait for retrievable resources. Adds a `retrieve()` static method to the
@@ -15,13 +15,13 @@ trait Retrieve
      *     or an options array containing an `id` key
      * @param null|array|string $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
      * @return static
      */
     public static function retrieve($id, $opts = null)
     {
-        $opts = \Stripe\Util\RequestOptions::parse($opts);
+        $opts = \rtbStripe\Util\RequestOptions::parse($opts);
         $instance = new static($id, $opts);
         $instance->refresh();
 

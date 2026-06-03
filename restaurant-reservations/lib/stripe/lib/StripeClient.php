@@ -2,74 +2,74 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe;
+namespace rtbStripe;
 
 /**
  * Client used to send requests to Stripe's API.
  *
- * @property \Stripe\Service\AccountLinkService $accountLinks
- * @property \Stripe\Service\AccountService $accounts
- * @property \Stripe\Service\ApplePayDomainService $applePayDomains
- * @property \Stripe\Service\ApplicationFeeService $applicationFees
- * @property \Stripe\Service\BalanceService $balance
- * @property \Stripe\Service\BalanceTransactionService $balanceTransactions
- * @property \Stripe\Service\BillingPortal\BillingPortalServiceFactory $billingPortal
- * @property \Stripe\Service\ChargeService $charges
- * @property \Stripe\Service\Checkout\CheckoutServiceFactory $checkout
- * @property \Stripe\Service\CountrySpecService $countrySpecs
- * @property \Stripe\Service\CouponService $coupons
- * @property \Stripe\Service\CreditNoteService $creditNotes
- * @property \Stripe\Service\CustomerService $customers
- * @property \Stripe\Service\DisputeService $disputes
- * @property \Stripe\Service\EphemeralKeyService $ephemeralKeys
- * @property \Stripe\Service\EventService $events
- * @property \Stripe\Service\ExchangeRateService $exchangeRates
- * @property \Stripe\Service\FileLinkService $fileLinks
- * @property \Stripe\Service\FileService $files
- * @property \Stripe\Service\InvoiceItemService $invoiceItems
- * @property \Stripe\Service\InvoiceService $invoices
- * @property \Stripe\Service\Issuing\IssuingServiceFactory $issuing
- * @property \Stripe\Service\MandateService $mandates
- * @property \Stripe\Service\OAuthService $oauth
- * @property \Stripe\Service\OrderReturnService $orderReturns
- * @property \Stripe\Service\OrderService $orders
- * @property \Stripe\Service\PaymentIntentService $paymentIntents
- * @property \Stripe\Service\PaymentMethodService $paymentMethods
- * @property \Stripe\Service\PayoutService $payouts
- * @property \Stripe\Service\PlanService $plans
- * @property \Stripe\Service\PriceService $prices
- * @property \Stripe\Service\ProductService $products
- * @property \Stripe\Service\PromotionCodeService $promotionCodes
- * @property \Stripe\Service\Radar\RadarServiceFactory $radar
- * @property \Stripe\Service\RefundService $refunds
- * @property \Stripe\Service\Reporting\ReportingServiceFactory $reporting
- * @property \Stripe\Service\ReviewService $reviews
- * @property \Stripe\Service\SetupAttemptService $setupAttempts
- * @property \Stripe\Service\SetupIntentService $setupIntents
- * @property \Stripe\Service\Sigma\SigmaServiceFactory $sigma
- * @property \Stripe\Service\SkuService $skus
- * @property \Stripe\Service\SourceService $sources
- * @property \Stripe\Service\SubscriptionItemService $subscriptionItems
- * @property \Stripe\Service\SubscriptionScheduleService $subscriptionSchedules
- * @property \Stripe\Service\SubscriptionService $subscriptions
- * @property \Stripe\Service\TaxRateService $taxRates
- * @property \Stripe\Service\Terminal\TerminalServiceFactory $terminal
- * @property \Stripe\Service\TokenService $tokens
- * @property \Stripe\Service\TopupService $topups
- * @property \Stripe\Service\TransferService $transfers
- * @property \Stripe\Service\WebhookEndpointService $webhookEndpoints
+ * @property \rtbStripe\Service\AccountLinkService $accountLinks
+ * @property \rtbStripe\Service\AccountService $accounts
+ * @property \rtbStripe\Service\ApplePayDomainService $applePayDomains
+ * @property \rtbStripe\Service\ApplicationFeeService $applicationFees
+ * @property \rtbStripe\Service\BalanceService $balance
+ * @property \rtbStripe\Service\BalanceTransactionService $balanceTransactions
+ * @property \rtbStripe\Service\BillingPortal\BillingPortalServiceFactory $billingPortal
+ * @property \rtbStripe\Service\ChargeService $charges
+ * @property \rtbStripe\Service\Checkout\CheckoutServiceFactory $checkout
+ * @property \rtbStripe\Service\CountrySpecService $countrySpecs
+ * @property \rtbStripe\Service\CouponService $coupons
+ * @property \rtbStripe\Service\CreditNoteService $creditNotes
+ * @property \rtbStripe\Service\CustomerService $customers
+ * @property \rtbStripe\Service\DisputeService $disputes
+ * @property \rtbStripe\Service\EphemeralKeyService $ephemeralKeys
+ * @property \rtbStripe\Service\EventService $events
+ * @property \rtbStripe\Service\ExchangeRateService $exchangeRates
+ * @property \rtbStripe\Service\FileLinkService $fileLinks
+ * @property \rtbStripe\Service\FileService $files
+ * @property \rtbStripe\Service\InvoiceItemService $invoiceItems
+ * @property \rtbStripe\Service\InvoiceService $invoices
+ * @property \rtbStripe\Service\Issuing\IssuingServiceFactory $issuing
+ * @property \rtbStripe\Service\MandateService $mandates
+ * @property \rtbStripe\Service\OAuthService $oauth
+ * @property \rtbStripe\Service\OrderReturnService $orderReturns
+ * @property \rtbStripe\Service\OrderService $orders
+ * @property \rtbStripe\Service\PaymentIntentService $paymentIntents
+ * @property \rtbStripe\Service\PaymentMethodService $paymentMethods
+ * @property \rtbStripe\Service\PayoutService $payouts
+ * @property \rtbStripe\Service\PlanService $plans
+ * @property \rtbStripe\Service\PriceService $prices
+ * @property \rtbStripe\Service\ProductService $products
+ * @property \rtbStripe\Service\PromotionCodeService $promotionCodes
+ * @property \rtbStripe\Service\Radar\RadarServiceFactory $radar
+ * @property \rtbStripe\Service\RefundService $refunds
+ * @property \rtbStripe\Service\Reporting\ReportingServiceFactory $reporting
+ * @property \rtbStripe\Service\ReviewService $reviews
+ * @property \rtbStripe\Service\SetupAttemptService $setupAttempts
+ * @property \rtbStripe\Service\SetupIntentService $setupIntents
+ * @property \rtbStripe\Service\Sigma\SigmaServiceFactory $sigma
+ * @property \rtbStripe\Service\SkuService $skus
+ * @property \rtbStripe\Service\SourceService $sources
+ * @property \rtbStripe\Service\SubscriptionItemService $subscriptionItems
+ * @property \rtbStripe\Service\SubscriptionScheduleService $subscriptionSchedules
+ * @property \rtbStripe\Service\SubscriptionService $subscriptions
+ * @property \rtbStripe\Service\TaxRateService $taxRates
+ * @property \rtbStripe\Service\Terminal\TerminalServiceFactory $terminal
+ * @property \rtbStripe\Service\TokenService $tokens
+ * @property \rtbStripe\Service\TopupService $topups
+ * @property \rtbStripe\Service\TransferService $transfers
+ * @property \rtbStripe\Service\WebhookEndpointService $webhookEndpoints
  */
 class StripeClient extends BaseStripeClient
 {
     /**
-     * @var \Stripe\Service\CoreServiceFactory
+     * @var \rtbStripe\Service\CoreServiceFactory
      */
     private $coreServiceFactory;
 
     public function __get($name)
     {
         if (null === $this->coreServiceFactory) {
-            $this->coreServiceFactory = new \Stripe\Service\CoreServiceFactory($this);
+            $this->coreServiceFactory = new \rtbStripe\Service\CoreServiceFactory($this);
         }
 
         return $this->coreServiceFactory->__get($name);

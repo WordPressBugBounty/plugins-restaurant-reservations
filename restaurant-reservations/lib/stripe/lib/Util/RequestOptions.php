@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe\Util;
+namespace rtbStripe\Util;
 
 class RequestOptions
 {
@@ -86,7 +86,7 @@ class RequestOptions
      * @param null|array|RequestOptions|string $options a key => value array
      * @param bool $strict when true, forbid string form and arbitrary keys in array form
      *
-     * @throws \Stripe\Exception\InvalidArgumentException
+     * @throws \rtbStripe\Exception\InvalidArgumentException
      *
      * @return RequestOptions
      */
@@ -105,7 +105,7 @@ class RequestOptions
                 $message = 'Do not pass a string for request options. If you want to set the '
                     . 'API key, pass an array like ["api_key" => <apiKey>] instead.';
 
-                throw new \Stripe\Exception\InvalidArgumentException($message);
+                throw new \rtbStripe\Exception\InvalidArgumentException($message);
             }
 
             return new RequestOptions($options, [], null);
@@ -140,7 +140,7 @@ class RequestOptions
             if ($strict && !empty($options)) {
                 $message = 'Got unexpected keys in options array: ' . \implode(', ', \array_keys($options));
 
-                throw new \Stripe\Exception\InvalidArgumentException($message);
+                throw new \rtbStripe\Exception\InvalidArgumentException($message);
             }
 
             return new RequestOptions($key, $headers, $base);
@@ -151,7 +151,7 @@ class RequestOptions
            . 'per-request options, which must be an array. (HINT: you can set '
            . 'a global apiKey by "Stripe::setApiKey(<apiKey>)")';
 
-        throw new \Stripe\Exception\InvalidArgumentException($message);
+        throw new \rtbStripe\Exception\InvalidArgumentException($message);
     }
 
     private function redactedApiKey()

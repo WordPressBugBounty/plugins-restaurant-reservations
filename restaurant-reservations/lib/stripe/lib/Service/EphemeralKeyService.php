@@ -2,20 +2,20 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class EphemeralKeyService extends \Stripe\Service\AbstractService
+class EphemeralKeyService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Invalidates a short-lived API key for a given resource.
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\EphemeralKey
+     * @return \rtbStripe\EphemeralKey
      */
     public function delete($id, $params = null, $opts = null)
     {
@@ -26,16 +26,16 @@ class EphemeralKeyService extends \Stripe\Service\AbstractService
      * Creates a short-lived API key for a given resource.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\EphemeralKey
+     * @return \rtbStripe\EphemeralKey
      */
     public function create($params = null, $opts = null)
     {
         if (!$opts || !isset($opts['stripe_version'])) {
-            throw new \Stripe\Exception\InvalidArgumentException('stripe_version must be specified to create an ephemeral key');
+            throw new \rtbStripe\Exception\InvalidArgumentException('stripe_version must be specified to create an ephemeral key');
         }
 
         return $this->request('post', '/v1/ephemeral_keys', $params, $opts);

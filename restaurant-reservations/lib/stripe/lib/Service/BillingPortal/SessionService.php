@@ -2,19 +2,19 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service\BillingPortal;
+namespace rtbStripe\Service\BillingPortal;
 
-class SessionService extends \Stripe\Service\AbstractService
+class SessionService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Creates a session of the customer portal.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\BillingPortal\Session
+     * @return \rtbStripe\BillingPortal\Session
      */
     public function create($params = null, $opts = null)
     {

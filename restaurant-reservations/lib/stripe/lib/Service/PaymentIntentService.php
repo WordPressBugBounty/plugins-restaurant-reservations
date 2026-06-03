@@ -2,19 +2,19 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class PaymentIntentService extends \Stripe\Service\AbstractService
+class PaymentIntentService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of PaymentIntents.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -33,11 +33,11 @@ class PaymentIntentService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentIntent
+     * @return \rtbStripe\PaymentIntent
      */
     public function cancel($id, $params = null, $opts = null)
     {
@@ -56,11 +56,11 @@ class PaymentIntentService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentIntent
+     * @return \rtbStripe\PaymentIntent
      */
     public function capture($id, $params = null, $opts = null)
     {
@@ -98,11 +98,11 @@ class PaymentIntentService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentIntent
+     * @return \rtbStripe\PaymentIntent
      */
     public function confirm($id, $params = null, $opts = null)
     {
@@ -123,11 +123,11 @@ class PaymentIntentService extends \Stripe\Service\AbstractService
      * API</a> when <code>confirm=true</code> is supplied.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentIntent
+     * @return \rtbStripe\PaymentIntent
      */
     public function create($params = null, $opts = null)
     {
@@ -146,11 +146,11 @@ class PaymentIntentService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentIntent
+     * @return \rtbStripe\PaymentIntent
      */
     public function retrieve($id, $params = null, $opts = null)
     {
@@ -168,11 +168,11 @@ class PaymentIntentService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentIntent
+     * @return \rtbStripe\PaymentIntent
      */
     public function update($id, $params = null, $opts = null)
     {

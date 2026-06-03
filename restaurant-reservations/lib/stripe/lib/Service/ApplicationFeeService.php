@@ -2,20 +2,20 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class ApplicationFeeService extends \Stripe\Service\AbstractService
+class ApplicationFeeService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of application fees you’ve previously collected. The application
      * fees are returned in sorted order, with the most recent fees appearing first.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -31,11 +31,11 @@ class ApplicationFeeService extends \Stripe\Service\AbstractService
      *
      * @param string $parentId
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function allRefunds($parentId, $params = null, $opts = null)
     {
@@ -56,11 +56,11 @@ class ApplicationFeeService extends \Stripe\Service\AbstractService
      *
      * @param string $parentId
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\ApplicationFeeRefund
+     * @return \rtbStripe\ApplicationFeeRefund
      */
     public function createRefund($parentId, $params = null, $opts = null)
     {
@@ -73,11 +73,11 @@ class ApplicationFeeService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\ApplicationFee
+     * @return \rtbStripe\ApplicationFee
      */
     public function retrieve($id, $params = null, $opts = null)
     {
@@ -92,11 +92,11 @@ class ApplicationFeeService extends \Stripe\Service\AbstractService
      * @param string $parentId
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\ApplicationFeeRefund
+     * @return \rtbStripe\ApplicationFeeRefund
      */
     public function retrieveRefund($parentId, $id, $params = null, $opts = null)
     {
@@ -112,11 +112,11 @@ class ApplicationFeeService extends \Stripe\Service\AbstractService
      * @param string $parentId
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\ApplicationFeeRefund
+     * @return \rtbStripe\ApplicationFeeRefund
      */
     public function updateRefund($parentId, $id, $params = null, $opts = null)
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe\ApiOperations;
+namespace rtbStripe\ApiOperations;
 
 /**
  * Trait for deletable resources. Adds a `delete()` method to the class.
@@ -13,7 +13,7 @@ trait Delete
      * @param null|array $params
      * @param null|array|string $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
      * @return static the deleted resource
      */

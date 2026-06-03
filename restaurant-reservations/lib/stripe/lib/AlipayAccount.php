@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe;
+namespace rtbStripe;
 
 /**
  * Class AlipayAccount.
@@ -40,7 +40,7 @@ class AlipayAccount extends ApiResource
      * @param array|string $_id
      * @param null|array|string $_opts
      *
-     * @throws \Stripe\Exception\BadMethodCallException
+     * @throws \rtbStripe\Exception\BadMethodCallException
      *
      * @deprecated Alipay accounts are deprecated. Please use the sources API instead.
      * @see https://stripe.com/docs/sources/alipay
@@ -59,7 +59,7 @@ class AlipayAccount extends ApiResource
      * @param null|array $_params
      * @param null|array|string $_options
      *
-     * @throws \Stripe\Exception\BadMethodCallException
+     * @throws \rtbStripe\Exception\BadMethodCallException
      *
      * @deprecated Alipay accounts are deprecated. Please use the sources API instead.
      * @see https://stripe.com/docs/sources/alipay

@@ -2,9 +2,9 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class BalanceService extends \Stripe\Service\AbstractService
+class BalanceService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Retrieves the current account balance, based on the authentication that was used
@@ -13,11 +13,11 @@ class BalanceService extends \Stripe\Service\AbstractService
      * for negative balances</a>.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Balance
+     * @return \rtbStripe\Balance
      */
     public function retrieve($params = null, $opts = null)
     {

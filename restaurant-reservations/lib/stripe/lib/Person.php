@@ -2,7 +2,7 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe;
+namespace rtbStripe;
 
 /**
  * This is an object representing a person associated with a Stripe account.
@@ -22,11 +22,11 @@ namespace Stripe;
  * @property string $id Unique identifier for the object.
  * @property string $object String representing the object's type. Objects of the same type share the same value.
  * @property string $account The account the person is associated with.
- * @property \Stripe\StripeObject $address
- * @property null|\Stripe\StripeObject $address_kana The Kana variation of the person's address (Japan only).
- * @property null|\Stripe\StripeObject $address_kanji The Kanji variation of the person's address (Japan only).
+ * @property \rtbStripe\StripeObject $address
+ * @property null|\rtbStripe\StripeObject $address_kana The Kana variation of the person's address (Japan only).
+ * @property null|\rtbStripe\StripeObject $address_kanji The Kanji variation of the person's address (Japan only).
  * @property int $created Time at which the object was created. Measured in seconds since the Unix epoch.
- * @property \Stripe\StripeObject $dob
+ * @property \rtbStripe\StripeObject $dob
  * @property null|string $email The person's email address.
  * @property null|string $first_name The person's first name.
  * @property null|string $first_name_kana The Kana variation of the person's first name (Japan only).
@@ -37,14 +37,14 @@ namespace Stripe;
  * @property null|string $last_name_kana The Kana variation of the person's last name (Japan only).
  * @property null|string $last_name_kanji The Kanji variation of the person's last name (Japan only).
  * @property null|string $maiden_name The person's maiden name.
- * @property \Stripe\StripeObject $metadata Set of <a href="https://stripe.com/docs/api/metadata">key-value pairs</a> that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
+ * @property \rtbStripe\StripeObject $metadata Set of <a href="https://stripe.com/docs/api/metadata">key-value pairs</a> that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
  * @property null|string $nationality The country where the person is a national.
  * @property null|string $phone The person's phone number.
  * @property string $political_exposure Indicates if the person or any of their representatives, family members, or other closely related persons, declares that they hold or have held an important public job or function, in any jurisdiction.
- * @property \Stripe\StripeObject $relationship
- * @property null|\Stripe\StripeObject $requirements Information about the requirements for this person, including what information needs to be collected, and by when.
+ * @property \rtbStripe\StripeObject $relationship
+ * @property null|\rtbStripe\StripeObject $requirements Information about the requirements for this person, including what information needs to be collected, and by when.
  * @property bool $ssn_last_4_provided Whether the last four digits of the person's Social Security number have been provided (U.S. only).
- * @property \Stripe\StripeObject $verification
+ * @property \rtbStripe\StripeObject $verification
  */
 class Person extends ApiResource
 {
@@ -91,7 +91,7 @@ class Person extends ApiResource
      * @param array|string $_id
      * @param null|array|string $_opts
      *
-     * @throws \Stripe\Exception\BadMethodCallException
+     * @throws \rtbStripe\Exception\BadMethodCallException
      */
     public static function retrieve($_id, $_opts = null)
     {
@@ -107,7 +107,7 @@ class Person extends ApiResource
      * @param null|array $_params
      * @param null|array|string $_options
      *
-     * @throws \Stripe\Exception\BadMethodCallException
+     * @throws \rtbStripe\Exception\BadMethodCallException
      */
     public static function update($_id, $_params = null, $_options = null)
     {

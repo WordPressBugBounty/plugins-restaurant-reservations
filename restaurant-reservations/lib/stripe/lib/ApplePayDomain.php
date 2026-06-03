@@ -2,7 +2,7 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe;
+namespace rtbStripe;
 
 /**
  * @property string $id Unique identifier for the object.

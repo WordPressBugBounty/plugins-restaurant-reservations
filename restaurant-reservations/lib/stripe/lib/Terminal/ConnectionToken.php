@@ -2,7 +2,7 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Terminal;
+namespace rtbStripe\Terminal;
 
 /**
  * A Connection Token is used by the Stripe Terminal SDK to connect to a reader.
@@ -14,9 +14,9 @@ namespace Stripe\Terminal;
  * @property string $location The id of the location that this connection token is scoped to.
  * @property string $secret Your application should pass this token to the Stripe Terminal SDK.
  */
-class ConnectionToken extends \Stripe\ApiResource
+class ConnectionToken extends \rtbStripe\ApiResource
 {
     const OBJECT_NAME = 'terminal.connection_token';
 
-    use \Stripe\ApiOperations\Create;
+    use \rtbStripe\ApiOperations\Create;
 }

@@ -2,20 +2,20 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service\BillingPortal;
+namespace rtbStripe\Service\BillingPortal;
 
-class ConfigurationService extends \Stripe\Service\AbstractService
+class ConfigurationService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of configurations that describe the functionality of the customer
      * portal.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -27,11 +27,11 @@ class ConfigurationService extends \Stripe\Service\AbstractService
      * PortalSession.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\BillingPortal\Configuration
+     * @return \rtbStripe\BillingPortal\Configuration
      */
     public function create($params = null, $opts = null)
     {
@@ -44,11 +44,11 @@ class ConfigurationService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\BillingPortal\Configuration
+     * @return \rtbStripe\BillingPortal\Configuration
      */
     public function retrieve($id, $params = null, $opts = null)
     {
@@ -60,11 +60,11 @@ class ConfigurationService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\BillingPortal\Configuration
+     * @return \rtbStripe\BillingPortal\Configuration
      */
     public function update($id, $params = null, $opts = null)
     {

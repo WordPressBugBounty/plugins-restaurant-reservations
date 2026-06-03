@@ -2,7 +2,7 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe;
+namespace rtbStripe;
 
 /**
  * @property string $object String representing the object's type. Objects of the same type share the same value.

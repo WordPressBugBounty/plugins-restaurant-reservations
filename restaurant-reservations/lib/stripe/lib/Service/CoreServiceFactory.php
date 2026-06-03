@@ -2,7 +2,7 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
 /**
  * Service factory class for API resources in the root namespace.
@@ -59,7 +59,7 @@ namespace Stripe\Service;
  * @property TransferService $transfers
  * @property WebhookEndpointService $webhookEndpoints
  */
-class CoreServiceFactory extends \Stripe\Service\AbstractServiceFactory
+class CoreServiceFactory extends \rtbStripe\Service\AbstractServiceFactory
 {
     /**
      * @var array<string, string>

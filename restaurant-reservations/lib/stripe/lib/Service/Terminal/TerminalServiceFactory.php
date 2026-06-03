@@ -2,7 +2,7 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service\Terminal;
+namespace rtbStripe\Service\Terminal;
 
 /**
  * Service factory class for API resources in the Terminal namespace.
@@ -11,7 +11,7 @@ namespace Stripe\Service\Terminal;
  * @property LocationService $locations
  * @property ReaderService $readers
  */
-class TerminalServiceFactory extends \Stripe\Service\AbstractServiceFactory
+class TerminalServiceFactory extends \rtbStripe\Service\AbstractServiceFactory
 {
     /**
      * @var array<string, string>

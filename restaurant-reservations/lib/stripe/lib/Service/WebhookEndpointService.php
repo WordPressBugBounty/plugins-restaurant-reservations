@@ -2,19 +2,19 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class WebhookEndpointService extends \Stripe\Service\AbstractService
+class WebhookEndpointService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of your webhook endpoints.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -33,11 +33,11 @@ class WebhookEndpointService extends \Stripe\Service\AbstractService
      * section of the Dashboard.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\WebhookEndpoint
+     * @return \rtbStripe\WebhookEndpoint
      */
     public function create($params = null, $opts = null)
     {
@@ -51,11 +51,11 @@ class WebhookEndpointService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\WebhookEndpoint
+     * @return \rtbStripe\WebhookEndpoint
      */
     public function delete($id, $params = null, $opts = null)
     {
@@ -67,11 +67,11 @@ class WebhookEndpointService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\WebhookEndpoint
+     * @return \rtbStripe\WebhookEndpoint
      */
     public function retrieve($id, $params = null, $opts = null)
     {
@@ -84,11 +84,11 @@ class WebhookEndpointService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\WebhookEndpoint
+     * @return \rtbStripe\WebhookEndpoint
      */
     public function update($id, $params = null, $opts = null)
     {

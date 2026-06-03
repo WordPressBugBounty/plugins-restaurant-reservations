@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe\Exception;
+namespace rtbStripe\Exception;
 
 class UnexpectedValueException extends \UnexpectedValueException implements ExceptionInterface
 {

@@ -2,19 +2,19 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class PaymentMethodService extends \Stripe\Service\AbstractService
+class PaymentMethodService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of PaymentMethods for a given Customer.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -42,11 +42,11 @@ class PaymentMethodService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentMethod
+     * @return \rtbStripe\PaymentMethod
      */
     public function attach($id, $params = null, $opts = null)
     {
@@ -59,11 +59,11 @@ class PaymentMethodService extends \Stripe\Service\AbstractService
      * reference</a> to learn how to create PaymentMethods via Stripe.js.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentMethod
+     * @return \rtbStripe\PaymentMethod
      */
     public function create($params = null, $opts = null)
     {
@@ -75,11 +75,11 @@ class PaymentMethodService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentMethod
+     * @return \rtbStripe\PaymentMethod
      */
     public function detach($id, $params = null, $opts = null)
     {
@@ -91,11 +91,11 @@ class PaymentMethodService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentMethod
+     * @return \rtbStripe\PaymentMethod
      */
     public function retrieve($id, $params = null, $opts = null)
     {
@@ -108,11 +108,11 @@ class PaymentMethodService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\PaymentMethod
+     * @return \rtbStripe\PaymentMethod
      */
     public function update($id, $params = null, $opts = null)
     {

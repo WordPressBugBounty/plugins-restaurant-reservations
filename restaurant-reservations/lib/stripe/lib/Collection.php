@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe;
+namespace rtbStripe;
 
 /**
  * Class Collection.
@@ -8,7 +8,7 @@ namespace Stripe;
  * @property string $object
  * @property string $url
  * @property bool $has_more
- * @property \Stripe\StripeObject[] $data
+ * @property \rtbStripe\StripeObject[] $data
  */
 class Collection extends StripeObject implements \Countable, \IteratorAggregate
 {
@@ -67,9 +67,9 @@ class Collection extends StripeObject implements \Countable, \IteratorAggregate
 
         list($response, $opts) = $this->_request('get', $url, $params, $opts);
         $obj = Util\Util::convertToStripeObject($response, $opts);
-        if (!($obj instanceof \Stripe\Collection)) {
-            throw new \Stripe\Exception\UnexpectedValueException(
-                'Expected type ' . \Stripe\Collection::class . ', got "' . \get_class($obj) . '" instead.'
+        if (!($obj instanceof \rtbStripe\Collection)) {
+            throw new \rtbStripe\Exception\UnexpectedValueException(
+                'Expected type ' . \rtbStripe\Collection::class . ', got "' . \get_class($obj) . '" instead.'
             );
         }
         $obj->setFilters($params);
@@ -116,6 +116,7 @@ class Collection extends StripeObject implements \Countable, \IteratorAggregate
      * @return \ArrayIterator an iterator that can be used to iterate
      *    across objects in the current page
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new \ArrayIterator($this->data);
@@ -244,7 +245,7 @@ class Collection extends StripeObject implements \Countable, \IteratorAggregate
     /**
      * Gets the first item from the current page. Returns `null` if the current page is empty.
      *
-     * @return null|\Stripe\StripeObject
+     * @return null|\rtbStripe\StripeObject
      */
     public function first()
     {
@@ -254,7 +255,7 @@ class Collection extends StripeObject implements \Countable, \IteratorAggregate
     /**
      * Gets the last item from the current page. Returns `null` if the current page is empty.
      *
-     * @return null|\Stripe\StripeObject
+     * @return null|\rtbStripe\StripeObject
      */
     public function last()
     {

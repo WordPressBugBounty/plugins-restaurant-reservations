@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe\Exception\OAuth;
+namespace rtbStripe\Exception\OAuth;
 
 /**
  * InvalidClientException is thrown when the client_id does not belong to you,

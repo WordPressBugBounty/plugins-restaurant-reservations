@@ -2,19 +2,19 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class CreditNoteService extends \Stripe\Service\AbstractService
+class CreditNoteService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of credit notes.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -28,11 +28,11 @@ class CreditNoteService extends \Stripe\Service\AbstractService
      *
      * @param string $parentId
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function allLines($parentId, $params = null, $opts = null)
     {
@@ -62,11 +62,11 @@ class CreditNoteService extends \Stripe\Service\AbstractService
      * <code>status</code> at the time of credit note creation.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\CreditNote
+     * @return \rtbStripe\CreditNote
      */
     public function create($params = null, $opts = null)
     {
@@ -77,11 +77,11 @@ class CreditNoteService extends \Stripe\Service\AbstractService
      * Get a preview of a credit note without creating it.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\CreditNote
+     * @return \rtbStripe\CreditNote
      */
     public function preview($params = null, $opts = null)
     {
@@ -94,11 +94,11 @@ class CreditNoteService extends \Stripe\Service\AbstractService
      * the full (paginated) list of line items.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\CreditNote
+     * @return \rtbStripe\CreditNote
      */
     public function previewLines($params = null, $opts = null)
     {
@@ -110,11 +110,11 @@ class CreditNoteService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\CreditNote
+     * @return \rtbStripe\CreditNote
      */
     public function retrieve($id, $params = null, $opts = null)
     {
@@ -126,11 +126,11 @@ class CreditNoteService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\CreditNote
+     * @return \rtbStripe\CreditNote
      */
     public function update($id, $params = null, $opts = null)
     {
@@ -143,11 +143,11 @@ class CreditNoteService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\CreditNote
+     * @return \rtbStripe\CreditNote
      */
     public function voidCreditNote($id, $params = null, $opts = null)
     {

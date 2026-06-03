@@ -1,8 +1,8 @@
 <?php
 
-namespace Stripe\Util;
+namespace rtbStripe\Util;
 
-use Stripe\StripeObject;
+use rtbStripe\StripeObject;
 
 abstract class Util
 {
@@ -43,7 +43,7 @@ abstract class Util
      */
     public static function convertToStripeObject($resp, $opts)
     {
-        $types = \Stripe\Util\ObjectTypes::mapping;
+        $types = \rtbStripe\Util\ObjectTypes::mapping;
         if (self::isList($resp)) {
             $mapped = [];
             foreach ($resp as $i) {
@@ -56,7 +56,7 @@ abstract class Util
             if (isset($resp['object']) && \is_string($resp['object']) && isset($types[$resp['object']])) {
                 $class = $types[$resp['object']];
             } else {
-                $class = \Stripe\StripeObject::class;
+                $class = \rtbStripe\StripeObject::class;
             }
 
             return $class::constructFrom($resp, $opts);
@@ -132,7 +132,7 @@ abstract class Util
      */
     public static function objectsToIds($h)
     {
-        if ($h instanceof \Stripe\ApiResource) {
+        if ($h instanceof \rtbStripe\ApiResource) {
             return $h->id;
         }
         if (static::isList($h)) {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Stripe;
+namespace rtbStripe;
 
-use Stripe\Util\CaseInsensitiveArray;
+use rtbStripe\Util\CaseInsensitiveArray;
 
 /**
  * Class ApiResponse.

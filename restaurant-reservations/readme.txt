@@ -1,8 +1,10 @@
 === Five Star Restaurant Reservations - WordPress Booking Plugin ===
 Contributors: Rustaurius
-Tested Up To: 7.0
 Tags: restaurant reservations, restaurant booking, reservation, reservation system, open table
-Stable tag: 2.7.19
+Requires at Least: 6.0
+Tested Up To: 7.0
+Requires PHP: 8.0
+Stable tag: 2.7.20
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -301,6 +303,11 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 - [Our Support Center](https://www.fivestarplugins.com/support-center/)
 
 == Changelog ==
+
+= 2.7.20 (2026-06-03) =
+- Updates to prevent a conflict that was happening with the Gift Cards Pro plugin Stripe payments implementation.
+- Removing/fixing deprecated notices.
+- Release includes a validated fix for a reported Patchstack vulnerability.
 
 = 2.7.19 (2026-05-25) =
 - Fixed an issue in which, when creating/editing a booking via the admin, it would, in some cases, incorrectly use global scheduling rules instead of location-specific scheduling rules in the calendar.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe\Exception;
+namespace rtbStripe\Exception;
 
 /**
  * IdempotencyException is thrown in cases where an idempotency key was used

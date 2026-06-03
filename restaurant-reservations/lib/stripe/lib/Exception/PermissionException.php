@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe\Exception;
+namespace rtbStripe\Exception;
 
 /**
  * PermissionException is thrown in cases where access was attempted on a

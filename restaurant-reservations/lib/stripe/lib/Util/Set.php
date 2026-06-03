@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe\Util;
+namespace rtbStripe\Util;
 
 use ArrayIterator;
 use IteratorAggregate;
@@ -37,6 +37,7 @@ class Set implements IteratorAggregate
         return \array_keys($this->_elts);
     }
 
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new ArrayIterator($this->toArray());

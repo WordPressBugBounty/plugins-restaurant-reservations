@@ -2,19 +2,19 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class SubscriptionItemService extends \Stripe\Service\AbstractService
+class SubscriptionItemService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of your subscription items for a given subscription.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -35,11 +35,11 @@ class SubscriptionItemService extends \Stripe\Service\AbstractService
      *
      * @param string $parentId
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function allUsageRecordSummaries($parentId, $params = null, $opts = null)
     {
@@ -51,11 +51,11 @@ class SubscriptionItemService extends \Stripe\Service\AbstractService
      * or replaced.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\SubscriptionItem
+     * @return \rtbStripe\SubscriptionItem
      */
     public function create($params = null, $opts = null)
     {
@@ -89,11 +89,11 @@ class SubscriptionItemService extends \Stripe\Service\AbstractService
      *
      * @param string $parentId
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\UsageRecord
+     * @return \rtbStripe\UsageRecord
      */
     public function createUsageRecord($parentId, $params = null, $opts = null)
     {
@@ -106,11 +106,11 @@ class SubscriptionItemService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\SubscriptionItem
+     * @return \rtbStripe\SubscriptionItem
      */
     public function delete($id, $params = null, $opts = null)
     {
@@ -122,11 +122,11 @@ class SubscriptionItemService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\SubscriptionItem
+     * @return \rtbStripe\SubscriptionItem
      */
     public function retrieve($id, $params = null, $opts = null)
     {
@@ -138,11 +138,11 @@ class SubscriptionItemService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\SubscriptionItem
+     * @return \rtbStripe\SubscriptionItem
      */
     public function update($id, $params = null, $opts = null)
     {

@@ -2,7 +2,7 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service\Radar;
+namespace rtbStripe\Service\Radar;
 
 /**
  * Service factory class for API resources in the Radar namespace.
@@ -11,7 +11,7 @@ namespace Stripe\Service\Radar;
  * @property ValueListItemService $valueListItems
  * @property ValueListService $valueLists
  */
-class RadarServiceFactory extends \Stripe\Service\AbstractServiceFactory
+class RadarServiceFactory extends \rtbStripe\Service\AbstractServiceFactory
 {
     /**
      * @var array<string, string>

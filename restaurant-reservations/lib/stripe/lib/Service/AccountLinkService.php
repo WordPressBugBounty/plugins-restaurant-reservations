@@ -2,9 +2,9 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class AccountLinkService extends \Stripe\Service\AbstractService
+class AccountLinkService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Creates an AccountLink object that includes a single-use Stripe URL that the
@@ -12,11 +12,11 @@ class AccountLinkService extends \Stripe\Service\AbstractService
      * Onboarding flow.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\AccountLink
+     * @return \rtbStripe\AccountLink
      */
     public function create($params = null, $opts = null)
     {

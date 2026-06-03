@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe;
+namespace rtbStripe;
 
 /**
  * Class RecipientTransfer.
@@ -20,10 +20,10 @@ namespace Stripe;
  * @property string $failure_code
  * @property string $failure_message
  * @property bool $livemode
- * @property \Stripe\StripeObject $metadata
+ * @property \rtbStripe\StripeObject $metadata
  * @property string $method
  * @property string $recipient
- * @property \Stripe\Collection $reversals
+ * @property \rtbStripe\Collection $reversals
  * @property bool $reversed
  * @property string $source_type
  * @property string $statement_descriptor

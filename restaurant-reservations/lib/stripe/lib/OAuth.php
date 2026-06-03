@@ -1,6 +1,6 @@
 <?php
 
-namespace Stripe;
+namespace rtbStripe;
 
 abstract class OAuth
 {
@@ -34,7 +34,7 @@ abstract class OAuth
      * @param null|array $params
      * @param null|array $opts
      *
-     * @throws \Stripe\Exception\OAuth\OAuthErrorException if the request fails
+     * @throws \rtbStripe\Exception\OAuth\OAuthErrorException if the request fails
      *
      * @return StripeObject object containing the response from the API
      */
@@ -58,7 +58,7 @@ abstract class OAuth
      * @param null|array $params
      * @param null|array $opts
      *
-     * @throws \Stripe\Exception\OAuth\OAuthErrorException if the request fails
+     * @throws \rtbStripe\Exception\OAuth\OAuthErrorException if the request fails
      *
      * @return StripeObject object containing the response from the API
      */

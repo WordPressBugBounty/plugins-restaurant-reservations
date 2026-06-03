@@ -2,9 +2,9 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service;
+namespace rtbStripe\Service;
 
-class InvoiceService extends \Stripe\Service\AbstractService
+class InvoiceService extends \rtbStripe\Service\AbstractService
 {
     /**
      * You can list all invoices, or list the invoices for a specific customer. The
@@ -12,11 +12,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      * invoices appearing first.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -31,11 +31,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      *
      * @param string $parentId
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function allLines($parentId, $params = null, $opts = null)
     {
@@ -51,11 +51,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      * your customers.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function create($params = null, $opts = null)
     {
@@ -70,11 +70,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function delete($id, $params = null, $opts = null)
     {
@@ -88,11 +88,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function finalizeInvoice($id, $params = null, $opts = null)
     {
@@ -105,11 +105,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function markUncollectible($id, $params = null, $opts = null)
     {
@@ -125,11 +125,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function pay($id, $params = null, $opts = null)
     {
@@ -141,11 +141,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function retrieve($id, $params = null, $opts = null)
     {
@@ -164,11 +164,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function sendInvoice($id, $params = null, $opts = null)
     {
@@ -199,11 +199,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      * the <code>subscription_proration_date</code> on the upcoming invoice resource.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function upcoming($params = null, $opts = null)
     {
@@ -217,11 +217,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      * line items.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function upcomingLines($params = null, $opts = null)
     {
@@ -240,11 +240,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function update($id, $params = null, $opts = null)
     {
@@ -259,11 +259,11 @@ class InvoiceService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Invoice
+     * @return \rtbStripe\Invoice
      */
     public function voidInvoice($id, $params = null, $opts = null)
     {

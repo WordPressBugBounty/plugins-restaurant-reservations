@@ -2,7 +2,7 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe;
+namespace rtbStripe;
 
 /**
  * @property string $id Unique identifier for the object.
@@ -27,10 +27,10 @@ class EphemeralKey extends ApiResource
      * @param null|array $params
      * @param null|array|string $opts
      *
-     * @throws \Stripe\Exception\InvalidArgumentException if stripe_version is missing
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\InvalidArgumentException if stripe_version is missing
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\EphemeralKey the created key
+     * @return \rtbStripe\EphemeralKey the created key
      */
     public static function create($params = null, $opts = null)
     {

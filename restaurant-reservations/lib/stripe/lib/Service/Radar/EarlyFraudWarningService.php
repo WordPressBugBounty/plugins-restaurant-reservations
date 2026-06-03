@@ -2,19 +2,19 @@
 
 // File generated from our OpenAPI spec
 
-namespace Stripe\Service\Radar;
+namespace rtbStripe\Service\Radar;
 
-class EarlyFraudWarningService extends \Stripe\Service\AbstractService
+class EarlyFraudWarningService extends \rtbStripe\Service\AbstractService
 {
     /**
      * Returns a list of early fraud warnings.
      *
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Collection
+     * @return \rtbStripe\Collection
      */
     public function all($params = null, $opts = null)
     {
@@ -30,11 +30,11 @@ class EarlyFraudWarningService extends \Stripe\Service\AbstractService
      *
      * @param string $id
      * @param null|array $params
-     * @param null|array|\Stripe\Util\RequestOptions $opts
+     * @param null|array|\rtbStripe\Util\RequestOptions $opts
      *
-     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     * @throws \rtbStripe\Exception\ApiErrorException if the request fails
      *
-     * @return \Stripe\Radar\EarlyFraudWarning
+     * @return \rtbStripe\Radar\EarlyFraudWarning
      */
     public function retrieve($id, $params = null, $opts = null)
     {
