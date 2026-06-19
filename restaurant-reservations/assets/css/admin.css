@@ -1835,6 +1835,31 @@
 
 
 /*********************************
+RESET NOTIFICATIONS BUTTON
+*********************************/
+.rtb-settings-reset-notifications {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: transparent;
+	border: 1px solid #1b335f;
+	color: #1b335f;
+	font-size: 14px;
+	cursor: pointer;
+	height: 36px;
+	padding: 0 16px;
+	margin: 0 auto 32px 0;
+	border-radius: 8px;
+	box-shadow: none;
+	transition: background .25s, color .25s, border-color .25s;
+}
+.rtb-settings-reset-notifications:hover {
+	background: #1b335f;
+	color: #fff;
+}
+
+
+/*********************************
 CUSTOM FIELDS
 *********************************/
 #cffrtb-field-editor.rtb-admin-modal .button {

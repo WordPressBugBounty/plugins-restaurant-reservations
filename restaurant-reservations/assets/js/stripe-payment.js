@@ -16,10 +16,10 @@ else {
 
 function stripeResponseHandler(status, response) {
     if (response.error) {
-		// show errors returned by Stripe
-        jQuery(".payment-errors").html(response.error.message);
-		// re-enable the submit button
-		jQuery('#stripe-submit').attr("disabled", false);
+      // show errors returned by Stripe
+      jQuery(".payment-errors").html(response.error.message);
+      // re-enable the submit button
+      jQuery('#stripe-submit').attr("disabled", false);
     }
     else {
         var form$ = jQuery("#stripe-payment-form");
@@ -47,11 +47,108 @@ function enable_payment_form() {
   jQuery('#stripe-submit').prop('disabled', false);
 }
 
+/**
+ * Handle the return leg of a Stripe redirect-based payment (e.g. Bancomat, iDEAL).
+ *
+ * Returns true if a redirect-return was detected and handled, else false.
+ */
+function rtb_handle_stripe_redirect_return( $ ) {
+
+  var urlParams = new URLSearchParams( window.location.search );
+  var returnedIntentId = urlParams.get( 'payment_intent' );
+  var returnedIntentSecret = urlParams.get( 'payment_intent_client_secret' );
+  var booking_id = urlParams.get( 'booking_id' );
+
+  if ( ! returnedIntentId || ! returnedIntentSecret || ! booking_id ) {
+
+    return false;
+  }
+
+  // Retrieve the intent directly from Stripe to confirm its actual status.
+  _stripe.retrievePaymentIntent( returnedIntentSecret ).then( function( result ) {
+
+    var params = {
+      nonce:      rtb_stripe_payment.nonce,
+      action:     'rtb_stripe_pmt_succeed',
+      booking_id: booking_id,
+    };
+
+    if ( result.error ) {
+
+      params['success'] = false;
+      params['message'] = result.error.message;
+
+      // Show error if the payment form is present on this page, else alert.
+      if ( $( '.payment-errors' ).length ) {
+
+        error_handler( result.error.message );
+      }
+      else {
+
+        alert( result.error.message );
+      }
+
+    }
+    else {
+
+      var pi = result.paymentIntent;
+
+      if ( pi.status === 'succeeded' || pi.status === 'requires_capture' ) {
+
+        params['success']        = true;
+        params['payment_amount'] = pi.amount;
+        params['payment_id']     = pi.id;
+
+      }
+      else {
+
+        params['success'] = false;
+        params['message'] = 'Payment status: ' + pi.status;
+      }
+    }
+
+    $.post( ajaxurl, params, function( response ) {
+
+      response = JSON.parse( response );
+
+      if ( true == response.success ) {
+
+        // Build a clean URL from just the pathname (strips Stripe's params) then append payment=paid params.
+        var url = new URL( window.location.pathname, window.location.origin );
+
+        for ( const [key, value] of Object.entries( response.urlParams ) ) {
+
+          url.searchParams.append( key, value );
+        }
+
+        window.location = url.href;
+      }
+      else {
+
+        if ( $( '.payment-errors' ).length ) {
+
+          error_handler( response.message );
+        }
+        else {
+          alert( response.message );
+        }
+
+        console.log( 'RTB-Stripe redirect-return error: ', response.message );
+      }
+    });
+  });
+
+  return true;
+}
+
 jQuery(document).ready(function($) {
 
   // setup payment element
   if ( rtb_stripe_payment.stripe_sca ) {
-    
+
+    // If this is a redirect-return (e.g. from Bancomat), process it and stop here.
+    if ( rtb_handle_stripe_redirect_return( $ ) ) { return; }
+
     var options = {
       mode: 'payment',
       theme: 'flat',
@@ -98,8 +195,8 @@ jQuery(document).ready(function($) {
 
     event.preventDefault();
     
-		// disable the submit button to prevent repeated clicks
-		disable_payment_form();
+    // disable the submit button to prevent repeated clicks
+    disable_payment_form();
 
     // send the card details to Stripe
     if ( rtb_stripe_payment.stripe_sca ) {
@@ -115,12 +212,16 @@ jQuery(document).ready(function($) {
       }
 
       var booking_id = $('#stripe-payment-form').data( 'booking_id' );
-      // Call your backend to create the Checkout Session
+
+      // Append booking_id to return_url so the redirect-return handler can read it when Stripe sends the customer back.
+      var return_url = window.location.href + ( window.location.search ? '&' : '?' ) + 'booking_id=' + booking_id;
+
+      // Call your backend to create the Payment Intent.
       var params = {
         'nonce': rtb_stripe_payment.nonce,
         'action': 'rtb_stripe_get_intent',
         'booking_id': booking_id,
-        'return_url': window.location.href,
+        'return_url': return_url,
       };
 
       $.post(ajaxurl, params, function(result) {
@@ -220,7 +321,7 @@ jQuery(document).ready(function($) {
       }, stripeResponseHandler);
     }
 
-		// prevent the form from submitting with the default action
-		return false;
-	});
+    // prevent the form from submitting with the default action
+    return false;
+  });
 });

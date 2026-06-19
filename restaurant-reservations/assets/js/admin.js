@@ -1171,7 +1171,7 @@ jQuery(document).ready(function($){
 jQuery( document ).ready( function() {
 	jQuery( '.rtb-settings-reset-notifications' ).on( 'click', function() {
 
-		if ( confirm( 'Are you sure that you want to delete all notifications?' ) ) {
+		if ( confirm( 'Are you sure that you want to delete all notifications data? This will empty the option in the DB, so you can safely create new notifications from scratch. Please scroll down and save the settings page after doing this.' ) ) {
 
 			jQuery( this ).parent().parent().addClass( 'rtb-hidden' );
 	

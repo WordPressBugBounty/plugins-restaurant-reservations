@@ -140,7 +140,6 @@ class rtbHelper {
   public static function display_help_button() {
     if ( self::aiaa_is_active() ) { return; }
     if ( ! rtbHelper::should_button_display() ) { return; }
-    rtbHelper::enqueue_scripts();
     $page_details = self::get_page_details();
     ?>
       <button class="rtb-dashboard-help-button" aria-label="Help">?</button>
@@ -193,6 +192,9 @@ class rtbHelper {
   }
 
   public static function enqueue_scripts() {
+
+    if ( ! self::should_button_display() ) { return; }
+
     wp_enqueue_style( 'rtb-admin-helper-button', RTB_PLUGIN_URL . '/assets/css/helper-button.css', array(), RTB_VERSION );
     wp_enqueue_script( 'rtb-admin-helper-button', RTB_PLUGIN_URL . '/assets/js/helper-button.js', array( 'jquery' ), RTB_VERSION, true );
   }
@@ -313,5 +315,5 @@ class rtbHelper {
 }
 
 add_action( 'plugins_loaded', array( 'rtbHelper', 'aiaa_add_filter' ), 20 );
-
+add_action( 'admin_enqueue_scripts', array( 'rtbHelper', 'enqueue_scripts' ) );
 }

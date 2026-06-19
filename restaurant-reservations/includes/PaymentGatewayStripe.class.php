@@ -27,6 +27,8 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
     add_action( 'rtb_booking_load_post_data', array( $this, 'populate_booking_stripe_info' ), 30, 1 );
     add_filter( 'rtb_insert_booking_metadata', array( $this, 'save_booking_gateway_info' ), 30, 2 );
 
+    add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_redirect_return_script' ) );
+
     /**
      * Adding info and capability to charge the hold manually in the bookings table for admin
      */
@@ -368,7 +370,7 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
         'clientSecret'  => $intent->client_secret,
         'name'          => $booking->name,
         'email'         => $booking->email,
-        'redirect_url'  => $return_url,
+        'redirect_url'  => add_query_arg( 'booking_id', $booking->ID, $return_url ),
       );
 
       $this->response_message( true, __( 'Payment Intent generated succsssfully', 'restaurant-reservations' ), $args );
@@ -403,6 +405,16 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
     $booking = new rtbBooking();
     $loaded = $booking->load_post( intval( $_POST['booking_id'] ) );
 
+    // If already paid, just return the success URL params.
+    if ( $loaded && ! empty( $booking->receipt_id ) && 'paid' === $booking->post_status ) {
+
+      $this->sca_response( true, array(
+        'payment'       => 'paid',
+        'booking_id'    => intval( $booking->ID ),
+        'booking_email' => $booking->email,
+      ));
+    }    
+
     try {
 
       if ( isset( $_POST['success'] ) && 'false' != sanitize_text_field( $_POST['success'] ) ) {
@@ -427,6 +439,8 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
 
         // Not needed anymore
         unset( $booking->stripe_payment_intent_id );
+
+        // 'processing' here would mean a Bancomat-type payment returned as processing, which is safe to treat as succeeded
         $booking->payment_paid();
 
         // url_params on successful payment
@@ -486,10 +500,13 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
       $is_hold = $rtb_controller->settings->get_setting( 'rtb-stripe-hold' );
 
       // For normal payments: status must be 'succeeded'
+      // For Bancomat-type payments: status can be 'succeeded' or 'processing'
       // For hold/manual-capture: status must be 'requires_capture'
-      $valid_status = $is_hold ? 'requires_capture' : 'succeeded';
+      $valid_statuses = $is_hold ? array( 'requires_capture' ) : array( 'succeeded', 'processing' );
 
-      return $intent->status === $valid_status;
+      $result = in_array( $intent->status, $valid_statuses, true );
+
+      return $result;
     }
     catch ( Exception $ex ) {
 
@@ -786,6 +803,52 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
       echo '<p class="stripe-payment-hold-msg">' . esc_html( $rtb_controller->settings->get_setting( 'label-deposit-placing-hold'  ) ) . '</p>';
     }
   }
+
+  /**
+   * Enqueue scripts to correctly handle Bancomat-type payments on return
+   * 
+   * @since 2.7.21
+   */
+  public function enqueue_redirect_return_script() {
+    global $rtb_controller;
+
+    if ( empty( $_GET['payment_intent'] ) || empty( $_GET['booking_id'] ) ) { return; }
+
+    if ( ! $rtb_controller->settings->get_setting( 'rtb-stripe-sca' ) ) { return; }
+
+    $stripe_lib_version = 'v3';
+
+    wp_enqueue_script(
+      'rtb-stripe',
+      "https://js.stripe.com/{$stripe_lib_version}/",
+      array( 'jquery' ),
+      RTB_VERSION,
+      true
+    );
+
+    wp_enqueue_script(
+      'rtb-stripe-payment',
+      RTB_PLUGIN_URL . '/assets/js/stripe-payment.js',
+      array( 'jquery', 'rtb-stripe' ),
+      RTB_VERSION,
+      true
+    );
+
+    wp_localize_script(
+      'rtb-stripe-payment',
+      'rtb_stripe_payment',
+      array(
+        'nonce'                => wp_create_nonce( 'rtb-stripe-payment' ),
+        'amount'               => 0,
+        'currency'             => $rtb_controller->settings->get_setting( 'rtb-currency' ),
+        'hold'                 => $rtb_controller->settings->get_setting( 'rtb-stripe-hold' ),
+        'stripe_mode'          => $rtb_controller->settings->get_setting( 'rtb-stripe-mode' ),
+        'stripe_sca'           => true,
+        'live_publishable_key' => $rtb_controller->settings->get_setting( 'rtb-stripe-live-publishable' ),
+        'test_publishable_key' => $rtb_controller->settings->get_setting( 'rtb-stripe-test-publishable' ),
+      )
+    );
+  } 
 }
 
 }
