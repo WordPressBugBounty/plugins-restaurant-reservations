@@ -2201,19 +2201,27 @@ If you were not the one to cancel this booking, please contact us.
 		$content = '';
 
 		$premium_features = '
-			<p><strong>' . __( 'The premium version also gives you access to the following features:', 'restaurant-reservations' ) . '</strong></p>
-			<ul class="rtb-dashboard-new-footer-one-benefits">
-				<li>' . __( 'Multiple Form Layouts', 'restaurant-reservations' ) . '</li>
-				<li>' . __( 'Custom Booking Fields', 'restaurant-reservations' ) . '</li>
-				<li>' . __( 'Advanced Email Designer', 'restaurant-reservations' ) . '</li>
-				<li>' . __( 'Set Table and Seat Restrictions', 'restaurant-reservations' ) . '</li>
-				<li>' . __( 'Automatic Booking Confirmation', 'restaurant-reservations' ) . '</li>
-				<li>' . __( 'Bookings Page for Staff', 'restaurant-reservations' ) . '</li>
-				<li>' . __( 'Export Bookings', 'restaurant-reservations' ) . '</li>
-				<li>' . __( 'Email Support', 'restaurant-reservations' ) . '</li>
-			</ul>
-			<div class="rtb-dashboard-new-footer-one-buttons">
-				<a class="rtb-dashboard-new-upgrade-button" href="https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1&utm_source=rtb_settings&utm_content=' . $section_and_perm_type . '" target="_blank">' . __( 'UPGRADE NOW', 'restaurant-reservations' ) . '</a>
+			<div class="rtb-settings-preview-other-features">
+				<div id="rtb-dashboard-new-footer-one">
+					<div class="rtb-dashboard-new-footer-one-inside">
+						<div class="rtb-dashboard-new-footer-one-left">
+							<div class="rtb-dashboard-new-footer-one-title">' . __( 'The premium version also gives you access to the following features:', 'restaurant-reservations' ) . '</div>
+							<ul class="rtb-dashboard-new-footer-one-benefits">
+								<li>' . __( 'Multiple Form Layouts', 'restaurant-reservations' ) . '</li>
+								<li>' . __( 'Custom Booking Fields', 'restaurant-reservations' ) . '</li>
+								<li>' . __( 'Advanced Email Designer', 'restaurant-reservations' ) . '</li>
+								<li>' . __( 'Set Table and Seat Restrictions', 'restaurant-reservations' ) . '</li>
+								<li>' . __( 'Automatic Booking Confirmation', 'restaurant-reservations' ) . '</li>
+								<li>' . __( 'Bookings Page for Staff', 'restaurant-reservations' ) . '</li>
+								<li>' . __( 'Export Bookings', 'restaurant-reservations' ) . '</li>
+								<li>' . __( 'Email Support', 'restaurant-reservations' ) . '</li>
+							</ul>
+						</div>
+						<div class="rtb-dashboard-new-footer-one-buttons">
+							<a class="rtb-dashboard-new-upgrade-button" href="https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1&utm_source=rtb_settings&utm_content=' . $section_and_perm_type . '" target="_blank">' . __( 'UPGRADE NOW', 'restaurant-reservations' ) . '</a>
+						</div>
+					</div>
+				</div>
 			</div>
 		';
 

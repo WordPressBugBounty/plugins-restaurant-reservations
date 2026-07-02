@@ -825,6 +825,7 @@
 .rtb-settings-preview-images {
 	display: flex;
 	justify-content: space-between;
+	flex-wrap: wrap;
 	width: 100%;
 }
 .rtb-settings-preview-images img {

@@ -4,7 +4,7 @@ Tags: restaurant reservations, restaurant booking, reservation, reservation syst
 Requires at Least: 6.0
 Tested Up To: 7.0
 Requires PHP: 8.0
-Stable tag: 2.7.21
+Stable tag: 2.7.22
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -303,6 +303,9 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 - [Our Support Center](https://www.fivestarplugins.com/support-center/)
 
 == Changelog ==
+
+= 2.7.22 (2026-07-02) =
+- Fixed an issue related to upgrading. 
 
 = 2.7.21 (2026-06-19) =
 - Fix/update for Bancomat-type (Stripe) payments not being marked as paid in the plugin and, as such, not being switched to the correct status after payment.
