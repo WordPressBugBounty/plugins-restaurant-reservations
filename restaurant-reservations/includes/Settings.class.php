@@ -1777,6 +1777,27 @@ If you were not the one to cancel this booking, please contact us.
 			)
 		);
 
+		$sap->add_setting(
+			'rtb-settings',
+			'rtb-notifications-daily-summary',
+			'select',
+			array(
+				'id'            => 'daily-summary-future-bookings',
+				'title'         => __( 'Include Future Bookings?', 'restaurant-reservations' ),
+				'description'   => __( 'By default, the daily summary email will always include today\'s bookings. If you would like to also see the bookings for upcoming days, use this option choose how many days to include.', 'restaurant-reservations' ),
+				'blank_option'	=> true,
+				'options'       => array(
+					'1' => '1',
+					'2' => '2',
+					'3' => '3',
+					'4' => '4',
+					'5' => '5',
+					'6' => '6',
+					'7' => '7',
+				),
+			)
+		);
+		
 		$sap->add_section(
 			'rtb-settings',
 			array(

@@ -867,7 +867,7 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 		public function reset_notifications() {
 			global $rtb_controller;
 
-			if ( !check_ajax_referer( 'rtb-admin', 'nonce' ) ) {
+			if ( !check_ajax_referer( 'rtb-admin', 'nonce' ) || !current_user_can( 'manage_options' ) ) {
 				rtbHelper::bad_nonce_ajax();
 			}
 

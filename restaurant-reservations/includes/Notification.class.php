@@ -33,6 +33,13 @@ abstract class rtbNotification {
 	public $notification_id;
 
 	/**
+	 * Manual message
+	 * @var string
+	 * @since 2.7.23
+	 */
+	public $manual_message;
+
+	/**
 	 * Define the notification essentials
 	 * @since 0.0.1
 	 */

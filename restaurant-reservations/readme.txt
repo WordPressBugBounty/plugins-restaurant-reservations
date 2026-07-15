@@ -4,7 +4,7 @@ Tags: restaurant reservations, restaurant booking, reservation, reservation syst
 Requires at Least: 6.0
 Tested Up To: 7.0
 Requires PHP: 8.0
-Stable tag: 2.7.22
+Stable tag: 2.7.23
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -303,6 +303,12 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 - [Our Support Center](https://www.fivestarplugins.com/support-center/)
 
 == Changelog ==
+
+= 2.7.23 (2026-07-15) =
+- Adds an option to include up to 7 days of future bookings, in addition to today's bookings, in the daily summary email.
+- Adds a cap (10) to the number of times the daily summary email will try to resend if the initial email fails. 
+- Updates to correct some styling issues in the admin.
+- Patches a reported vulnerability.
 
 = 2.7.22 (2026-07-02) =
 - Fixed an issue related to upgrading. 

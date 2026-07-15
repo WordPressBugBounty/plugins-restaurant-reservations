@@ -262,18 +262,28 @@ class rtbNotifications {
 		
 		$next_send_time = $last_send_datetime->format('U') + $send_time_hours * 60*60 + $send_time_minutes * 60;
 		
-		if ( $next_send_time > time() ) { return; }
+		if ( $next_send_time > time() ) { 
+
+			update_option( 'rtb-daily-summary-today-attempts', 0 );
+
+			return;
+		}
 
 		$display_table = $rtb_controller->settings->get_setting( 'enable-tables' );
 		$multiple_locations = $rtb_controller->locations->do_locations_exist();
+		$future_bookings_days = $rtb_controller->settings->get_setting( 'daily-summary-future-bookings' ) ? $rtb_controller->settings->get_setting( 'daily-summary-future-bookings' ) : 0;
+		$start_time = current_time( 'Y-m-d 00:00:00' );
+		$end_time = date( 'Y-m-d 23:59:59', strtotime( "+{$future_bookings_days} days", current_time( 'timestamp' ) ) );
 
 		$args = array(
 			'post_type' 		=> 'rtb-booking',
 			'posts_per_page'	=> -1,
-			'date_query' 		=> array(
-				'year' 				=> date( 'Y' ),
-				'month' 			=> date( 'm' ),
-				'day' 				=> date( 'd' )
+			'date_query'        => array(
+				array(
+					'after'     => $start_time,
+					'before'    => $end_time,
+					'inclusive' => true,
+				),
 			),
 			'post_status' 		=> array_keys( $rtb_controller->cpts->booking_statuses ),
 			'orderby' 			=> 'date',
@@ -307,7 +317,8 @@ class rtbNotifications {
 			<table class='rtb-view-bookings-table'>
 				<thead>
 					<tr>
-						<?php if ( $multiple_locations ) {?> <th><?php _e('Location', 'restaurant-reservations'); ?></th><?php } ?>
+						<?php if ( $multiple_locations ) { ?> <th><?php _e('Location', 'restaurant-reservations'); ?></th><?php } ?>
+						<?php if ( $rtb_controller->settings->get_setting( 'daily-summary-future-bookings' ) ) { ?> <th><?php _e('Date', 'restaurant-reservations'); ?></th><?php } ?>
 						<th><?php _e('Time', 'restaurant-reservations'); ?></th>
 						<th><?php _e('Party', 'restaurant-reservations'); ?></th>
 						<th><?php _e('Name', 'restaurant-reservations'); ?></th>
@@ -334,6 +345,7 @@ class rtbNotifications {
 						?>
 						<tr>
 							<?php if ( $multiple_locations ) { $term = get_term( $booking_object->location ); echo ( ! is_wp_error( $term ) ? "<td>{$term->name}</td>" : '<td></td>' ); } ?>
+							<?php if ( $rtb_controller->settings->get_setting( 'daily-summary-future-bookings' ) ) { ?> <td><?php echo ( new DateTime( $booking_object->date ) )->format( 'M j' ); ?></td><?php } ?>
 							<td><?php echo ( new DateTime( $booking_object->date ) )->format( 'H:i:s' ); ?></td>
 							<td><?php echo esc_html( $booking_object->party ); ?></td>
 							<td><?php echo esc_html( $booking_object->name ); ?></td>
@@ -377,16 +389,24 @@ class rtbNotifications {
 		$notification->subject = __( 'Daily Email Summary', 'restaurant-reservations' );
 		$notification->manual_message = $email_content;
 
-		if ( $notification->prepare_notification() ) {
- 
-			if ( $notification->send_notification() ) {
+		$current_count = (int) get_option( 'rtb-daily-summary-today-attempts', 0 );
+		$new_count = $current_count + 1;
+		update_option( 'rtb-daily-summary-today-attempts', $new_count );
 
-				$now = new DateTime( 'now', wp_timezone() );
+		$should_update_send_date = true;
 
-				update_option( 'rtb-daily-summary-send-date', $now->format( 'Y-m-d' ) );
-			}
+		if ( $notification->prepare_notification() and $new_count < 11 ) {
+
+			$should_update_send_date = $notification->send_notification();
 		}
-	}
+
+		if ( $should_update_send_date ) {
+
+			$now = new DateTime( 'now', wp_timezone() );
+
+			update_option( 'rtb-daily-summary-send-date', $now->format( 'Y-m-d' ) );
+		}
+}
 
 	/**
 	 * Set booking data

@@ -80,7 +80,7 @@ class rtbDashboard {
 
 			<?php if ( ! $permission or ! $ultimate or get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) {
 				$premium_info = '<div class="rtb-dashboard-visit-our-site">';
-				$premium_info .= sprintf( __( '<a href="%s" target="_blank">Visit our website</a> to learn how to upgrade to premium.', 'restaurant-reservations' ), 'https://www.fivestarplugins.com/premium-upgrade-instructions/?utm_source=fdm_dashboard&utm_content=visit_our_site_link' );
+				$premium_info .= sprintf( __( '<a href="%s" target="_blank">Visit our website</a> to learn how to upgrade to premium.', 'restaurant-reservations' ), 'https://www.fivestarplugins.com/premium-upgrade-instructions/?utm_source=rtb_dashboard&utm_content=visit_our_site_link' );
 				$premium_info .= '</div>';
 
 				$premium_info = apply_filters( 'fsp_dashboard_top', $premium_info, 'RTB', 'https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1' );
@@ -185,8 +185,10 @@ class rtbDashboard {
 								</ul>
 							</div>
 							<div class="rtb-dashboard-new-footer-one-buttons">
-								<a class="rtb-dashboard-new-upgrade-button" href="https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1&utm_source=fdm_dashboard&utm_content=footer_upgrade" target="_blank">UPGRADE NOW</a>
+								<a class="rtb-dashboard-new-upgrade-button" href="https://www.fivestarplugins.com/license-payment/?Selected=RTB&Quantity=1&utm_source=rtb_dashboard&utm_content=footer_upgrade" target="_blank">UPGRADE NOW</a>
 								<?php if ( ! get_option("RTB_Trial_Happening") and ! get_option( "RTU_Trial_Happening" ) ) { 
+									$trial_info = sprintf( __( '<div class="rtb-dashboard-visit-site-to-learn-about-trial"><a href="%s" target="_blank">Visit our website</a> to learn how to get a free 7-day trial of the premium or ultimate versions.</div>'), 'https://www.fivestarplugins.com/premium-upgrade-instructions/?utm_source=rtb_dashboard&utm_content=sidebar_visit_our_site_link' );
+
 									$version_select_modal = '<div class="rtb-trial-version-select-modal rtb-hidden">';
 									$version_select_modal .= '<div class="rtb-trial-version-select-modal-title">' . __( 'Select version to trial', 'restaurant-reservations' ) . '</div>';
 									$version_select_modal .= '<div class="rtb-trial-version-select-modal-option"><input type="radio" value="premium" name="rtb-trial-version" checked /> ' . __( 'Premium', 'restaurant-reservations' ) . '</div>';

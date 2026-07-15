@@ -95,8 +95,7 @@ class rtbPaymentGatewayPayPal implements rtbPaymentGateway
    * 
    * @since 2.1.0
    */
-  public function handle_ipn()
-  {
+  public function handle_ipn() {
     global $rtb_controller;
 
     if ( ! $rtb_controller->settings->get_setting( 'require-deposit' ) ) {
@@ -164,18 +163,84 @@ class rtbPaymentGatewayPayPal implements rtbPaymentGateway
 
     if (strcmp ($res, "VERIFIED") == 0) {
         
-      $paypal_receipt_number = sanitize_text_field( $_POST['txn_id'] );
-      $payment_amount = sanitize_text_field( $_POST['mc_gross'] );
-      
+      // Validate posted fields before trusting them
+
+      $payment_status         = isset( $_POST['payment_status'] )   ? sanitize_text_field( $_POST['payment_status'] ) : '';
+      $mc_gross               = isset( $_POST['mc_gross'] )         ? (float) $_POST['mc_gross']                      : 0;
+      $mc_currency            = isset( $_POST['mc_currency'] )      ? sanitize_text_field( $_POST['mc_currency'] )    : '';
+      $receiver_email         = isset( $_POST['receiver_email'] )   ? sanitize_email( $_POST['receiver_email'] )      : '';
+      $business_email         = isset( $_POST['business'] )         ? sanitize_email( $_POST['business'] )            : '';
+      $paypal_receipt_number  = isset( $_POST['txn_id'] )           ? sanitize_text_field( $_POST['txn_id'] )         : '';
+
+      // Verify payment is actually completed
+      if ( $payment_status !== 'Completed' ) {
+
+        if ( $debug ) { update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN rejected: payment_status={$payment_status}" . PHP_EOL ); }
+        
+        return;
+      }
+
+      // Receiver must match the merchant configured in plugin settings
+      $expected_business = $rtb_controller->settings->get_setting( 'rtb-paypal-email' );
+      $posted_receiver   = !empty( $receiver_email ) ? $receiver_email : $business_email;
+
+      if ( strcasecmp( trim( $posted_receiver ), trim( $expected_business ) ) !== 0 ) {
+
+        if ( $debug ) { update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN rejected: receiver mismatch ({$posted_receiver})" . PHP_EOL ); }
+        
+        return;
+      }
+
+      // Currency must match plugin settings
+      $expected_currency = $rtb_controller->settings->get_setting( 'rtb-currency' );
+
+      if ( strcasecmp( $mc_currency, $expected_currency ) !== 0 ) {
+
+        if ( $debug ) { update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN rejected: currency mismatch ({$mc_currency})" . PHP_EOL ); }
+        
+        return;
+      }
+
       parse_str($_POST['custom'], $custom_vars);
       $booking_id = intval( $custom_vars['booking_id'] );
-      
+
       $booking = new rtbBooking();
       $booking->load_post( $booking_id );
 
-      if ( ! $booking ) { return; }
+      if ( ! $booking || empty( $booking->ID ) ) { return; }
+
+      // Booking must still be waiting on payment (prevents replay against an already-paid or otherwise-finalized booking)
+      if ( $booking->post_status !== 'payment_pending' ) {
+
+        if ( $debug ) { update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN rejected: booking {$booking_id} not payment_pending" . PHP_EOL ); }
         
-      $booking->deposit = $payment_amount;
+        return;
+      }
+
+      // Amount must meet the expected deposit for this booking
+      $expected_deposit = (float) $booking->calculate_deposit();
+
+      if ( $mc_gross < $expected_deposit ) {
+
+        if ( $debug ) { update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN rejected: amount {$mc_gross} below expected {$expected_deposit}" . PHP_EOL ); }
+        
+        return;
+      }
+
+      // txn_id must not have been used before (replay protection)
+      $used_txn_ids = get_option( 'rtb_used_paypal_txn_ids', [] );
+
+      if ( in_array( $paypal_receipt_number, $used_txn_ids, true ) ) {
+
+        if ( $debug ) { update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN rejected: duplicate txn_id {$paypal_receipt_number}" . PHP_EOL ); }
+
+        return;
+      }
+
+      $used_txn_ids[] = $paypal_receipt_number;
+      update_option( 'rtb_used_paypal_txn_ids', $used_txn_ids );
+
+      $booking->deposit    = $mc_gross;
       $booking->receipt_id = $paypal_receipt_number;
 
       $booking->payment_paid();
