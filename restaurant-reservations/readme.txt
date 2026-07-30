@@ -4,7 +4,7 @@ Tags: restaurant reservations, restaurant booking, reservation, reservation syst
 Requires at Least: 6.0
 Tested Up To: 7.0
 Requires PHP: 8.0
-Stable tag: 2.7.23
+Stable tag: 2.7.24
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -303,6 +303,9 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 - [Our Support Center](https://www.fivestarplugins.com/support-center/)
 
 == Changelog ==
+
+= 2.7.24 (2026-07-30) =
+- Added a direct support option to the deactivation survey, making it easier to get help right away if you're uninstalling due to an issue.
 
 = 2.7.23 (2026-07-15) =
 - Adds an option to include up to 7 days of future bookings, in addition to today's bookings, in the daily summary email.

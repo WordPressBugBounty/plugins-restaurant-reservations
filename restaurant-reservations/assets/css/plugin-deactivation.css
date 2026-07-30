@@ -40,6 +40,11 @@
 	color: #999;
 	margin-right: 10px;
 }
+#rtb-deactivation-cancel {
+	display: inline-block;
+    float: right;
+    cursor: pointer;
+}
 .rtb-deactivate-survey-desc {
 	display: block;
 	font-weight: 600;

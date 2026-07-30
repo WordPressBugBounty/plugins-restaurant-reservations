@@ -55,8 +55,8 @@ class rtbDeactivationSurvey {
 		<div class="rtb-deactivate-survey-modal" id="rtb-deactivate-survey-restaurant-reservations">
 			<div class="rtb-deactivate-survey-wrap">
 				<form class="rtb-deactivate-survey" method="post" data-installtime="<?php echo $install_time; ?>">
-					<span class="rtb-deactivate-survey-title"><span class="dashicons dashicons-testimonial"></span><?php echo ' ' . __( 'Quick Feedback', 'restaurant-reservations' ); ?></span>
-					<span class="rtb-deactivate-survey-desc"><?php echo __('If you have a moment, please share why you are deactivating Five-Star Restaurant Reservations:', 'restaurant-reservations' ); ?></span>
+					<span class="rtb-deactivate-survey-title"><span class="dashicons dashicons-testimonial"></span><?php echo ' ' . __( 'Quick Feedback', 'restaurant-reservations' ); ?><span id="rtb-deactivation-cancel">X</span></span>
+					<span class="rtb-deactivate-survey-desc"><?php echo __('Need help? Contact us at <a href="mailto:contact@fivestarplugins.com">contact@fivestarplugins.com</a> for a quick reply!<br/> Please share why you are deactivating Five-Star Restaurant Reservations:', 'restaurant-reservations' ); ?></span>
 					<div class="rtb-deactivate-survey-options">
 						<?php foreach ( $options as $id => $option ) : ?>
 							<div class="rtb-deactivate-survey-option">
