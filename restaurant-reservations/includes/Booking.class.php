@@ -85,6 +85,7 @@ class rtbBooking {
 	public $late_arrival_sent;
 	public $post_reservation_follow_up_sent;
 	public $reservation_notifications;
+	public $notification_diagnostics;
 
 	// custom fields
 	public $custom_fields;
@@ -169,6 +170,7 @@ class rtbBooking {
 			'late_arrival_sent' => false,
 			'post_reservation_follow_up_sent' => false,
 			'reservation_notifications'	=> array(),
+			'notification_diagnostics' => array(),
 			'mc_optin' => false,
 			'cancellation_code' => ''
 		);
@@ -200,6 +202,10 @@ class rtbBooking {
 		$this->post_reservation_follow_up_sent = $meta['post_reservation_follow_up_sent'];
 
 		$this->reservation_notifications = $meta['reservation_notifications'];
+		$separate_diagnostics = get_post_meta( $this->ID, '_rtb_notification_diagnostic', false );
+		$this->notification_diagnostics = ! empty( $separate_diagnostics )
+			? array_slice( $separate_diagnostics, -50 )
+			: $meta['notification_diagnostics'];
 
 		// Did they opt out?
 		$optout = $rtb_controller->settings->get_setting( 'mc-optout' );
@@ -337,13 +343,138 @@ class rtbBooking {
 			return false;
 		}
 
-		if ( $this->insert_post_data() === false ) { 
-			return false;
-		} else {
+		$lock = false;
+		if ( 'insert' === $action ) {
+			$lock = $this->acquire_admission_lock();
+			if ( ! $lock ) {
+				$this->validation_errors[] = array(
+					'field'   => 'time',
+					'message' => esc_html__( 'Another booking is being completed for this time. Please confirm availability and try again.', 'restaurant-reservations' ),
+				);
+
+				return false;
+			}
+		}
+
+		try {
+			if ( 'insert' === $action && ! $this->passes_locked_admission_check() ) {
+				return false;
+			}
+
+			if ( $this->insert_post_data( $lock ) === false ) {
+				return false;
+			}
+
 			$this->request_inserted = true;
+		} finally {
+			if ( $lock ) { $this->release_admission_lock( $lock ); }
 		}
 
 		do_action( 'rtb_' . $action . '_booking', $this );
+
+		return true;
+	}
+
+	private function acquire_admission_lock() {
+		global $wpdb;
+
+		// Lock the whole location/day so overlapping dining blocks cannot pass
+		// their final capacity checks concurrently under different start times.
+		$scope = get_current_blog_id() . '|' . (int) $this->location . '|' . substr( (string) $this->date, 0, 10 );
+		$name = 'rtb-booking-admission-lock-' . substr( hash( 'sha256', $scope ), 0, 32 );
+		$value = array(
+			'owner'   => wp_generate_uuid4(),
+			'expires' => time() + 15,
+		);
+
+		if ( add_option( $name, $value, '', 'no' ) ) {
+			return array( 'name' => $name, 'value' => $value );
+		}
+
+		$existing = get_option( $name );
+		if ( ! is_array( $existing ) || empty( $existing['expires'] ) || (int) $existing['expires'] >= time() ) {
+			return false;
+		}
+
+		$updated = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND option_value = %s",
+				maybe_serialize( $value ),
+				$name,
+				maybe_serialize( $existing )
+			)
+		);
+
+		wp_cache_delete( $name, 'options' );
+
+		return 1 === $updated ? array( 'name' => $name, 'value' => $value ) : false;
+	}
+
+	private function release_admission_lock( $lock ) {
+		global $wpdb;
+
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name = %s AND option_value = %s",
+				$lock['name'],
+				maybe_serialize( $lock['value'] )
+			)
+		);
+
+		wp_cache_delete( $lock['name'], 'options' );
+	}
+
+	private function refresh_admission_lock( &$lock ) {
+		global $wpdb;
+
+		if ( empty( $lock['name'] ) || empty( $lock['value']['owner'] ) ) {
+			return false;
+		}
+
+		$refreshed = $lock['value'];
+		$refreshed['expires'] = max( time() + 15, (int) $lock['value']['expires'] + 15 );
+		$updated = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND option_value = %s",
+				maybe_serialize( $refreshed ),
+				$lock['name'],
+				maybe_serialize( $lock['value'] )
+			)
+		);
+
+		wp_cache_delete( $lock['name'], 'options' );
+		if ( 1 !== $updated ) {
+			return false;
+		}
+
+		$lock['value'] = $refreshed;
+
+		return true;
+	}
+
+	private function passes_locked_admission_check() {
+		global $rtb_controller;
+
+		$ignore_maximums = $this->by_admin && ! empty( $rtb_controller->settings->get_setting( 'rtb-admin-ignore-maximums' ) );
+		if ( ! $ignore_maximums && ! $this->is_under_max_reservations() ) {
+			$this->validation_errors[] = array( 'field' => 'time', 'message' => esc_html( $rtb_controller->settings->get_setting( 'label-maximum-reservations-reached' ) ) );
+			return false;
+		}
+
+		if ( ! $ignore_maximums && ! $this->is_under_max_seats() ) {
+			$this->validation_errors[] = array( 'field' => 'time', 'message' => esc_html( $rtb_controller->settings->get_setting( 'label-maximum-seats-reached' ) ) );
+			return false;
+		}
+
+		if ( ! empty( $this->table ) && ! $this->is_valid_table() ) {
+			$this->validation_errors[] = array( 'field' => 'table', 'message' => esc_html( $rtb_controller->settings->get_setting( 'label-select-valid-table-for-booking' ) ) );
+			return false;
+		}
+
+		if ( $this->is_duplicate_booking() ) {
+			$this->validation_errors[] = array( 'field' => 'date', 'message' => esc_html( $rtb_controller->settings->get_setting( 'label-booking-info-exactly-matches' ) ) );
+			return false;
+		}
 
 		return true;
 	}
@@ -449,11 +580,12 @@ class rtbBooking {
 
 			$request = new DateTime( $date->format( 'Y-m-d' ) . ' ' . $time->format( 'H:i:s' ), wp_timezone() );
 			$this->date_submission = new DateTime( 'now', wp_timezone() );
+			$location_slug = $this->get_location_slug();
 
 			// Exempt Bookings Managers from the early and late bookings restrictions
 			if ( !current_user_can( 'manage_bookings' ) ) {
 
-				$early_bookings = $rtb_controller->settings->get_setting( 'early-bookings' );
+				$early_bookings = $rtb_controller->settings->get_setting( 'early-bookings', $location_slug );
 				if ( !empty( $early_bookings ) && is_numeric( $early_bookings ) ) {
 					$upper_bound = ( new DateTime( 'now', wp_timezone() ) )->setTime( 23, 59 );
 					$upper_bound->add( new DateInterval( "P{$early_bookings}D" ) );
@@ -467,7 +599,7 @@ class rtbBooking {
 					}
 				}
 
-				$late_bookings = $rtb_controller->settings->get_setting( 'late-bookings' );
+				$late_bookings = $rtb_controller->settings->get_setting( 'late-bookings', $location_slug );
 				if ( empty( $late_bookings ) ) {
 					if ( $request->format( 'U' ) < $this->date_submission->format( 'U' ) ) {
 						$this->validation_errors[] = array(
@@ -506,12 +638,13 @@ class rtbBooking {
 			}
 
 			// Check against scheduling exception rules
-			$exception_rules = $rtb_controller->settings->get_setting( 'schedule-closed' );
+			$ignore_schedule = $this->by_admin && current_user_can( 'manage_bookings' ) && ! empty( $rtb_controller->settings->get_setting( 'admin-ignore-schedule' ) );
+			$exception_rules = $rtb_controller->settings->get_setting( 'schedule-closed', $location_slug );
 			$exception_is_active = false;
 			if (
 				empty( $this->validation_errors )
 				&& !empty( $exception_rules )
-				&& ( ! empty( $rtb_controller->settings->get_setting( 'admin-ignore-schedule' ) ) && ! current_user_can( 'manage_bookings' ) )
+				&& ! $ignore_schedule
 			) {
 
 				/**
@@ -539,9 +672,9 @@ class rtbBooking {
 						$end = !empty( $excp_rule['date_range']['end'] )
 							? new DateTime( $excp_rule['date_range']['end'], wp_timezone() )
 							: ( new DateTime( 'now', wp_timezone() ) )->add( new DateInterval( 'P10Y' ) );
-						$end->setTime(23, 59, 58);
+						$end->setTime(23, 59, 59);
 
-						if( $start < $request && $request < $end ) {
+						if( $start <= $request && $request <= $end ) {
 							$excp_rule_obj = clone $request;
 						}
 						else {
@@ -600,13 +733,13 @@ class rtbBooking {
 			}
 
 			// Check against weekly scheduling rules
-			$rules = $rtb_controller->settings->get_setting( 'schedule-open' );
+			$rules = $rtb_controller->settings->get_setting( 'schedule-open', $location_slug );
 
 			// Order of conditions in if matters to prevent unnecessary warnings
 			if (
 				empty( $this->validation_errors )
 				&& !empty( $rules )
-				&& ( ! empty( $rtb_controller->settings->get_setting( 'admin-ignore-schedule' ) ) && ! current_user_can( 'manage_bookings' ) )
+				&& ! $ignore_schedule
 				&& !$exception_is_active
 			) {
 				$request_weekday = strtolower( $request->format( 'l' ) );
@@ -622,8 +755,8 @@ class rtbBooking {
 							break;
 						}
 
-						$too_early = true;
-						$too_late = true;
+						$too_early = ! empty( $rule['time']['start'] );
+						$too_late = ! empty( $rule['time']['end'] );
 
 						// Too early
 						if ( !empty( $rule['time']['start'] ) ) {
@@ -1007,16 +1140,13 @@ class rtbBooking {
 
 		$location_id = isset( $this->location ) ? $this->location : 0;
 
-		$valid_tables = rtb_get_valid_tables( $this->date, $location_id );
-
-		if ( isset( $this->ID ) ) {
-			
-			$post_meta = get_post_meta( $this->ID, 'rtb', true );
-
-			if ( isset( $post_meta['table'] ) and is_array( $post_meta['table'] ) ) { $valid_tables = array_merge( $valid_tables, $post_meta['table'] ); }
-		}
+		$exclude_booking_id = ! empty( $this->ID ) ? (int) $this->ID : 0;
+		$availability_context = rtb_get_table_availability_context( $this->date, $location_id, $exclude_booking_id );
+		$valid_tables = rtb_get_valid_tables( $this->date, $location_id, $availability_context, $exclude_booking_id );
 		
-		return $this->table == array_intersect( $this->table, $valid_tables );
+		if ( $this->table != array_intersect( $this->table, $valid_tables ) ) { return false; }
+
+		return rtb_tables_fit_party( $this->table, $this->date, $location_id, $this->party, $availability_context, $exclude_booking_id );
 	}
 
 	/**
@@ -1077,19 +1207,8 @@ class rtbBooking {
     	  )
     	);
 
-    	// If there are multiple locations, a location is selected, and 
-		// max seats has been enabled for this specific location
-		if ( ! empty( $this->get_location_slug() ) and $rtb_controller->settings->is_location_setting_enabled( 'rtb-max-tables-count', $this->get_location_slug() ) ) {
-
-			$tax_query = array(
-				array(
-					'taxonomy'	=> $rtb_controller->locations->location_taxonomy,
-					'field'		=> 'slug',
-					'terms'		=> $this->get_location_slug()
-				)
-			);
-
-			$args['tax_query'] = $tax_query;
+		if ( ! empty( $this->location ) ) {
+			$args['location'] = (int) $this->location;
 		}
 
 		require_once( RTB_PLUGIN_DIR . '/includes/Query.class.php' );
@@ -1143,8 +1262,8 @@ class rtbBooking {
 
 		$max_seats = (int) $rtb_controller->settings->get_setting( 'rtb-max-people-count', $this->get_location_slug(), $this->get_timeslot() );
 
-		if ( $max_seats == 'undefined' or ! $max_seats ) { return true; } 
-		if ( $this->party > $max_seats ) { return false; }
+		if ( $max_seats == 'undefined' or ! $max_seats ) { return true; }
+		if ( ! rtb_slot_has_capacity( array(), $this->party, 0, $max_seats ) ) { return false; }
 
 		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $this->get_location_slug(), $this->get_timeslot() ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
 
@@ -1161,19 +1280,8 @@ class rtbBooking {
 			)
 		);
 
-		// If there are multiple locations, a location is selected, and 
-		// max seats has been enabled for this specific location
-		if ( ! empty( $this->get_location_slug() ) and $rtb_controller->settings->is_location_setting_enabled( 'rtb-max-people-count', $this->get_location_slug() ) ) {
-
-			$tax_query = array(
-				array(
-					'taxonomy'	=> $rtb_controller->locations->location_taxonomy,
-					'field'		=> 'slug',
-					'terms'		=> $this->get_location_slug()
-				)
-			);
-
-			$args['tax_query'] = $tax_query;
+		if ( ! empty( $this->location ) ) {
+			$args['location'] = (int) $this->location;
 		}
 
 		require_once( RTB_PLUGIN_DIR . '/includes/Query.class.php' );
@@ -1202,7 +1310,7 @@ class rtbBooking {
 			if ( key ( $current_seats ) < $time - $dining_block_seconds ) { array_shift( $current_seats ); }
 
 			// Check if adding the current party puts us above the max confirmation number
-			if ( array_sum( $current_seats ) + $this->party > $max_seats ) { return false; } 
+			if ( ! rtb_slot_has_capacity( array( 'total_guest' => array_sum( $current_seats ) ), $this->party, 0, $max_seats ) ) { return false; }
 		}
 
 		return true;
@@ -1563,7 +1671,7 @@ class rtbBooking {
 	 * Insert post data for a new booking or update a booking
 	 * @since 0.0.1
 	 */
-	public function insert_post_data() {
+	public function insert_post_data( &$admission_lock = null ) {
 
 		$args = array(
 			'post_type'		=> RTB_BOOKING_POST_TYPE,
@@ -1595,6 +1703,15 @@ class rtbBooking {
 			$this->insert_post_meta();
 			$id = wp_insert_post( $args );
 		} else {
+			if ( $admission_lock && ! $this->refresh_admission_lock( $admission_lock ) ) {
+				$this->validation_errors[] = array(
+					'field'   => 'time',
+					'message' => esc_html__( 'Availability changed while this booking was being completed. Please try again.', 'restaurant-reservations' ),
+				);
+
+				return false;
+			}
+
 			$id = wp_insert_post( $args );
 			if ( $id && !is_wp_error( $id ) ) {
 				$this->ID = $id;

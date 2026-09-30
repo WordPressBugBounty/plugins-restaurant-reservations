@@ -45,7 +45,8 @@ class rtbNotifications {
 
 		add_action( 'init', array( $this, 'register_notifications' ) );
 
-		add_action( 'init', array( $this, 'maybe_send_daily_summary' ), 1001 ); //After location taxonomy registered
+		// Mail transport failures must not surface during an admin page request.
+		add_action( 'rtb_cron_jobs', array( $this, 'maybe_send_daily_summary' ) );
 	}
 
 	/**
@@ -62,6 +63,80 @@ class rtbNotifications {
 
 		if ( ! empty( $rtb_controller->settings->get_setting( 'booking-notifications' ) ) and $rtb_controller->permissions->check_permission( 'advanced' ) ) { $this->register_table_events(); }
 		else { $this->register_standard_events(); }
+	}
+
+	/**
+	 * Prepare, send and record the transport result for a notification.
+	 *
+	 * A successful result means that the configured transport accepted the
+	 * message. It does not prove delivery to the recipient.
+	 *
+	 * @since 2.8.0
+	 */
+	public function dispatch_notification( $notification, $prepared = false ) {
+
+		if ( ! $prepared && ! $notification->prepare_notification() ) {
+			$this->record_notification_diagnostic( $notification, 'not_generated', 'preparation_failed' );
+
+			return false;
+		}
+
+		do_action( 'rtb_send_notification_before', $notification );
+		$sent = (bool) $notification->send_notification();
+		do_action( 'rtb_send_notification_after', $notification );
+
+		$this->record_notification_diagnostic(
+			$notification,
+			$sent ? 'send_accepted' : 'send_failed',
+			$sent ? '' : 'transport_rejected'
+		);
+
+		return $sent;
+	}
+
+	/**
+	 * Store bounded, non-sensitive notification diagnostics on the booking.
+	 *
+	 * Diagnostic persistence is deliberately secondary to notification sending.
+	 *
+	 * @since 2.8.0
+	 */
+	private function record_notification_diagnostic( $notification, $status, $reason = '' ) {
+
+		if ( empty( $notification->booking ) || ! is_a( $notification->booking, 'rtbBooking' ) || empty( $notification->booking->ID ) ) {
+			return;
+		}
+
+		$booking = $notification->booking;
+
+		$entry = array(
+			'id'              => wp_generate_uuid4(),
+			'timestamp'       => gmdate( 'Y-m-d\TH:i:s\Z' ),
+			'event'           => sanitize_key( (string) $notification->event ),
+			'type'            => is_a( $notification, 'rtbNotificationSMS' ) ? 'sms' : 'email',
+			'target'          => sanitize_key( (string) $notification->target ),
+			'notification_id' => isset( $notification->notification_id ) ? absint( $notification->notification_id ) : 0,
+			'status'          => sanitize_key( $status ),
+		);
+
+		if ( $reason ) {
+			$entry['reason'] = sanitize_key( $reason );
+		}
+
+		if ( false === add_post_meta( $booking->ID, '_rtb_notification_diagnostic', $entry, false ) ) {
+			return;
+		}
+
+		$diagnostics = get_post_meta( $booking->ID, '_rtb_notification_diagnostic', false );
+		$excess = max( 0, count( $diagnostics ) - 50 );
+		for ( $index = 0; $index < $excess; $index++ ) {
+			delete_post_meta( $booking->ID, '_rtb_notification_diagnostic', $diagnostics[ $index ] );
+		}
+
+		$booking->notification_diagnostics = array_slice(
+			get_post_meta( $booking->ID, '_rtb_notification_diagnostic', false ),
+			-50
+		);
 	}
 
 	/**
@@ -184,14 +259,7 @@ class rtbNotifications {
 			
 			$booking_notification->set_booking( $this->booking );
 			
-			if ( $booking_notification->prepare_notification() ) { 
-				
-				do_action( 'rtb_send_notification_before', $booking_notification );
-				
-				$booking_notification->send_notification(); 
-				
-				do_action( 'rtb_send_notification_after', $booking_notification );
-			}
+			$this->dispatch_notification( $booking_notification );
 		}
 	}
 
@@ -262,28 +330,23 @@ class rtbNotifications {
 		
 		$next_send_time = $last_send_datetime->format('U') + $send_time_hours * 60*60 + $send_time_minutes * 60;
 		
-		if ( $next_send_time > time() ) { 
+		if ( $next_send_time > time() ) { return; }
 
-			update_option( 'rtb-daily-summary-today-attempts', 0 );
-
-			return;
-		}
+		// Keep failed transports eligible for retry without attempting to send
+		// on every ten-minute cron run when the site's mail service is down.
+		if ( get_transient( 'rtb-daily-summary-retry' ) ) { return; }
+		set_transient( 'rtb-daily-summary-retry', 1, HOUR_IN_SECONDS );
 
 		$display_table = $rtb_controller->settings->get_setting( 'enable-tables' );
 		$multiple_locations = $rtb_controller->locations->do_locations_exist();
-		$future_bookings_days = $rtb_controller->settings->get_setting( 'daily-summary-future-bookings' ) ? $rtb_controller->settings->get_setting( 'daily-summary-future-bookings' ) : 0;
-		$start_time = current_time( 'Y-m-d 00:00:00' );
-		$end_time = date( 'Y-m-d 23:59:59', strtotime( "+{$future_bookings_days} days", current_time( 'timestamp' ) ) );
 
 		$args = array(
 			'post_type' 		=> 'rtb-booking',
 			'posts_per_page'	=> -1,
-			'date_query'        => array(
-				array(
-					'after'     => $start_time,
-					'before'    => $end_time,
-					'inclusive' => true,
-				),
+			'date_query' 		=> array(
+				'year' 				=> date( 'Y' ),
+				'month' 			=> date( 'm' ),
+				'day' 				=> date( 'd' )
 			),
 			'post_status' 		=> array_keys( $rtb_controller->cpts->booking_statuses ),
 			'orderby' 			=> 'date',
@@ -317,8 +380,7 @@ class rtbNotifications {
 			<table class='rtb-view-bookings-table'>
 				<thead>
 					<tr>
-						<?php if ( $multiple_locations ) { ?> <th><?php _e('Location', 'restaurant-reservations'); ?></th><?php } ?>
-						<?php if ( $rtb_controller->settings->get_setting( 'daily-summary-future-bookings' ) ) { ?> <th><?php _e('Date', 'restaurant-reservations'); ?></th><?php } ?>
+						<?php if ( $multiple_locations ) {?> <th><?php _e('Location', 'restaurant-reservations'); ?></th><?php } ?>
 						<th><?php _e('Time', 'restaurant-reservations'); ?></th>
 						<th><?php _e('Party', 'restaurant-reservations'); ?></th>
 						<th><?php _e('Name', 'restaurant-reservations'); ?></th>
@@ -345,7 +407,6 @@ class rtbNotifications {
 						?>
 						<tr>
 							<?php if ( $multiple_locations ) { $term = get_term( $booking_object->location ); echo ( ! is_wp_error( $term ) ? "<td>{$term->name}</td>" : '<td></td>' ); } ?>
-							<?php if ( $rtb_controller->settings->get_setting( 'daily-summary-future-bookings' ) ) { ?> <td><?php echo ( new DateTime( $booking_object->date ) )->format( 'M j' ); ?></td><?php } ?>
 							<td><?php echo ( new DateTime( $booking_object->date ) )->format( 'H:i:s' ); ?></td>
 							<td><?php echo esc_html( $booking_object->party ); ?></td>
 							<td><?php echo esc_html( $booking_object->name ); ?></td>
@@ -389,24 +450,13 @@ class rtbNotifications {
 		$notification->subject = __( 'Daily Email Summary', 'restaurant-reservations' );
 		$notification->manual_message = $email_content;
 
-		$current_count = (int) get_option( 'rtb-daily-summary-today-attempts', 0 );
-		$new_count = $current_count + 1;
-		update_option( 'rtb-daily-summary-today-attempts', $new_count );
-
-		$should_update_send_date = true;
-
-		if ( $notification->prepare_notification() and $new_count < 11 ) {
-
-			$should_update_send_date = $notification->send_notification();
-		}
-
-		if ( $should_update_send_date ) {
+		if ( $this->dispatch_notification( $notification ) ) {
 
 			$now = new DateTime( 'now', wp_timezone() );
 
 			update_option( 'rtb-daily-summary-send-date', $now->format( 'Y-m-d' ) );
 		}
-}
+	}
 
 	/**
 	 * Set booking data
@@ -564,11 +614,7 @@ class rtbNotifications {
 
 			if ( $event == $notification->event ) {
 				$notification->set_booking( $this->booking );
-				if ( $notification->prepare_notification() ) { 
-					do_action( 'rtb_send_notification_before', $notification );
-					$notification->send_notification(); 
-					do_action( 'rtb_send_notification_after', $notification );
-				}
+				$this->dispatch_notification( $notification );
 				$notification->clear_to_email();
 			}
 		}

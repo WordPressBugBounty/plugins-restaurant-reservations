@@ -3,6 +3,28 @@
 var rtb_booking_form = rtb_booking_form || {};
 
 jQuery(document).ready(function ($) {
+	rtb_booking_form.time_request = null;
+	rtb_booking_form.time_request_token = 0;
+	rtb_booking_form.table_request = null;
+	rtb_booking_form.table_request_token = 0;
+
+	rtb_booking_form.invalidate_time_request = function() {
+		rtb_booking_form.time_request_token++;
+		if ( rtb_booking_form.time_request ) { rtb_booking_form.time_request.abort(); }
+		rtb_booking_form.time_request = null;
+	}
+
+	rtb_booking_form.invalidate_table_request = function() {
+		rtb_booking_form.table_request_token++;
+		if ( rtb_booking_form.table_request ) { rtb_booking_form.table_request.abort(); }
+		rtb_booking_form.table_request = null;
+	}
+
+	rtb_booking_form.clear_availability_errors = function( fields, include_submission ) {
+		jQuery.each( fields, function( index, field ) {
+			clearPrevFieldError( field, include_submission );
+		} );
+	}
 
 	/**
 	 * Initialize the booking form when loaded
@@ -55,6 +77,13 @@ jQuery(document).ready(function ($) {
 		if ( typeof rtb_pickadate !== 'undefined' ) {
 
 			rtb_pickadate.init_complete = false;
+
+			// A failed submission restores the location select without firing change.
+			// Apply its rules before either picker reads the initial settings.
+			if ( rtb_pickadate.multiple_locations_enabled && $( '#rtb-location' ).length ) {
+				rtb_booking_form.update_base_data_for_selected_location();
+				rtb_booking_form.update_party_options_for_location( true );
+			}
 
 			// Declare datepicker
 			var $date_input = $( '#rtb-date' );
@@ -131,8 +160,8 @@ jQuery(document).ready(function ($) {
 				return;
 			}
 
-			// Update disabled dates
-			rtb_booking_form.update_disabled_dates();
+			// Enforce the party -> date -> time dependency.
+			rtb_booking_form.update_datepicker();
 
 			if ( typeof rtb_pickadate.late_bookings === 'string' ) {
 				if ( rtb_pickadate.late_bookings == 'same_day' ) {
@@ -148,7 +177,7 @@ jQuery(document).ready(function ($) {
 
 			// If no date has been set, select today's date if it's a valid
 			// date. User may opt not to do this in the settings.
-			if ( $date_input.val() === '' && !$( '.rtb-booking-form .date .rtb-error' ).length ) {
+			if ( $date_input.val() === '' && parseInt( $( '#rtb-party' ).val(), 10 ) > 0 && !$( '.rtb-booking-form .date .rtb-error' ).length ) {
 
 				if ( rtb_pickadate.date_onload == 'soonest' ) {
 					rtb_booking_form.datepicker.set( 'select', new Date() );
@@ -178,24 +207,33 @@ jQuery(document).ready(function ($) {
 					rtb_booking_form.after_change_value = rtb_booking_form.datepicker.get();
 
 					if(rtb_booking_form.before_change_value != rtb_booking_form.after_change_value) {
+						rtb_booking_form.clear_availability_errors( [ 'date', 'time', 'table' ], true );
 						// clear time value if date changed
 						rtb_booking_form.timepicker.clear();
 					}
 
 					rtb_booking_form.update_timepicker_range();
-					rtb_booking_form.update_party_size_select();
 					rtb_booking_form.update_possible_tables();
 				}
 			});
 
 			rtb_booking_form.timepicker.on( {
+				open: function() { rtb_booking_form.previous_time = rtb_booking_form.timepicker.get(); },
 				close: function() {
-					rtb_booking_form.update_party_size_select();
+					if ( rtb_booking_form.previous_time !== rtb_booking_form.timepicker.get() ) {
+						rtb_booking_form.clear_availability_errors( [ 'time', 'table' ], true );
+					}
+					rtb_booking_form.clear_availability_errors( [ 'table' ] );
 					rtb_booking_form.update_possible_tables();
 				}
 			});
 
 			$( '#rtb-party' ).on( 'change', function() {
+				rtb_booking_form.clear_availability_errors( [ 'date', 'time', 'table' ], true );
+				rtb_booking_form.timepicker.clear();
+				rtb_booking_form.datepicker.clear();
+				rtb_booking_form.update_datepicker();
+				rtb_booking_form.update_timepicker_range();
 				rtb_booking_form.update_possible_tables();
 			});
 
@@ -203,16 +241,16 @@ jQuery(document).ready(function ($) {
 
 				if ( ! rtb_pickadate.multiple_locations_enabled ) { return; }
 
+				rtb_booking_form.clear_availability_errors( [ 'date', 'time', 'table' ], true );
 				rtb_booking_form.timepicker.clear();
 				rtb_booking_form.datepicker.clear();
 
 				rtb_booking_form.update_base_data_for_selected_location();
+				rtb_booking_form.update_party_options_for_location();
 
 				rtb_booking_form.update_datepicker();
 
 				rtb_booking_form.update_timepicker_range();
-
-				rtb_booking_form.update_party_size_select();
 
 				rtb_booking_form.update_possible_tables();
 			});
@@ -236,11 +274,39 @@ jQuery(document).ready(function ($) {
 		return Object.assign( rtb_pickadate, rtb_location_data[selected_location] );
 	}
 
+	rtb_booking_form.update_party_options_for_location = function ( restore_submitted_party ) {
+		var party_select = jQuery( '#rtb-party' ),
+			selected_location = jQuery( '#rtb-location' ).length ? jQuery( '#rtb-location' ).val() : 'global',
+			location_data = selected_location && rtb_location_data[selected_location] ? rtb_location_data[selected_location] : rtb_location_data.global,
+			current_party = restore_submitted_party && party_select.data( 'selected' ) ? party_select.data( 'selected' ) : party_select.val();
+
+		if ( ! location_data || ! location_data.party_options ) { return; }
+
+		party_select.empty();
+		jQuery.each( location_data.party_options, function( value, label ) {
+			party_select.append( jQuery( '<option></option>' ).attr( 'value', value ).text( label ) );
+		});
+
+		if ( party_select.find( 'option[value="' + current_party + '"]' ).length ) {
+			party_select.val( current_party );
+		}
+	}
+
 	rtb_booking_form.update_datepicker = function () {
+		var date_input = jQuery( '#rtb-date' );
 		
 		// Reset enabled/disabled rules on this datepicker
 		rtb_booking_form.datepicker.set( 'enable', false );
 		rtb_booking_form.datepicker.set( 'disable', false );
+
+		if ( ! parseInt( jQuery( '#rtb-party' ).val(), 10 ) ) {
+			date_input.prop( 'disabled', true ).attr( 'aria-disabled', 'true' );
+			rtb_booking_form.datepicker.clear();
+			rtb_booking_form.datepicker.set( 'disable', true );
+			return;
+		}
+
+		date_input.prop( 'disabled', false ).removeAttr( 'aria-disabled' );
 
 		rtb_booking_form.update_disabled_dates();
 	}
@@ -283,17 +349,24 @@ jQuery(document).ready(function ($) {
 	 * Update the timepicker's range based on the currently selected date
 	 */
 	rtb_booking_form.update_timepicker_range = function() {
+		var time_input = jQuery( '#rtb-time' );
+		rtb_booking_form.invalidate_time_request();
+		rtb_booking_form.invalidate_table_request();
+		rtb_booking_form.clear_availability_errors( [ 'time', 'table' ] );
+		time_input.prop( 'disabled', true ).attr( 'aria-disabled', 'true' );
 
 		// Reset enabled/disabled rules on this timepicker
 		rtb_booking_form.timepicker.set( 'enable', false );
 		rtb_booking_form.timepicker.set( 'disable', false );
 
 		if ( rtb_booking_form_js_localize.admin_ignore_schedule && rtb_booking_form_js_localize.is_admin ) {
+			time_input.prop( 'disabled', false ).removeAttr( 'aria-disabled' );
 			rtb_booking_form.timepicker.set( 'enable', true );
 			return;
 		}
 
-		if ( rtb_booking_form.datepicker.get() === '' ) {
+		var selected_party = parseInt( jQuery( '#rtb-party' ).val(), 10 );
+		if ( ! selected_party || rtb_booking_form.datepicker.get() === '' ) {
 			rtb_booking_form.timepicker.set( 'disable', true );
 			return;
 		}
@@ -302,7 +375,8 @@ jQuery(document).ready(function ($) {
 			selected_date_year = selected_date.getFullYear(),
 			selected_date_month = selected_date.getMonth(),
 			selected_date_date = selected_date.getDate(),
-			current_date = new Date();
+			current_date = new Date(),
+			selected_location = '';
 
 		selected_date.setHours(0, 0, 0), selected_date.setMilliseconds(100);
 
@@ -312,7 +386,7 @@ jQuery(document).ready(function ($) {
 		// See: http://amsul.ca/pickadate.js/time/#disable-times-all
 		var valid_times = [ rtb_booking_form.get_outer_time_range() ];
 
-		if ( rtb_pickadate.enable_max_reservations || rtb_pickadate.multiple_locations_enabled ) {
+		if ( selected_party ) {
 			selected_location = jQuery( '#rtb-location' ).length ? jQuery( '#rtb-location' ).val() : '';
 
 			let hidden_location = jQuery('.rtb-booking-form-form input[name="rtb-location"]');
@@ -331,9 +405,13 @@ jQuery(document).ready(function ($) {
 			params.month  = selected_date_month;
 			params.day    = selected_date_date;
 			params.location = selected_location;
+			params.party = selected_party;
+			params.booking_id = jQuery( '.rtb-booking-form form input[name="ID"]' ).length ? jQuery( '.rtb-booking-form form input[name="ID"]' ).val() : 0;
 
 			var data = jQuery.param( params );
-			jQuery.post( ajaxurl, data, function( response ) {
+			var request_token = rtb_booking_form.time_request_token;
+			rtb_booking_form.time_request = jQuery.post( ajaxurl, data, function( response ) {
+				if ( request_token !== rtb_booking_form.time_request_token ) { return; }
 
 				if( rtb_pickadate.init_complete ) {
 					clearPrevFieldError( 'date' );
@@ -368,6 +446,9 @@ jQuery(document).ready(function ($) {
 					clearPrevFieldError( 'time' );
 					displayFieldError( 'time', rtb_booking_form_js_localize.error['no-slots-available'] );
 				}
+				else {
+					time_input.prop( 'disabled', false ).removeAttr( 'aria-disabled' );
+				}
 
 				jQuery( all_valid_times ).each( function( index, valid_time ) {
 					valid_time.to = rtb_booking_form.get_latest_viable_time( parseInt( valid_time.to[0] ), parseInt( valid_time.to[1] ) );
@@ -377,11 +458,17 @@ jQuery(document).ready(function ($) {
 				rtb_pickadate.init_complete = true;
 			})
 			.fail(function( args ) {
+				if ( 'abort' === args.statusText || request_token !== rtb_booking_form.time_request_token ) { return; }
 				clearPrevFieldError( 'date' );
 				displayFieldError( 'date', rtb_booking_form_js_localize.error['smthng-wrng-cntct-us'] );
 				rtb_booking_form.timepicker.set( 'disable', true );
 
 				return;
+			})
+			.always(function() {
+				if ( request_token === rtb_booking_form.time_request_token ) {
+					rtb_booking_form.time_request = null;
+				}
 			});
 		}
 
@@ -713,11 +800,18 @@ jQuery(document).ready(function ($) {
 	}
 
 	rtb_booking_form.update_possible_tables = function() {
-		
-		if ( rtb_pickadate.enable_tables ) { 
+		var table_select = $('#rtb-table');
+		rtb_booking_form.invalidate_table_request();
+		rtb_booking_form.clear_availability_errors( [ 'table' ] );
 
-			var table_select = $('#rtb-table'),
-			party = $('#rtb-party').val(),
+		if ( table_select.length ) {
+			table_select.prop( 'disabled', true );
+			table_select.prop( 'selectedIndex', 0 );
+		}
+
+		if ( rtb_pickadate.enable_tables ) {
+
+			var party = $('#rtb-party').val(),
 			selected_location = jQuery( '#rtb-location' ).length ? jQuery( '#rtb-location' ).val() : '',
 			selected_date = new Date( rtb_booking_form.datepicker.get( 'select', 'yyyy/mm/dd' ) ),
 			selected_date_year = selected_date.getFullYear(),
@@ -737,11 +831,6 @@ jQuery(document).ready(function ($) {
 			selected_date_month = ('0' + (selected_date_month + 1)).slice(-2);
 			selected_date_date = ('0' + selected_date_date).slice(-2);
 
-			table_select.prop('disabled', true);
-
-			//reset table selection
-			table_select.prop("selectedIndex", 0).change();
-
 			var booking_id = $( '.rtb-booking-form form input[name="ID"]').length ? $( '.rtb-booking-form form input[name="ID"]').val() : 0;
 
 			var params = {};
@@ -753,11 +842,13 @@ jQuery(document).ready(function ($) {
 			params.day    = selected_date_date;
 			params.time   = selected_time;
 			params.party  = party;
-			params.booking_id = booking_id
+			params.booking_id = booking_id;
 			params.location_id = selected_location;
 
-			var data = jQuery.param( params );
-			jQuery.post( ajaxurl, data, function( response ) {
+			var data = jQuery.param( params ),
+				request_token = rtb_booking_form.table_request_token;
+			rtb_booking_form.table_request = jQuery.post( ajaxurl, data, function( response ) {
+				if ( request_token !== rtb_booking_form.table_request_token ) { return; }
 				
 				if ( ! response ) { return; }
 
@@ -770,7 +861,7 @@ jQuery(document).ready(function ($) {
 
 				var available_tables = response.available_tables;
 
-				if( 1 > available_tables.length ) {
+				if ( 1 > Object.keys( available_tables ).length ) {
 					displayFieldError( 'table', rtb_booking_form_js_localize.error['no-table-available'] );
 				}
 				else {
@@ -793,6 +884,11 @@ jQuery(document).ready(function ($) {
 				else if( '' != table_select.data('selected') ) {
 					table_select.val( table_select.data('selected') );
 				}			
+			})
+			.always(function() {
+				if ( request_token === rtb_booking_form.table_request_token ) {
+					rtb_booking_form.table_request = null;
+				}
 			});
 		}
 
@@ -976,10 +1072,11 @@ function displayFieldError( field, message ) {
 	}
 }
 
-function clearPrevFieldError( field ) {
-	if( field_has_error( field ) ) {
-		get_field_with_error( field ).each( (idx, x) => x.remove() );
-	}
+function clearPrevFieldError( field, include_submission ) {
+	// Availability refreshes (including startup) are not a new submission.
+	var errors = get_field_with_error( field );
+	if ( ! include_submission ) { errors = errors.not( '.rtb-submission-error' ); }
+	errors.each( (idx, x) => x.remove() );
 }
 
 function field_has_error( field ) {

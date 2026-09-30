@@ -3,19 +3,32 @@
 }
 
 .rtb-helper-install-notice {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 16px;
   clear: both;
+  padding-right: 40px;
 }
 
-.rtb-helper-install-notice-img,
-.rtb-helper-install-notice-txt
- {
-  float: left;
-  padding: 8px 8px 8px 0px;
+.rtb-helper-install-notice-img {
+  flex: 0 0 96px;
+  padding: 8px 0;
 }
 
-.rtb-helper-install-notice div img {
-  max-height: 36px;
+.rtb-helper-install-notice-img img {
+  display: block;
+  width: 96px;
+  height: 96px;
+}
+
+.rtb-helper-install-notice-txt {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+}
+
+.rtb-helper-install-notice .rtb-clear {
+  display: none;
 }
 
 /* NEW PLUGIN NOTICE */

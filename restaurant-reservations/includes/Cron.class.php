@@ -84,6 +84,8 @@ class rtbCron {
 	public function handle_reminder_task() {
 		global $rtb_controller;
 
+		if ( ! $rtb_controller->permissions->check_permission( 'reminders' ) ) { return; }
+
 		if ( empty( $rtb_controller->settings->get_setting( 'time-reminder-user' ) ) ) { return; }
 
 		if ( ! empty( $rtb_controller->settings->get_setting( 'booking-notifications' ) ) ) { return; }
@@ -111,13 +113,8 @@ class rtbCron {
 					$notification = new rtbNotificationEmail( 'reminder', 'user' ); 
 				}
 				
-				$notification->set_booking($booking);
-				
-				$notification->prepare_notification();
-
-				do_action( 'rtb_send_notification_before', $notification );
-				$sent = $notification->send_notification();
-				do_action( 'rtb_send_notification_after', $notification );
+				$notification->set_booking( $booking );
+				$sent = $rtb_controller->notifications->dispatch_notification( $notification );
 
 				if ( $sent ) {
 					$booking->reminder_sent = true;
@@ -136,6 +133,8 @@ class rtbCron {
 	 */
 	public function handle_late_arrivals_task() {
 		global $rtb_controller;
+
+		if ( ! $rtb_controller->permissions->check_permission( 'reminders' ) ) { return; }
 
 		if ( empty( $rtb_controller->settings->get_setting( 'time-late-user' ) ) ) { return; }
 
@@ -164,13 +163,8 @@ class rtbCron {
 					$notification = new rtbNotificationEmail( 'late_user', 'user' ); 
 				}
 
-				$notification->set_booking($booking);
-
-				$notification->prepare_notification();
-
-				do_action( 'rtb_send_notification_before', $notification );
-  				$sent = $notification->send_notification(); 
-  				do_action( 'rtb_send_notification_after', $notification );
+				$notification->set_booking( $booking );
+				$sent = $rtb_controller->notifications->dispatch_notification( $notification );
 
   				if ( $sent ) {
   					$booking->late_arrival_sent = true;
@@ -189,6 +183,8 @@ class rtbCron {
 	 */
 	public function handle_post_reservation_follow_up_task() {
 		global $rtb_controller;
+
+		if ( ! $rtb_controller->permissions->check_permission( 'reminders' ) ) { return; }
 
 		if ( empty( $rtb_controller->settings->get_setting( 'time-post-reservation-follow-up-user' ) ) ) { return; }
 
@@ -218,12 +214,7 @@ class rtbCron {
 				}
 
 				$notification->set_booking( $booking );
-
-				$notification->prepare_notification();
-
-				do_action( 'rtb_send_notification_before', $notification );
-  				$sent = $notification->send_notification(); 
-  				do_action( 'rtb_send_notification_after', $notification );
+				$sent = $rtb_controller->notifications->dispatch_notification( $notification );
 
   				if ( $sent ) {
   					$booking->post_reservation_follow_up_sent = true;
@@ -242,6 +233,8 @@ class rtbCron {
 	 */
 	public function handle_table_notifications() {
 		global $rtb_controller;
+
+		if ( ! $rtb_controller->permissions->check_permission( 'reminders' ) ) { return; }
 
 		require_once( RTB_PLUGIN_DIR . '/includes/Notification.class.php' );
 		require_once( RTB_PLUGIN_DIR . '/includes/Notification.Email.class.php' );
@@ -281,19 +274,12 @@ class rtbCron {
 
 				$booking_notification->set_booking( $booking );
 
-				if ( $booking_notification->prepare_notification() ) { 
-				
-					do_action( 'rtb_send_notification_before', $booking_notification );
-				
-					$sent = $booking_notification->send_notification(); 
-				
-					do_action( 'rtb_send_notification_after', $booking_notification );
+				$sent = $rtb_controller->notifications->dispatch_notification( $booking_notification );
 
-					if ( $sent ) {
+				if ( $sent ) {
 
-  						$booking->reservation_notifications[] = $notification->id;
-  						$booking->insert_post_meta();
-  					}
+					$booking->reservation_notifications[] = $notification->id;
+					$booking->insert_post_meta();
 				}
 			}
 		}

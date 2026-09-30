@@ -38,7 +38,7 @@ class rtbPermissions {
 
 		if ( is_array( get_option( 'rtb-permission-level' ) ) ) { return; }
 
-		if ( ! empty( get_option( 'rtb-permission-level' ) ) ) { 
+		if ( ! empty( get_option( 'rtb-permission-level' ) ) ) {
 
 			update_option( 'rtb-permission-level', array( get_option( 'rtb-permission-level' ) ) );
 
@@ -68,12 +68,62 @@ class rtbPermissions {
 	public function check_permission( $permission_type = '' ) {
 		if ( ! $this->permission_level ) { $this->get_permission_level(); }
 
-		return ( array_key_exists( $permission_type, $this->plugin_permissions ) ? ( $this->permission_level >= $this->plugin_permissions[$permission_type] ? true : false ) : false );
+		if ( ! array_key_exists( $permission_type, $this->plugin_permissions ) || $this->permission_level < $this->plugin_permissions[ $permission_type ] ) {
+			return false;
+		}
+
+		if ( 3 !== $this->plugin_permissions[ $permission_type ] ) {
+			return true;
+		}
+
+		// Existing payment and table policies remain enforced while entitlement
+		// is degraded, but their settings are made read-only by can_edit_permission().
+		if ( in_array( $permission_type, array( 'payments', 'premium_table_restrictions' ), true ) ) {
+			return true;
+		}
+
+		return $this->has_active_ultimate_entitlement();
+	}
+
+	public function can_edit_permission( $permission_type = '' ) {
+		if ( ! $this->permission_level ) { $this->get_permission_level(); }
+
+		if ( ! array_key_exists( $permission_type, $this->plugin_permissions ) || $this->permission_level < $this->plugin_permissions[ $permission_type ] ) {
+			return false;
+		}
+
+		return 3 !== $this->plugin_permissions[ $permission_type ] || $this->has_active_ultimate_entitlement();
+	}
+
+	public function has_active_ultimate_entitlement() {
+		return $this->has_compatible_helper() && fspph_rtb_is_ultimate_active();
+	}
+
+	public function has_compatible_helper() {
+		return defined( 'FSPPH_VERSION' )
+			&& version_compare( FSPPH_VERSION, '0.1.0', '>=' )
+			&& function_exists( 'fspph_rtb_entitlement_contract_version' )
+			&& 1 === (int) fspph_rtb_entitlement_contract_version()
+			&& function_exists( 'fspph_rtb_is_ultimate_active' );
+	}
+
+	public function get_entitlement_state() {
+		if ( ! $this->has_compatible_helper() || ! function_exists( 'fspph_rtb_get_entitlement_state' ) ) {
+			return array( 'status' => 'incompatible', 'active' => false );
+		}
+
+		return fspph_rtb_get_entitlement_state();
+	}
+
+	public function get_stored_permission_level() {
+		if ( ! $this->permission_level ) { $this->get_permission_level(); }
+
+		return (int) $this->permission_level;
 	}
 
 	public function update_permissions() {
-		$this->permission_level = get_option( "rtb-permission-level" );
+		$permissions = get_option( 'rtb-permission-level' );
+		$this->permission_level = is_array( $permissions ) ? (int) reset( $permissions ) : (int) $permissions;
 	}
 }
-
 }

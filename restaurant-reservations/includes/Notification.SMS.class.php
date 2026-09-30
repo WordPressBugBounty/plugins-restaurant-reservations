@@ -143,23 +143,30 @@ class rtbNotificationSMS extends rtbNotification {
 	public function send_notification() {
 		global $rtb_controller;
 
-		$url = add_query_arg(
+		$response = wp_remote_post(
+			apply_filters( 'rtb_notification_sms_endpoint', 'https://www.fivestarplugins.com/sms-handling/sms-client.php' ),
 			array(
-				'license_key' 	=> urlencode( $this->license_key ),
-				'admin_email' 	=> urlencode( $this->purchase_email ),
-				'phone_number' 	=> urlencode( $this->phone_number ),
-				'message'		=> urlencode( $this->message ),
-				'country_code'	=> urlencode( $rtb_controller->settings->get_setting( 'rtb-country-code' ) ),
-				'sender_id'		=> urlencode( $rtb_controller->settings->get_setting( 'sms-sender-id' ) )
-			),
-			'http://www.fivestarplugins.com/sms-handling/sms-client.php'
+				'timeout'   => 15,
+				'sslverify' => true,
+				'body'      => array(
+					'api_version'  => '2',
+					'license_key'  => $this->license_key,
+					'admin_email'  => $this->purchase_email,
+					'phone_number' => $this->phone_number,
+					'message'      => $this->message,
+					'country_code' => $rtb_controller->settings->get_setting( 'rtb-country-code' ),
+					'sender_id'    => $rtb_controller->settings->get_setting( 'sms-sender-id' ),
+				),
+			)
 		);
 
-		$opts = array('http'=>array('method'=>"GET"));
-		$context = stream_context_create($opts);
-		$return = json_decode( file_get_contents( $url, false, $context ) );
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return false;
+		}
 
-		return isset( $return->success ) ? $return->success : false;
+		$return = json_decode( wp_remote_retrieve_body( $response ) );
+
+		return ! empty( $return->success );
 	}
 }
 } // endif;

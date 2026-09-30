@@ -691,11 +691,7 @@ class rtbAdminBookings {
 			$email->subject = empty( $subject ) ? $rtb_controller->settings->get_setting( 'subject-admin-notice' ) : $subject;
 			$email->message = $message;
 			$email->set_booking( $booking );
-			if ( $email->prepare_notification() ) {
-				do_action( 'rtb_send_notification_before', $email );
-				$email->send_notification();
-				do_action( 'rtb_send_notification_after', $email );
-			}
+			$rtb_controller->notifications->dispatch_notification( $email );
 
 			// Store email in postmeta for log
 			$booking->add_log( 'email', $email->subject, $email->message );

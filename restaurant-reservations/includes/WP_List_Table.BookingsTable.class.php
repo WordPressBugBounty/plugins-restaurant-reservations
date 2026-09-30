@@ -191,6 +191,7 @@ class rtbBookingsTable extends WP_List_Table {
 
 		// Add default items to the details column if they've been hidden
 		add_filter( 'rtb_bookings_table_column_details', array( $this, 'add_details_column_items' ), 10, 2 );
+		add_filter( 'rtb_bookings_table_column_details', array( $this, 'add_notification_diagnostic_items' ), 20, 2 );
 	}
 
 	public function populate_booking_status()
@@ -849,6 +850,37 @@ class rtbBookingsTable extends WP_List_Table {
 			$details[] = array(
 				'label' => $label,
 				'value' => $value,
+			);
+		}
+
+		return $details;
+	}
+
+	/**
+	 * Add recent transport diagnostics to the booking details panel.
+	 *
+	 * @since 2.8.0
+	 */
+	public function add_notification_diagnostic_items( $details, $booking ) {
+
+		if ( ! current_user_can( 'manage_bookings' ) || empty( $booking->notification_diagnostics ) || ! is_array( $booking->notification_diagnostics ) ) {
+			return $details;
+		}
+
+		foreach ( array_reverse( array_slice( $booking->notification_diagnostics, -5 ) ) as $diagnostic ) {
+			$status = isset( $diagnostic['status'] ) ? str_replace( '_', ' ', $diagnostic['status'] ) : 'unknown';
+			$value = sprintf(
+				'%1$s — %2$s/%3$s/%4$s: %5$s',
+				isset( $diagnostic['timestamp'] ) ? $diagnostic['timestamp'] : '',
+				isset( $diagnostic['event'] ) ? $diagnostic['event'] : '',
+				isset( $diagnostic['type'] ) ? $diagnostic['type'] : '',
+				isset( $diagnostic['target'] ) ? $diagnostic['target'] : '',
+				$status
+			);
+
+			$details[] = array(
+				'label' => esc_html__( 'Notification transport', 'restaurant-reservations' ),
+				'value' => esc_html( $value ),
 			);
 		}
 

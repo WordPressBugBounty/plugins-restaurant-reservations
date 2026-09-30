@@ -249,8 +249,6 @@ class cffrtbField {
 	 * @since 0.1
 	 */
 	public function prepare_options_input() {
-
-		// Load existing options
 		$options = array();
 		if ( !empty( $this->ID ) ) {
 			$meta = get_post_meta( $this->ID, 'cffrtb', true );
@@ -259,39 +257,38 @@ class cffrtbField {
 			}
 		}
 
-		// Disable options that are no longer available
-		foreach( $options as $i => $option ) {
-
-			// Store key for fields that were generated before the change in
-			// version 1.1, when the key represented the field id
-			if ( !isset( $option['id'] ) ) {
-				$option['id'] = $i;
-			}
-
-			$exists = false;
-			foreach( $this->options as $new_option ) {
-				if ( $new_option['id'] == $option['id'] ) {
-					$exists = true;
-					break;
-				}
-			}
-
-			if ( !$exists ) {
-				$options[$i]['disabled'] = true;
-			}
+		$existing = array();
+		$max_id = -1;
+		foreach ( $options as $key => $option ) {
+			$id = isset( $option['id'] ) ? $option['id'] : $key;
+			$option['id'] = $id;
+			$existing[ (string) $id ] = $option;
+			if ( is_numeric( $id ) ) { $max_id = max( $max_id, (int) $id ); }
 		}
 
-		// Generate new options array with properly assigned IDs for new options
-		$i = count( $options );
-		foreach( $this->options as $key => $option ) {
-			if ( substr( $option['id'], 0, 3 ) == 'new' ) {
-				$option['id'] = $i;
-				$i++;
+		$merged = array();
+		$seen = array();
+		foreach ( (array) $this->options as $option ) {
+			$id = isset( $option['id'] ) ? (string) $option['id'] : 'new';
+			// Loaded historical records must not become active on a repeated save.
+			if ( ! empty( $option['disabled'] ) || isset( $seen[ $id ] ) ) { continue; }
+			if ( 0 === strpos( $id, 'new' ) || ! isset( $existing[ $id ] ) ) {
+				$id = (string) ++$max_id;
 			}
-			$options[$key] = $option;
+
+			$option['id'] = (int) $id;
+			$option['disabled'] = false;
+			$merged[] = $option;
+			$seen[ $id ] = true;
 		}
 
-		return $options;
+		foreach ( $existing as $id => $option ) {
+			if ( isset( $seen[ $id ] ) ) { continue; }
+			$option['disabled'] = true;
+			$merged[] = $option;
+		}
+
+		return $merged;
 	}
 
 	/**
@@ -309,12 +306,19 @@ class cffrtbField {
 	 * @since 0.1
 	 */
 	public function is_valid_option( $value ) {
+		return false !== $this->get_option_by_id( $value, true );
+	}
 
-		if ( !is_array( $this->options ) ) {
-			return false;
+	public function get_option_by_id( $id, $active_only = false ) {
+		foreach ( (array) $this->options as $key => $option ) {
+			$option_id = isset( $option['id'] ) ? $option['id'] : $key;
+			if ( (string) $option_id !== (string) $id ) { continue; }
+			if ( $active_only && ! empty( $option['disabled'] ) ) { return false; }
+
+			return $option;
 		}
 
-		return array_key_exists( $value, $this->options );
+		return false;
 	}
 
 	/**
@@ -493,7 +497,7 @@ class cffrtbField {
 		if ( !empty( $this->subtype ) ) { $post_meta['subtype'] = $this->subtype; }
 		if ( !empty( $this->required ) ) { $post_meta['required'] = $this->required; }
 		if ( !empty( $this->fieldset ) ) { $post_meta['fieldset'] = $this->fieldset; }
-		if ( !empty( $this->options ) && $this->type == 'options' ) { $post_meta['options'] = $this->prepare_options_input(); }
+		if ( $this->type == 'options' ) { $post_meta['options'] = $this->prepare_options_input(); }
 
 		$post_meta = apply_filters( 'cffrtb_insert_field_metadata', $post_meta, $this );
 
@@ -541,8 +545,8 @@ class cffrtbField {
 
 		$input = isset( $_POST['rtb-' . $this->slug ] )
 			? ( is_array( $_POST['rtb-' . $this->slug ] )
-				? array_map( 'absint', $_POST['rtb-' . $this->slug ] )
-				: sanitize_text_field( $_POST['rtb-' . $this->slug] ) )
+				? array_map( 'absint', wp_unslash( $_POST['rtb-' . $this->slug ] ) )
+				: sanitize_text_field( wp_unslash( $_POST['rtb-' . $this->slug] ) ) )
 			: '';
 
 		// Skip empty fields but do not skip checkboxes.
@@ -584,15 +588,11 @@ class cffrtbField {
 
 			if ( $this->subtype === 'select' || $this->subtype === 'radio' ) {
 				$val = absint( $input[0] );
-				if ( isset( $this->options[ $val ] ) ) {
-					$booking->custom_fields[ $this->slug ] = $val;
-				}
+				$booking->custom_fields[ $this->slug ] = $val;
 			} elseif ( $this->subtype === 'checkbox' ) {
 				$val = array();
 				foreach( $input as $input_i ) {
-					if ( isset( $this->options[ $input_i ] ) ) {
-						$val[] = $input_i;
-					}
+					$val[] = absint( $input_i );
 				}
 				$booking->custom_fields[ $this->slug ] = $val;
 			}

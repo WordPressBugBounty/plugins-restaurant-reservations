@@ -414,7 +414,7 @@ class rtbSettings {
 		}
 
 		$this->premium_permissions['premium_table_restrictions'] = array();
-		if ( ! $rtb_controller->permissions->check_permission('premium_table_restrictions') ) {
+		if ( ! $rtb_controller->permissions->can_edit_permission('premium_table_restrictions') ) {
 			$this->premium_permissions['premium_table_restrictions'] = array(
 				'disabled' 				=> true,
 				'disabled_image' 	=> '#',
@@ -433,7 +433,7 @@ class rtbSettings {
 		}
 
 		$this->premium_permissions['reminders'] = array();
-		if ( ! $rtb_controller->permissions->check_permission('reminders') ) {
+		if ( ! $rtb_controller->permissions->can_edit_permission('reminders') ) {
 			$this->premium_permissions['reminders'] = array(
 				'disabled' 				=> true,
 				'disabled_image' 	=> '#',
@@ -443,7 +443,7 @@ class rtbSettings {
 		}
 
 		$this->premium_permissions['payments'] = array();
-		if ( ! $rtb_controller->permissions->check_permission('payments') ) {
+		if ( ! $rtb_controller->permissions->can_edit_permission('payments') ) {
 			$this->premium_permissions['payments'] = array(
 				'disabled'		=> true,
 				'disabled_image'=> '#',
@@ -505,7 +505,7 @@ class rtbSettings {
 			'confirmed-message'				=> __( 'Thanks, your booking request has been automatically confirmed. We look forward to seeing you soon!', 'restaurant-reservations' ),
 			'date-format'					=> _x( 'mmmm d, yyyy', 'Default date format for display. Must match formatting rules at http://amsul.ca/pickadate.js/date/#formats', 'restaurant-reservations' ),
 			'time-format'					=> _x( 'h:i A', 'Default time format for display. Must match formatting rules at http://amsul.ca/pickadate.js/time/#formats', 'restaurant-reservations' ),
-			'time-interval'					=> __( '30', 'Default interval in minutes when selecting a time.', 'restaurant-reservations' ),
+			'time-interval'					=> _x( '30', 'Default interval in minutes when selecting a time.', 'restaurant-reservations' ),
 
 			'daily-summary-address-send-time'	=> '00:00',
 
@@ -552,6 +552,7 @@ class rtbSettings {
 			'label-time-clear'				=> __( 'Clear', 'restaurant-reservations' ),
 			'label-no-times-available'		=> __( 'There are currently no times available for booking on your selected date.', 'restaurant-reservations' ),
 			'label-party'					=> __( 'Party', 'restaurant-reservations' ),
+			'label-party-placeholder'		=> __( 'Please select a party size', 'restaurant-reservations' ),
 			'label-table-s'					=> __( 'Table(s)', 'restaurant-reservations' ),
 			'label-table-min'				=> __( 'min.', 'restaurant-reservations' ),
 			'label-table-max'				=> __( 'max.', 'restaurant-reservations' ),
@@ -2202,7 +2203,7 @@ If you were not the one to cancel this booking, please contact us.
 	public function show_submit_button( $permission_type = '' ) {
 		global $rtb_controller;
 	
-		if ( $rtb_controller->permissions->check_permission( $permission_type ) ) {
+		if ( $rtb_controller->permissions->can_edit_permission( $permission_type ) ) {
 			return true;
 		}
 
@@ -2384,7 +2385,7 @@ If you were not the one to cancel this booking, please contact us.
 
 		if ( ! empty( $this->get_setting( 'party-blank' ) ) ) {
 
-			$options[] = '';
+			$options[0] = $this->get_setting( 'label-party-placeholder' );
 		}
 
 		$location = ( ! empty( $location_id ) and term_exists( $location_id ) ) ? get_term( $location_id ) : false;
@@ -2564,6 +2565,15 @@ If you were not the one to cancel this booking, please contact us.
 			'reservation'	=> array(
 				'legend'	=> esc_html( $rtb_controller->settings->get_setting( 'label-book-table'  ) ),
 				'fields'	=> array(
+					'party'		=> array(
+						'title'			=> esc_html( $rtb_controller->settings->get_setting( 'label-party' ) ),
+						'request_input'	=> empty( $request->party ) ? '' : $request->party,
+						'callback'		=> 'rtb_print_form_select_field',
+						'callback_args'	=> array(
+							'options'	=> $this->get_form_party_options( empty( $args['location'] ) ? 0 : $args['location'] ),
+						),
+						'required'		=> true,
+					),
 					'date'		=> array(
 						'title'			=> esc_html( $rtb_controller->settings->get_setting( 'label-date' ) ),
 						'request_input'	=> empty( $request->request_date ) ? '' : $request->request_date,
@@ -2574,15 +2584,6 @@ If you were not the one to cancel this booking, please contact us.
 						'title'			=> esc_html( $rtb_controller->settings->get_setting( 'label-time' ) ),
 						'request_input'	=> empty( $request->request_time ) ? '' : $request->request_time,
 						'callback'		=> 'rtb_print_form_text_field',
-						'required'		=> true,
-					),
-					'party'		=> array(
-						'title'			=> esc_html( $rtb_controller->settings->get_setting( 'label-party' ) ),
-						'request_input'	=> empty( $request->party ) ? '' : $request->party,
-						'callback'		=> 'rtb_print_form_select_field',
-						'callback_args'	=> array(
-							'options'	=> $this->get_form_party_options( empty( $args['location'] ) ? 0 : $args['location'] ),
-						),
 						'required'		=> true,
 					),
 				),
@@ -2681,7 +2682,17 @@ If you were not the one to cancel this booking, please contact us.
 			unset( $fields['reservation']['fields']['table'] );
 		}
 
-		return apply_filters( 'rtb_booking_form_fields', $fields, $request, $args );
+		$fields = apply_filters( 'rtb_booking_form_fields', $fields, $request, $args );
+		// Saved pre-2.8 field orders must not put dependent date/time before party.
+		if ( isset( $fields['reservation']['fields'] ) ) {
+			$reservation = $fields['reservation']['fields'];
+			$first = array();
+			foreach ( array( 'location', 'party', 'date', 'time' ) as $slug ) {
+				if ( isset( $reservation[$slug] ) ) { $first[$slug] = $reservation[$slug]; }
+			}
+			$fields['reservation']['fields'] = $first + $reservation;
+		}
+		return $fields;
 	}
 
 	/**

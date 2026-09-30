@@ -395,14 +395,11 @@ jQuery(document).ready(function ($) {
 		 */
 		remove_option:	function( el ) {
 
-			el.fadeOut( '200', function() {
-				$(this).remove();
-
-				// Remove scrollbar if the options list is less than 10 options
-				if ( cffrtb_editor.editor.get_options_list_el().find( 'li' ).length <= 10 ) {
-					cffrtb_editor.editor.get_options_list_el().removeClass( 'scroll' );
-				}
-			});
+			// Remove synchronously so an immediate Save cannot serialize this option.
+			el.remove();
+			if ( this.get_options_list_el().find( 'li' ).length <= 10 ) {
+				this.get_options_list_el().removeClass( 'scroll' );
+			}
 		},
 
 		/**

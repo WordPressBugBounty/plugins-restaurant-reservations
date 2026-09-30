@@ -78,6 +78,31 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 		}
 
 		/**
+		 * Return the booking ID that may be excluded from availability during an edit.
+		 *
+		 * Public possession of a booking ID is not authorization. Core only permits
+		 * booking managers; extensions may return the requested ID from the filter
+		 * after validating their own customer-edit token.
+		 *
+		 * @return int
+		 * @since 2.8.0
+		 */
+		private function get_authorized_availability_booking_id() {
+			$requested_id = isset( $_POST['booking_id'] ) ? absint( $_POST['booking_id'] ) : 0;
+			if ( ! $requested_id || RTB_BOOKING_POST_TYPE !== get_post_type( $requested_id ) ) {
+				return 0;
+			}
+
+			if ( current_user_can( 'manage_bookings' ) ) {
+				return $requested_id;
+			}
+
+			$authorized_id = (int) apply_filters( 'rtb_authorized_availability_booking_id', 0, $requested_id );
+
+			return $requested_id === $authorized_id ? $requested_id : 0;
+		}
+
+		/**
 		 * Get reservations that are associated with the email address that was sent
 		 * @since 2.1.0
 		 */
@@ -150,8 +175,10 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 			else {
 				wp_send_json_error(
 					array(
-						'error' => 'nobookings',
-						'msg' => esc_html( $rtb_controller->settings->get_setting( 'label-modify-no-bookings-found'  ) ),
+						'error' => empty( $rtb_controller->settings->get_setting( 'disable-cancellation-code-required' ) ) ? 'invalidcode' : 'nobookings',
+						'msg' => empty( $rtb_controller->settings->get_setting( 'disable-cancellation-code-required' ) )
+							? __( 'The cancellation code you entered is not valid.', 'restaurant-reservations' )
+							: esc_html( $rtb_controller->settings->get_setting( 'label-modify-no-bookings-found' ) ),
 					)
 				);
 			}
@@ -274,6 +301,8 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 			$this->year = sanitize_text_field( $_POST['year'] );
 			$this->month = sanitize_text_field( $_POST['month'] );
 			$this->day = sanitize_text_field( $_POST['day'] );
+			$this->party = isset( $_POST['party'] ) ? absint( $_POST['party'] ) : 0;
+			$this->booking_id = $this->get_authorized_availability_booking_id();
 
 			$interval = $rtb_controller->settings->get_setting( 'time-interval' ) * 60;
 
@@ -332,11 +361,30 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 			// If the restaurant is closed that day
 			// If Enable Max Reservation not set
-			if ( empty( $hours ) or ! $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $location_slug ) ) {				
+			if ( empty( $hours ) ) {
 				$finalize_response( $hours );
 			}
 
 			$all_possible_slots = $this->get_all_possible_timeslots( $hours );
+			$party_blocked_slots = array();
+
+			if ( $this->party > 0 ) {
+				foreach ( $all_possible_slots as $slot ) {
+					$datetime = ( new DateTime( '@' . $slot ) )->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s' );
+					$timeslot = rtb_get_timeslot( $datetime, $location_id );
+					$minimum = (int) $rtb_controller->settings->get_setting( 'party-size-min', $location_slug, $timeslot );
+					$maximum = (int) $rtb_controller->settings->get_setting( 'party-size', $location_slug, $timeslot );
+
+					if ( ( $minimum > 0 && $this->party < $minimum ) || ( $maximum > 0 && $this->party > $maximum ) ) {
+						$party_blocked_slots[] = $slot;
+					}
+				}
+			}
+
+			if ( ! $rtb_controller->settings->get_setting( 'rtb-enable-max-tables', $location_slug ) && ! $rtb_controller->settings->get_setting( 'require-table' ) ) {
+				$available_slots = array_values( array_diff( $all_possible_slots, $party_blocked_slots ) );
+				$finalize_response( $consolidating_timeslots_to_timeframes( $available_slots ) );
+			}
 
 			// Get all current bookings sorted by date
 			$args = array(
@@ -346,20 +394,11 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				'end_date'       => $this->year . '-' . $this->month . '-' . $this->day,
 				'post_status'    => ['pending', 'payment_pending', 'confirmed', 'arrived']
 			);
-
-			// If there are multiple locations, a location is selected, and 
-			// max reservations and/or seats has been enabled for this specific location
-			if ( ! empty( $location_slug ) and ( $rtb_controller->settings->is_location_setting_enabled( 'rtb-max-tables-count', $location_slug ) or $rtb_controller->settings->is_location_setting_enabled( 'rtb-max-people-count', $location_slug ) ) ) {
-
-				$tax_query = array(
-					array(
-						'taxonomy'	=> $rtb_controller->locations->location_taxonomy,
-						'field'		=> 'term_id',
-						'terms'		=> $this->location->term_id
-					)
-				);
-
-				$args['tax_query'] = $tax_query;
+			if ( $location_id ) {
+				$args['location'] = $location_id;
+			}
+			if ( $this->booking_id ) {
+				$args['post__not_in'] = array( $this->booking_id );
 			}
 
 			$query = new rtbQuery( $args, 'ajax-get-time-slots' );
@@ -409,11 +448,18 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				}
 			}
 
-			$all_blocked_slots = [];
+			$all_blocked_slots = $party_blocked_slots;
 
 			// Go through all bookings and figure out when we're at or above the 
 			// max reservation or max people and mark that slot as blocked
-			foreach ( $all_bookings_by_slots as $slot => $data ) {
+			foreach ( $all_possible_slots as $slot ) {
+				$data = isset( $all_bookings_by_slots[ $slot ] )
+					? $all_bookings_by_slots[ $slot ]
+					: array(
+						'total_bookings' => 0,
+						'total_guest'    => 0,
+						'overlapped'     => false,
+					);
 
 				$datetime = ( new DateTime( '@' . $slot ) )->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s');
 
@@ -425,25 +471,9 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 				$max_people = (int) $rtb_controller->settings->get_setting( 'rtb-max-people-count', $location_slug, $timeslot );
 
-				if ( isset( $max_reservations ) and $max_reservations > 0 ) {
-					if( $max_reservations <= $data['total_bookings'] ) {
-						$all_blocked_slots[] = $slot;
-					}
-				}
-				else if ( isset( $max_people ) and $max_people > 0 ) {
-					/**
-					 * min_party_size = 10, max_people = 100, 6 bookings of total 91 guests
-					 * Now, if anybody wants to book for at least 10 people, it is not possible
-					 * because the total will surpass the max_people (100)
-					 * thus reducing min_party_size from max_people
-					 *
-					 * $max_people can be zero when min_party_size is same as max_people
-					 */
-					$max_people = $max_people - $min_party_size;
-
-					if( $max_people < $data['total_guest'] ) {
-						$all_blocked_slots[] = $slot;
-					}
+				$requested_party = $this->party > 0 ? $this->party : $min_party_size;
+				if ( ! rtb_slot_has_capacity( $data, $requested_party, $max_reservations, $max_people ) ) {
+					$all_blocked_slots[] = $slot;
 				}
 			}
 
@@ -474,7 +504,7 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 				// block after this slot only when this slot is not overlapped
 				// Overlapped slots should block only backwards, but not afterward
-				if( $all_bookings_by_slots[$slot]['overlapped'] ) {
+				if ( ! empty( $all_bookings_by_slots[ $slot ]['overlapped'] ) ) {
 					continue;
 				}
 
@@ -496,12 +526,18 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 			// If tables are required, block slots where there is no table available
 			if ( $rtb_controller->settings->get_setting( 'require-table' ) ) {
+				$first_table_slot = ! empty( $all_possible_slots ) ? reset( $all_possible_slots ) : false;
+				$table_availability_context = false !== $first_table_slot
+					? rtb_get_table_availability_context( ( new DateTime( '@' . $first_table_slot ) )->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s' ), $location_id, $this->booking_id )
+					: null;
 
 				foreach ( $all_possible_slots as $slot ) {
 
 					$datetime = ( new DateTime( '@' . $slot ) )->setTimezone( wp_timezone() )->format( 'Y-m-d H:i:s');
 
-					$valid_tables = rtb_get_valid_tables( $datetime, $location_id );
+					$valid_tables = $this->party > 0
+						? rtb_get_feasible_tables( $datetime, $location_id, $this->party, $table_availability_context, $this->booking_id )
+						: rtb_get_valid_tables( $datetime, $location_id, $table_availability_context, $this->booking_id );
 
 					if ( empty( $valid_tables ) ) { $all_blocked_slots[] = $slot; }
 				}
@@ -889,7 +925,7 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 				rtbHelper::bad_nonce_ajax();
 			}
 
-			$this->booking_id 	= isset( $_POST['booking_id'] ) ? intval( $_POST['booking_id'] ) : 0;
+			$this->booking_id 	= $this->get_authorized_availability_booking_id();
 			$this->location_id 	= isset( $_POST['location_id'] ) ? intval( $_POST['location_id'] ) : 0;
 			$this->year 		= isset( $_POST['year'] ) ? sanitize_text_field( $_POST['year'] ) : false;
 			$this->month 		= isset( $_POST['month'] ) ? sanitize_text_field( $_POST['month'] ) : false;
@@ -901,46 +937,19 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 			$datetime = $this->year . '-' . $this->month . '-' . $this->day . ' ' . $this->time;
 
-			$tables = $rtb_controller->settings->get_sorted_tables( $datetime, $this->location_id );
-
-			$valid_tables = rtb_get_valid_tables( $datetime, $this->location_id);
+			$availability_context = rtb_get_table_availability_context( $datetime, $this->location_id, $this->booking_id );
+			$valid_tables = $this->party > 0
+				? rtb_get_feasible_tables( $datetime, $this->location_id, $this->party, $availability_context, $this->booking_id )
+				: rtb_get_valid_tables( $datetime, $this->location_id, $availability_context, $this->booking_id );
 
 			if ( $this->booking_id ) {
 				
 				$current_booking = new rtbBooking();
 				$current_booking->load_post( $this->booking_id );
 
-				if ( $current_booking->table ) { $valid_tables = array_merge( $valid_tables, $current_booking->table ); }
 			}
 
-			$return_tables = array();
-
-			if ( isset( $this->party ) ) {
-
-				$possible_combinations = array();
-				foreach ( $valid_tables as $valid_table ) {
-
-					// If the party size is between the min and max for the table, great
-					if ( $tables[ $valid_table ]->min_people <= $this->party and $tables[ $valid_table ]->max_people >= $this->party ) {
-						
-						$possible_combinations[] = $valid_table;
-					}
-					// If the party is above the minimum for the table, look to see if combinations could work
-					elseif ( $tables[ $valid_table ]->min_people <= $this->party ) {
-
-						$combination = $this->get_combinations_chain( $tables, $valid_tables, $valid_table, $tables[ $valid_table ]->max_people, $this->party );
-
-						if ( $combination ) { 
-							$possible_combinations[] = $combination; 
-						}
-					}
-
-					$return_tables = $this->format_tables( $possible_combinations );
-				}
-			}
-			else {
-				$return_tables = $this->format_tables( $valid_tables );
-			}
+			$return_tables = $this->format_tables( $valid_tables );
 			//update_option( "EWD_Debugging", 'tables: ' . print_r( $return_tables, true) );
 			$selected_table = ( isset( $current_booking ) and $current_booking->table ) ? implode(', ', $current_booking->table ) : -1;
 
@@ -950,50 +959,6 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 
 			die();
 		} 
-
-		/**
-		 * Recursively go through table combinations to find one that has enough seats
-		 * @since 2.1.7
-		 */
-		public function get_combinations_chain(
-			$tables, 
-			$valid_tables, 
-			$current_table, 
-			$current_size, 
-			$needed_size
-		) {
-			$table_chain[] = $current_table;
-
-			// No combination specified
-			if ( ! $tables[ $current_table ]->combinations ) {
-				return false;
-			}
-
-			$possible_tables = explode( ',', $tables[ $current_table ]->combinations );
-
-			foreach ( $possible_tables as $possible_table ) {
-
-				// If the table has already been booked, continue
-				if ( !in_array( $possible_table, $valid_tables) ) {
-					continue;
-				}
-
-				// If the table can hold the group on its own, continue
-				if ( $tables[ $possible_table ]->max_people >= $needed_size ) {
-					continue;
-				}
-
-				$current_size += $tables[ $possible_table ]->max_people;
-				$table_chain[] = $possible_table;
-
-				if ( $current_size >= $needed_size ) {
-					return implode(',', $table_chain);
-				}
-			}
-
-			//no viable combination found
-			return false;
-		}
 
 		/**
 		 * Format the tables available to be booked as number(s)_string => human_value pairs

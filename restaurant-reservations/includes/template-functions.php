@@ -336,6 +336,36 @@ add_shortcode( 'view-bookings-form', 'rtb_display_bookings_form_shortcode' );
 } // endif;
 
 /**
+ * Limit front-end booking details to authorized staff or protected content.
+ * The queried post is used rather than the loop post so a shortcode embedded
+ * in public content cannot inherit another post's protection.
+ *
+ * @since 2.8.0
+ */
+if ( !function_exists( 'rtb_can_view_bookings_form' ) ) {
+function rtb_can_view_bookings_form() {
+	if ( current_user_can( 'manage_options' ) || current_user_can( 'manage_bookings' ) ) {
+		return true;
+	}
+
+	if ( ! is_singular() ) {
+		return false;
+	}
+
+	$post = get_queried_object();
+	if ( ! ( $post instanceof WP_Post ) ) {
+		return false;
+	}
+
+	if ( 'private' === $post->post_status ) {
+		return current_user_can( 'read_post', $post->ID ) && ! post_password_required( $post );
+	}
+
+	return '' !== $post->post_password && ! post_password_required( $post );
+}
+} // endif;
+
+/**
  * Print the display bookings form's HTML code, including error handling and confirmation
  * notices.
  * @since 2.0.0
@@ -344,6 +374,9 @@ if ( !function_exists( 'rtb_print_view_bookings_form' ) ) {
 function rtb_print_view_bookings_form( $args = array() ) {
 
 	global $rtb_controller;
+	if ( ! rtb_can_view_bookings_form() ) {
+		return '';
+	}
 
 	// Only allow the form to be displayed once on a page
 	if ( $rtb_controller->display_bookings_form_rendered === true ) {
@@ -914,7 +947,7 @@ function rtb_print_form_error( $field ) {
 	if ( !empty( $rtb_controller->request ) && !empty( $rtb_controller->request->validation_errors ) ) {
 		foreach ( $rtb_controller->request->validation_errors as $error ) {
 			if ( $error['field'] == $field ) {
-				echo '<div class="rtb-error">' . $error['message'] . '</div>';
+				echo '<div class="rtb-error rtb-submission-error" role="alert">' . $error['message'] . '</div>';
 			}
 		}
 	}
@@ -1029,16 +1062,73 @@ if ( !function_exists( 'rtb_add_custom_styling' ) ) {
 }
 
 /**
+ * Preload the booking data used to calculate table availability for one day.
+ *
+ * @param int|string $datetime    Date/time on the requested day.
+ * @param int        $location_id       Location term ID.
+ * @param int        $exclude_booking_id Booking ID to exclude during an authorized edit.
+ * @return array
+ * @since 2.8.0
+ */
+if ( ! function_exists( 'rtb_parse_availability_datetime' ) ) {
+	/** Missing/invalid submissions must never silently become "now". */
+	function rtb_parse_availability_datetime( $datetime ) {
+		if ( ! is_string( $datetime ) && ! is_int( $datetime ) ) { return false; }
+		if ( '' === trim( (string) $datetime ) ) { return false; }
+		try {
+			$date = new DateTime( is_numeric( $datetime ) ? '@' . $datetime : $datetime, wp_timezone() );
+			$errors = DateTime::getLastErrors();
+			if ( $errors && ( $errors['warning_count'] || $errors['error_count'] ) ) { return false; }
+			$date->setTimezone( wp_timezone() );
+			return $date;
+		} catch ( Exception $exception ) { return false; }
+	}
+}
+
+if ( ! function_exists( 'rtb_get_table_availability_context' ) ) {
+	function rtb_get_table_availability_context( $datetime, $location_id = 0, $exclude_booking_id = 0 ) {
+		$request_time = rtb_parse_availability_datetime( $datetime );
+		if ( ! $request_time ) { return array( 'date' => null, 'location_id' => (int) $location_id, 'exclude_booking_id' => (int) $exclude_booking_id, 'bookings' => array() ); }
+		$location_id = (int) $location_id;
+		$exclude_booking_id = (int) $exclude_booking_id;
+
+		$args = array(
+			'posts_per_page' => -1,
+			'date_range'     => 'dates',
+			'start_date'     => $request_time->format( 'Y-m-d' ),
+			'end_date'       => $request_time->format( 'Y-m-d' ),
+		);
+		if ( $location_id > 0 ) {
+			$args['location'] = $location_id;
+		}
+		if ( $exclude_booking_id > 0 ) {
+			$args['post__not_in'] = array( $exclude_booking_id );
+		}
+
+		require_once( RTB_PLUGIN_DIR . '/includes/Query.class.php' );
+		$query = new rtbQuery( $args );
+		$query->prepare_args();
+
+		return array(
+			'date'        => $request_time->format( 'Y-m-d' ),
+			'location_id' => $location_id,
+			'exclude_booking_id' => $exclude_booking_id,
+			'bookings'    => $query->get_bookings(),
+		);
+	}
+}
+
+/**
  * Retrieve tables that are available to be booked at a specific date/time
  *
  * @datetime int|string of the date/time to check
  * @since 2.1.7
  */
 if ( ! function_exists( 'rtb_get_valid_tables') ) {
-	function rtb_get_valid_tables( $datetime, $location_id = 0 ) {
+	function rtb_get_valid_tables( $datetime, $location_id = 0, $availability_context = null, $exclude_booking_id = 0 ) {
 		global $rtb_controller;
 
-		$request_time = new DateTime( $datetime, wp_timezone() );
+		$request_time = rtb_parse_availability_datetime( $datetime );
 
 		if ( ! $request_time ) { return array(); }
 
@@ -1060,19 +1150,18 @@ if ( ! function_exists( 'rtb_get_valid_tables') ) {
 
 		$dining_block_seconds = (int) $rtb_controller->settings->get_setting( 'rtb-dining-block-length', $location_slug, $timeslot ) * 60 - 1; // Take 1 second off, to avoid bookings that start or end exactly at the beginning of a booking block
 
-		$args = array(
-			'posts_per_page' => -1,
-			'date_range' => 'dates',
-			'start_date' => $request_time->format( 'Y-m-d' ),
-			'end_date' => $request_time->format( 'Y-m-d' )
-		);
+		if (
+			! is_array( $availability_context ) ||
+			! array_key_exists( 'bookings', $availability_context ) ||
+			! isset( $availability_context['location_id'], $availability_context['date'], $availability_context['exclude_booking_id'] ) ||
+			(int) $availability_context['location_id'] !== (int) $location_id ||
+			(int) $availability_context['exclude_booking_id'] !== (int) $exclude_booking_id ||
+			$availability_context['date'] !== $request_time->format( 'Y-m-d' )
+		) {
+			$availability_context = rtb_get_table_availability_context( $datetime, $location_id, $exclude_booking_id );
+		}
 
-		require_once( RTB_PLUGIN_DIR . '/includes/Query.class.php' );
-		$query = new rtbQuery( $args );
-		$query->prepare_args();
-
-		// Get all current bookings sorted by date
-		$bookings = $query->get_bookings();
+		$bookings = $availability_context['bookings'];
 
 		$request_time_start = intval( $request_time->format( 'U' ) ) - $dining_block_seconds;
 		$request_time_end = intval( $request_time->format( 'U' ) ) + $dining_block_seconds;
@@ -1100,12 +1189,8 @@ if ( ! function_exists( 'rtb_get_timeslot' ) ) {
 function rtb_get_timeslot( $datetime, $location_id ) {
 	global $rtb_controller;
 
-	// If $datetime is numeric, treat it as a Unix timestamp
-	if ( is_numeric( $datetime ) ) {
-		$datetime = '@' . $datetime;
-	}
-
-	$selected_datetime = new DateTime( $datetime, wp_timezone() );
+	$selected_datetime = rtb_parse_availability_datetime( $datetime );
+	if ( ! $selected_datetime ) { return false; }
 	$selected_weekday = strtolower( $selected_datetime->format( 'l' ) );
 
 	$location_slug = ! empty( $location_id ) ? get_term_field( 'slug', $location_id ) : false;
@@ -1190,7 +1275,7 @@ function rtb_get_timeslot( $datetime, $location_id ) {
 				
 				if ( $weekday == $selected_weekday ) {
 					
-					if ( isset( $opening['time'] ) && $opening['time']['start'] !== 'undefined' ) {
+					if ( ! empty( $opening['time']['start'] ) && $opening['time']['start'] !== 'undefined' ) {
 
 						$open_time = ( new DateTime( $selected_datetime->format( 'Y-m-d' ) .' '. $opening['time']['start'], wp_timezone() ) )->format( 'U' );
 					}
@@ -1200,7 +1285,7 @@ function rtb_get_timeslot( $datetime, $location_id ) {
 						$open_time = ( new DateTime( $selected_datetime->format( 'Y-m-d' ), wp_timezone() ) )->format('U');
 					}
 
-					if ( isset( $opening['time'] ) && $opening['time']['end'] !== 'undefined' ) {
+					if ( ! empty( $opening['time']['end'] ) && $opening['time']['end'] !== 'undefined' ) {
 
 						$close_time = ( new DateTime( $selected_datetime->format( 'Y-m-d' ) .' '. $opening['time']['end'], wp_timezone() ) )->format( 'U' );
 					}
@@ -1269,5 +1354,91 @@ if ( ! function_exists( 'wp_timezone') ) {
     	}
 
     	return new DateTimeZone( $timezone_string );
+	}
+}
+
+if ( ! function_exists( 'rtb_tables_fit_party' ) ) {
+	function rtb_tables_fit_party( $table_numbers, $datetime, $location_id, $party, $availability_context = null, $exclude_booking_id = 0 ) {
+		global $rtb_controller;
+
+		$table_numbers = array_values( array_unique( array_map( 'strval', (array) $table_numbers ) ) );
+		$available = array_map( 'strval', rtb_get_valid_tables( $datetime, $location_id, $availability_context, $exclude_booking_id ) );
+		$tables = $rtb_controller->settings->get_sorted_tables( $datetime, $location_id );
+
+		return rtb_table_numbers_fit_party( $table_numbers, $available, $tables, $party );
+	}
+}
+
+if ( ! function_exists( 'rtb_table_numbers_fit_party' ) ) {
+	function rtb_table_numbers_fit_party( $table_numbers, $available, $tables, $party ) {
+		$minimum = null;
+		$maximum = 0;
+
+		if ( empty( $table_numbers ) || count( array_intersect( $table_numbers, $available ) ) !== count( $table_numbers ) ) {
+			return false;
+		}
+
+		foreach ( $table_numbers as $number ) {
+			if ( ! isset( $tables[ $number ] ) ) { return false; }
+			$minimum = null === $minimum
+				? (int) $tables[ $number ]->min_people
+				: min( $minimum, (int) $tables[ $number ]->min_people );
+			$maximum += (int) $tables[ $number ]->max_people;
+		}
+
+		return (int) $party >= (int) $minimum && (int) $party <= $maximum;
+	}
+}
+
+if ( ! function_exists( 'rtb_slot_has_capacity' ) ) {
+	function rtb_slot_has_capacity( $occupancy, $requested_party, $max_reservations = 0, $max_people = 0 ) {
+		$total_bookings = isset( $occupancy['total_bookings'] ) ? (int) $occupancy['total_bookings'] : 0;
+		$total_guests = isset( $occupancy['total_guest'] ) ? (int) $occupancy['total_guest'] : 0;
+
+		if ( (int) $max_reservations > 0 && $total_bookings >= (int) $max_reservations ) {
+			return false;
+		}
+
+		if ( (int) $max_people > 0 && $total_guests + (int) $requested_party > (int) $max_people ) {
+			return false;
+		}
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'rtb_get_feasible_tables' ) ) {
+	function rtb_get_feasible_tables( $datetime, $location_id, $party, $availability_context = null, $exclude_booking_id = 0 ) {
+		global $rtb_controller;
+
+		$available = array_values( array_map( 'strval', rtb_get_valid_tables( $datetime, $location_id, $availability_context, $exclude_booking_id ) ) );
+		$tables = $rtb_controller->settings->get_sorted_tables( $datetime, $location_id );
+		$feasible = array();
+
+		foreach ( $available as $number ) {
+			if ( rtb_table_numbers_fit_party( array( $number ), $available, $tables, $party ) ) {
+				$feasible[] = $number;
+				continue;
+			}
+
+			if ( empty( $tables[ $number ]->combinations ) || (int) $tables[ $number ]->min_people > (int) $party ) { continue; }
+
+			$chain = array( $number );
+			$queue = array_filter( array_map( 'trim', explode( ',', $tables[ $number ]->combinations ) ) );
+			while ( ! empty( $queue ) ) {
+				$candidate = (string) array_shift( $queue );
+				if ( in_array( $candidate, $chain, true ) || ! in_array( $candidate, $available, true ) || ! isset( $tables[ $candidate ] ) ) { continue; }
+				$chain[] = $candidate;
+				if ( rtb_table_numbers_fit_party( $chain, $available, $tables, $party ) ) {
+					$feasible[] = implode( ',', $chain );
+					break;
+				}
+				if ( ! empty( $tables[ $candidate ]->combinations ) ) {
+					$queue = array_merge( $queue, array_map( 'trim', explode( ',', $tables[ $candidate ]->combinations ) ) );
+				}
+			}
+		}
+
+		return array_values( array_unique( $feasible ) );
 	}
 }

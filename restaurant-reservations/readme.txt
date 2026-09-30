@@ -2,9 +2,9 @@
 Contributors: Rustaurius
 Tags: restaurant reservations, restaurant booking, reservation, reservation system, open table
 Requires at Least: 6.0
-Tested Up To: 7.0
+Tested Up To: 7.1
 Requires PHP: 8.0
-Stable tag: 2.7.24
+Stable tag: 2.8.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -22,6 +22,7 @@ Comes with customizable **Gutenberg restaurant block** and **restaurant reservat
 ### Key Features
 
 - Create a customized restaurant reservation form
+- Party-size-first booking flow that uses the selected party size when checking applicable availability
 - Responsive booking form layout that looks great for mobile reservations and on all devices
 - Add your reservation form to any page via the included Gutenberg restaurant booking block or shortcode, or just choose your reservation page in the settings
 - Set up a specific restaurant schedule by defining the times and dates available for reservation
@@ -47,6 +48,8 @@ Simply insert the *Booking Form* block or the shortcode below to add the reserva
 The Five Star Restaurant Reservations plugin automatically sends out email notifications to both the person who made the reservation and to the admin. These are triggered for new pending bookings, both to the customer and to the admin, so you can approve it, as well as for confirmed or denied bookings (to the customer).
 
 You can customize the content of each of the above messages to help streamline your booking and approval processes, including using our built-in [template tags](https://doc.fivestarplugins.com/plugins/restaurant-reservations/user/notifications/template-tags) to include specific booking information.
+
+The plugin also includes notification diagnostics for authorized managers to help troubleshoot email issues. These diagnostics can distinguish the plugin's notification and WordPress send-attempt status from downstream email delivery, which is handled by your site's mail server or email provider.
 
 ### Customize Your Booking Form
 
@@ -88,6 +91,8 @@ That being said, if you do need to create a separate form for each location, thi
 
 The premium version of our restaurant reservations plugin comes with several features that let you restrict the number of people in your restaurant, so you can be sure to never overbook.
 
+Availability checks work with the party size selected by the guest before they choose their reservation date and time, allowing applicable capacity and table restrictions to be evaluated using the intended party size.
+
 - Set a dining block length used as a guide to apply the restrictions.
 - Set a maximum number of reservations allowed per dining block length.
 - Or set a maximum number of seats/people allowed per dining block length.
@@ -102,6 +107,8 @@ The premium version of our restaurant reservations plugin comes with several fea
 The premium version of our restaurant booking form plugin comes with the ability to create new custom fields and add them to your reservation form. With options for text input fields, dropdowns, checkboxes or radio buttons, you can use these fields to gather any extra info you need from the people making reservations on your site.
 
 If you offer discount or promo codes, let people specify theirs at reservation time. If you would like to collect allergy info or let people choose from certain dietary concerns, this is easily made possible via custom fields. The possibilities are endless.
+
+Custom field choices maintain their identities when options are reordered, disabled or recreated, helping preserve the meaning of information stored with existing reservations.
 
 ### Premium Notifications
 
@@ -304,105 +311,20 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 
 == Changelog ==
 
-= 2.7.24 (2026-07-30) =
-- Added a direct support option to the deactivation survey, making it easier to get help right away if you're uninstalling due to an issue.
-
-= 2.7.23 (2026-07-15) =
-- Adds an option to include up to 7 days of future bookings, in addition to today's bookings, in the daily summary email.
-- Adds a cap (10) to the number of times the daily summary email will try to resend if the initial email fails. 
-- Updates to correct some styling issues in the admin.
-- Patches a reported vulnerability.
-
-= 2.7.22 (2026-07-02) =
-- Fixed an issue related to upgrading. 
-
-= 2.7.21 (2026-06-19) =
-- Fix/update for Bancomat-type (Stripe) payments not being marked as paid in the plugin and, as such, not being switched to the correct status after payment.
-- Updated when the help bubble/pane styling is enqueued to fix issue in which admin screens would sometimes briefly flash unstyled content on page load.
-
-= 2.7.20 (2026-06-03) =
-- Updates to prevent a conflict that was happening with the Gift Cards Pro plugin Stripe payments implementation.
-- Removing/fixing deprecated notices.
-- Release includes a validated fix for a reported Patchstack vulnerability.
-
-= 2.7.19 (2026-05-25) =
-- Fixed an issue in which, when creating/editing a booking via the admin, it would, in some cases, incorrectly use global scheduling rules instead of location-specific scheduling rules in the calendar.
-
-= 2.7.18 (2026-05-18) =
-- Fixed deprecated notices/code.
-- Compatibility updates for WordPress 7.0.
-
-= 2.7.17 (2026-04-29) =
-- Fix for email addresses not being added to the selected MailChimp audience.
-
-= 2.7.16 (2026-04-17) =
-- Fix for a fatal error when the settings haven't been saved.
-- Updates to correct an issue with in-admin help not displaying correctly.
-- Fixed incorrectly-named element in a JS variable causing notice dismissal issue.
-
-= 2.7.15 (2026-04-15) =
-- Fix for conflict caused by helper button/feature.
-- Fix for reported Patchstack vulnerability.
-
-= 2.7.14 (2026-04-02) =
-- Updated styling for the view bookings form/table.
-- The view bookings form now displays a message when there are no bookings on the selected date instead of showing an empty table.
-
-= 2.7.13 (2026-02-19) =
-- Fixed an issue with translations for certain localized strings in the admin not being applied.
-
-= 2.7.12 (2026-02-06) =
-- Fixes an issue with the max party size causing the party size dropdown in the booking form to populate with an incorrect maximum in certain instances.
-
-= 2.7.11 (2026-02-04) =
-- Added the ability to disable/enable individual tables.
-- Fix for party size field not populating correctly when max party option was set to any size.
-
-= 2.7.10 (2026-02-02) =
-- Added a time limit/window to reminder, late-arrival and post-reservation notifications (3 hours for reminder and post-reservation, 1 hour for late-arrival), to make sure notifications aren't sent when they shouldn't be. If notifications aren't sent within that time frame, then they will be skipped for a particular booking.
-- Looking up and cancelling a booking now require an assigned unique booking code by default, in addition to the email address.
-
-= 2.7.9 (2026-01-09) =
-- Patch for low priority/no impact CSRF vulnerability reported by Patchstack.
-
-= 2.7.8 (2025-12-18) =
-- Fix: When updating a booking from the admin, notifications were being sent all the time instead of only when the "Send notifications" box was checked.
-- Modified: Added more status change triggers for sending notifications after updating a booking via the admin (so, now, notifications can also be sent if moving a booking from confirmed to closed, from closed to confirmed and from cancelled to confirmed).
-
-= 2.7.7 (2025-12-02) =
-- Tested with WordPress 6.9.
-- Fixed an issue related to reported Wordfence vulnerability.
-
-= 2.7.6 (2025-11-17) =
-- Added a new "Admin Ignore Schedule" option, so admins can create bookings outside their created scheduling rules and exceptions.
-
-= 2.7.5 (2025-10-20) =
-- Fixed an issue causing an error to sometimes display when clicking the "proceed to deposit" button in the booking form when using the Stripe gateway.
-
-= 2.7.4 (2025-10-16) =
-- Update to increase security related to payments and displaying payment summary information.
-
-= 2.7.3 (2025-09-23) =
-- Updated admin notice capability.
-
-= 2.7.2 (2025-08-27) =
-- Fixed an issue with location-specific maximums being incorrectly calculated.
-
-= 2.7.1 (2025-08-19) =
-- Minor bugfix for multiple locations settings
-
-= 2.7.0 (2025-07-30) =
-- **IMPORTANT NOTE: Significant updates have been made to the styling of the "Minimal" booking form layout option. If you are using this layout, we highly recommend that you install the update on a staging environment first and test with with the updated style, especially if you have customized the layout and/or CSS.**
-- Refresh of the "Minimal" booking form layout.
-- Redesign of the plugin admin.
-- Added: You can now specify a from alphanumeric sender ID for SMS notifications, to be used instead of the phone number. 
-- Added: You can now search for a booking by phone number on the Bookings admin screen.
-- Added: A character count warning when creating/editing SMS notifications, to help you prevent sending multiple messages for each notification.
-- Changed: Daily summary email now only sends if there are bookings on that day.
-- Changed: Added a blank entry at the top of the table select dropdown in the edit booking modal in the admin (to allow admins to make a booking that is not assigned to any table).
-- Changed: Dining Block Length setting can now be changed on a per-location basis.
-- Fixed: After selecting the required checkbox in the custom field edit screen, and saving your changes, the required checkbox remained unselected within the custom field edit screen.
-- Fixed: In the ultimate version, if, on the Advanced settings screen, you used the "Global" dropdown to select a scheduling rule, then opened it again and selected All, it wouldn't populate any options.
-- Fixed: In the front-end booking form, if using the blank party size option, if you selected a date and time while the party dropdown was still blank, it would show a false alert saying no table is available, until you selected a party size.
+= 2.8.0 (2026-09-30) =
+- **IMPORTANT NOTE: This is a major update with several big changes. We suggest testing this update in a staging or development environment before updating your live environment. Or wait a few days before updating in the event that an issue is identified that requires a fix/new update.**
+- Changed the public booking flow to Party Size → Date → Time, with party-size-aware capacity and table availability checks.
+- Improved booking reliability when multiple reservation requests compete for the same remaining capacity.
+- Improved custom field data integrity so option identities are preserved when choices are reordered, disabled or recreated.
+- Added notification send attempt diagnostics to help authorized managers troubleshoot email notification issues.
+- Fixed issue allowing the selection of unavailable dates in certain instances.
+- The view bookings form can now only be displayed on protected pages (e.g. require login, password-protected, etc., and not on totally public pages).
 
 [See changelog for all versions](https://www.fivestarplugins.com/changelogs/restaurant-reservations.txt).
+
+== Upgrade Notice ==
+
+= 2.8.0 =
+This update changes the public booking sequence to Party Size → Date → Time and includes important changes to booking availability, concurrent reservation handling, custom field data integrity, notification diagnostics and Premium Helper compatibility.
+If you use Premium or Ultimate features, update FSP Premium Helper to version >= 0.1.0 as part of the 2.8.0 update.
+Because the order and availability behavior of the booking fields have changed, we recommend testing the update on a staging site first if you use custom booking-form JavaScript, template customizations, extensive custom CSS, table or capacity restrictions, or other integrations that depend on the previous booking workflow.

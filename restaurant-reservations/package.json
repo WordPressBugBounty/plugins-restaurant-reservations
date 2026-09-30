@@ -1,0 +1,14 @@
+{
+  "name": "restaurant-reservations-release-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "package:build": "node scripts/build-release-packages.js",
+    "env:start:rtb": "node ../ufaq/node_modules/@wordpress/env/bin/wp-env start --config=.wp-env.rtb.json --update",
+    "env:stop:rtb": "node ../ufaq/node_modules/@wordpress/env/bin/wp-env stop --config=.wp-env.rtb.json",
+    "env:status:rtb": "node ../ufaq/node_modules/@wordpress/env/bin/wp-env status --config=.wp-env.rtb.json",
+    "env:wp:rtb": "node ../ufaq/node_modules/@wordpress/env/bin/wp-env run cli --config=.wp-env.rtb.json wp",
+    "test:integration:rtb": "node ../ufaq/node_modules/@wordpress/env/bin/wp-env run cli --config=.wp-env.rtb.json --env-cwd=wp-content/plugins/reservations wp eval-file tests/entitlement-smoke.php",
+    "test:reliability:rtb": "node ../ufaq/node_modules/@wordpress/env/bin/wp-env run cli --config=.wp-env.rtb.json --env-cwd=wp-content/plugins/reservations wp eval-file tests/reliability-smoke.php"
+  }
+}

@@ -530,12 +530,14 @@ class rtbFieldController {
 		if ( $field->type == 'options' && is_array( $val ) ) {
 			$display_vals = array();
 			foreach( $val as $val_i ) {
-				if ( isset( $field->options[ $val_i ] ) ) {
-					$display_vals[] = esc_html( $this->get_option_val_by_id( $val_i, $field->options ) );
-				}
+				$option_label = $this->get_option_val_by_id( $val_i, $field->options );
+				if ( '' === $option_label ) { continue; }
+				$display_vals[] = esc_html( $option_label );
 			}
 
-			if ( $use_html ) {
+			if ( empty( $display_vals ) ) {
+				$display_val = '';
+			} elseif ( $use_html ) {
 				$display_val = '<ul><li>' . $checkbox_icon . join( '</li><li>' . $checkbox_icon, $display_vals ) . '</li></ul>';
 			} else {
 				$display_val = join( esc_html_x( ', ', 'separator between two selected options', 'custom-fields-for-rtb' ), $display_vals );
