@@ -42,7 +42,7 @@ class sapAdminPageSettingInfiniteTable_2_7_4_rtb extends sapAdminPageSetting_2_7
 		'sap-infinite-table' => array(
 			'path'			=> 'js/infinite_table.js',
 			'dependencies'	=> array( 'jquery' ),
-			'version'		=> SAP_VERSION,
+			'version'		=> SAP_VERSION . '.1', // Refresh cached editor/row-targeting script.
 			'footer'		=> true,
 		),
 	);
@@ -70,6 +70,7 @@ class sapAdminPageSettingInfiniteTable_2_7_4_rtb extends sapAdminPageSetting_2_7
 		$values = json_decode( html_entity_decode( $this->value ?? '' ) ) ?? [];
 		
 		$this->fields = array_filter( $this->fields );
+		$this->has_editor = in_array( 'editor', array_column( $this->fields, 'type' ), true );
 
 		if ( ! is_array( $values ) ) {
 
@@ -91,7 +92,6 @@ class sapAdminPageSettingInfiniteTable_2_7_4_rtb extends sapAdminPageSetting_2_7
 							<tr class='sap-infinite-table-row' data-row_id='<?php echo esc_attr( $row_id ); ?>'>
 								<?php foreach ($this->fields as $field_id => $field) { ?>
 									<th class='<?php echo esc_attr( $field['class_string'] ); ?>'><?php echo esc_html( $field['label'] ); ?></th>
-									<?php if ($field['type'] == 'editor') { $this->has_editor = true; } ?>
 									<td data-field-type="<?php echo esc_attr( $field['type'] ); ?>" class='<?php echo esc_attr( $field['class_string'] ); ?>'>
 										<span class='sap-infinite-table-td-content <?php echo esc_attr( $this->get_conditional_display( $field, $row ) ); ?>' <?php $this->print_field_conditional_data( $field ); ?>>
 											<?php if ($field['type'] == 'id') : ?>
@@ -105,8 +105,9 @@ class sapAdminPageSettingInfiniteTable_2_7_4_rtb extends sapAdminPageSetting_2_7
 												<textarea data-name='<?php echo esc_attr( $field_id ); ?>'><?php echo esc_textarea( $row->$field_id ); ?></textarea>
 											<?php endif; ?>
 											<?php if ($field['type'] == 'editor') : ?>
-												<span class='sap-infinite-table-editor-value' data-name='<?php echo esc_attr( $field_id ); ?>'><?php echo esc_html( $this->get_editor_row_preview( $row->$field_id ) ); ?></span>
-												<input class='sap-infinite-table-editor-input' type='hidden' data-name='<?php echo esc_attr( $field_id ); ?>' value='<?php echo esc_attr( $row->$field_id ); ?>' />
+												<button type="button" class="button-link sap-infinite-table-editor-open" <?php disabled( $this->disabled ); ?>><?php esc_html_e( 'Open Editor', 'simple-admin-pages' ); ?></button>
+												<span class='sap-infinite-table-editor-value' data-name='<?php echo esc_attr( $field_id ); ?>'><?php echo esc_html( $this->get_editor_row_preview( $row->$field_id ?? '' ) ); ?></span>
+												<input class='sap-infinite-table-editor-input' type='hidden' data-name='<?php echo esc_attr( $field_id ); ?>' value='<?php echo esc_attr( $row->$field_id ?? '' ); ?>' />
 											<?php endif; ?>
 											<?php if ($field['type'] == 'number') : ?>
 												<input type='number' data-name='<?php echo esc_attr( $field_id ); ?>' value='<?php echo esc_attr( $row->$field_id ); ?>' />
@@ -153,7 +154,8 @@ class sapAdminPageSettingInfiniteTable_2_7_4_rtb extends sapAdminPageSetting_2_7
 										<textarea data-name='<?php echo esc_attr( $field_id ); ?>'></textarea>
 									<?php endif; ?>
 									<?php if ($field['type'] == 'editor') : ?>
-										<span class='sap-infinite-table-editor-value' data-name='<?php echo esc_attr( $field_id ); ?>'>Open Editor</span>
+										<button type="button" class="button-link sap-infinite-table-editor-open" <?php disabled( $this->disabled ); ?>><?php esc_html_e( 'Open Editor', 'simple-admin-pages' ); ?></button>
+										<span class='sap-infinite-table-editor-value' data-name='<?php echo esc_attr( $field_id ); ?>'></span>
 										<input class='sap-infinite-table-editor-input' type='hidden' data-name='<?php echo esc_attr( $field_id ); ?>' />
 									<?php endif; ?>
 									<?php if ($field['type'] == 'number') : ?>

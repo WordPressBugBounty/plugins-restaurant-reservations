@@ -4,7 +4,7 @@ Tags: restaurant reservations, restaurant booking, reservation, reservation syst
 Requires at Least: 6.0
 Tested Up To: 7.1
 Requires PHP: 8.0
-Stable tag: 2.8.0
+Stable tag: 2.8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -310,6 +310,9 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 - [Our Support Center](https://www.fivestarplugins.com/support-center/)
 
 == Changelog ==
+
+= 2.8.1 (2026-10-16) =
+- Fix for issue where, in some instances, you could not save a notification's message content. 
 
 = 2.8.0 (2026-09-30) =
 - **IMPORTANT NOTE: This is a major update with several big changes. We suggest testing this update in a staging or development environment before updating your live environment. Or wait a few days before updating in the event that an issue is identified that requires a fix/new update.**

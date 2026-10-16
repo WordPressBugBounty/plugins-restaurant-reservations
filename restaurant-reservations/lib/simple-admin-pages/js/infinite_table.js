@@ -65,22 +65,16 @@ jQuery(document).ready(function ($) {
     }
 
     let row_id = 0;
-    _list = [];
     $( this ).parents( 'tfoot' ).siblings( 'tbody' ).find( 'tr' ).each((i, x) => {
-      
-      _list.push( parseInt( $(x).data( 'row_id' ) ) );
+      let existing_id = parseInt( $(x).attr( 'data-row_id' ), 10 );
+      if ( ! isNaN( existing_id ) ) { row_id = Math.max( row_id, existing_id + 1 ); }
     });
-
-    _list.sort();
-    if( 0 < _list.length ) {
-      row_id = _list[ _list.length - 1 ] + 1;
-    }
     
     let _template_tr = $( this ).parents( 'tfoot' ).find( '.sap-infinite-table-row-template' ).clone();
     _template_tr
       .hide()
       .removeClass()
-      .addClass( 'sap-infinite-table-row' ); console.log( row_id );
+      .addClass( 'sap-infinite-table-row' );
     
     $( this ).parents( 'table' ).first().find( 'tbody' ).append( _template_tr );
     _template_tr.attr( 'data-row_id', row_id );
@@ -105,16 +99,16 @@ jQuery(document).ready(function ($) {
 
   // open/close an editor field and sync data with that row's hidden field
   $(document).on('click', 'td[data-field-type="editor"]', function (ev) {
-    
-    let row_id = $(this).parents( 'tr' ).first().data('row_id');
-    let name = $(this).find('.sap-infinite-table-editor-value').first().data('name');
+    ev.preventDefault();
+    if ( $(this).closest( '.sap-infinite-table' ).hasClass( 'disabled' ) ) { return; }
     let fieldset = $(this).parents( 'fieldset' ).first();
 
-    let tiny_mce_div = fieldset.find( '.sap-infinite-table-editor-container' );
+    let tiny_mce_div = fieldset.find( '.sap-infinite-table-editor-container' ).first();
 
     tiny_mce_div.removeClass( 'sap-hidden' );
-    tiny_mce_div.data( 'row_id', row_id );
-    tiny_mce_div.data( 'name', name );
+    // Row numbers are only table-local metadata. Bind this editing session
+    // to the actual cell so reordering, duplicate IDs and other tables are safe.
+    tiny_mce_div.data( 'target_cell', this );
 
     let editor_id = tiny_mce_div.data( 'editor_id' ); 
 
@@ -130,24 +124,32 @@ jQuery(document).ready(function ($) {
 
     let tiny_mce_div = $(this).parents( 'div.sap-infinite-table-editor-container' ).first();
 
-    let editor_id = tiny_mce_div.data('editor_id'); console.log( editor_id ); console.log( $( '#wp-' + editor_id + '-wrap' ).hasClass( 'tmce-active' ) );
-    let row_id = tiny_mce_div.data('row_id');
-    let name = tiny_mce_div.data('name');
+    let editor_id = tiny_mce_div.data('editor_id');
     let fieldset = $(this).parents( 'fieldset' ).first();
+    let cell = $( tiny_mce_div.data( 'target_cell' ) );
 
-    let row = $('.sap-infinite-table-row[data-row_id="' + row_id + '"]'); 
+    // Never fall back to a row-number lookup if the edited cell was removed.
+    if ( ! fieldset.length || ! cell.length || ! $.contains( fieldset[0], cell[0] ) || cell.closest( '.sap-infinite-table' ).hasClass( 'disabled' ) ) {
+      tiny_mce_div.addClass( 'sap-hidden' ).removeData( 'target_cell' );
+      return;
+    }
     
     let content = $( '#wp-' + editor_id + '-wrap' ).hasClass( 'tmce-active' ) ? tinyMCE.get( editor_id ).getContent() : jQuery( '#' + editor_id ).val();
     
-    row.find( '.sap-infinite-table-editor-value' ).first().html( $( content ).text().slice( 0, 60 ) + '...' );
-    row.find( '.sap-infinite-table-editor-input' ).first().val( content );
+    // Template contents are inert; render only text, never executable preview HTML.
+    let preview = document.createElement( 'template' );
+    preview.innerHTML = content;
+    preview.content.querySelectorAll( 'script, style' ).forEach( node => node.remove() );
+    let text = preview.content.textContent || '';
+    cell.find( '.sap-infinite-table-editor-value' ).first().text( text.slice( 0, 60 ) + ( text.length > 60 ? '...' : '' ) );
+    cell.find( '.sap-infinite-table-editor-input' ).first().val( content );
 
-    fieldset.find( '.sap-infinite-table-editor-container' ).addClass( 'sap-hidden' );
+    tiny_mce_div.addClass( 'sap-hidden' ).removeData( 'target_cell' );
   });
 
   $( document ).on( 'click', '.sap-infinite-table-editor-cancel', function ( ev ) {
 
-    $('.sap-infinite-table-editor-container').addClass( 'sap-hidden' );
+    $(this).closest( '.sap-infinite-table-editor-container' ).addClass( 'sap-hidden' ).removeData( 'target_cell' );
   } );
 
   // Remove field
