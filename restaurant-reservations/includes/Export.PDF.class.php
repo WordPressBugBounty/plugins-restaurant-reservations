@@ -274,15 +274,21 @@ class ebfrtbExportPDF extends ebfrtbExport {
 	 */
 	public function export_mpdf() {
 
-		if ( !extension_loaded( 'mbstring' ) ) {
+		if ( ! extension_loaded( 'mbstring' ) || ! extension_loaded( 'gd' ) ) {
 			$rtb_settings_link = '<a href="' . admin_url( 'admin.php?page=rtb-settings&tab=rtb-export' ) . '">' . _x( 'export settings', 'Name of a link to the Export tab on the settings page', 'restaurant-reservations' ) . '</a>';
-			wp_die( sprintf( __( 'Your server has not loaded the mbstring PHP extension, or has disabled the mbregex PHP extension. mPDF requires both to output a PDF file. Please contact your website host and ask them to enable these PHP extensions. Or switch to the TCPDF library, which has fewer server requirements. You can change the PDF Renderer in the %s.', 'restaurant-reservations' ), $rtb_settings_link ) );
+			wp_die( sprintf( __( 'mPDF requires the mbstring and GD PHP extensions. Ask your host to enable them, or switch to the TCPDF library in the %s.', 'restaurant-reservations' ), $rtb_settings_link ) );
 		}
 
 		// Load mPDF library
 		require_once( RTB_PLUGIN_DIR . '/lib/mpdf/vendor/autoload.php' );
 
-		$mpdf = new \Mpdf\Mpdf( [], $this->paper_size, '', '', 15, 15, 25 );
+		$mpdf = new \Mpdf\Mpdf( array(
+			'format' => strtoupper( $this->paper_size ),
+			'margin_left' => 15,
+			'margin_right' => 15,
+			'margin_top' => 25,
+			'tempDir' => self::mpdf_temp_directory(),
+		) );
 		$mpdf = $this->set_doc_info( $mpdf );
 
 		// Support languages automatically
@@ -302,6 +308,11 @@ class ebfrtbExportPDF extends ebfrtbExport {
 		$this->export = $mpdf;
 
 		return $this->export;
+	}
+
+	/** Keep mPDF's disposable cache outside the packaged plugin and unrelated temp files. */
+	public static function mpdf_temp_directory() {
+		return trailingslashit( get_temp_dir() ) . 'rtb-mpdf-' . substr( hash( 'sha256', ABSPATH ), 0, 12 ) . '-' . get_current_blog_id();
 	}
 
 	/**

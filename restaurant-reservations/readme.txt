@@ -4,7 +4,7 @@ Tags: restaurant reservations, restaurant booking, reservation, reservation syst
 Requires at Least: 6.0
 Tested Up To: 7.1
 Requires PHP: 8.0
-Stable tag: 2.8.1
+Stable tag: 2.9.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -238,6 +238,7 @@ You can also follow these steps to configure the plugin.
     - Go to the 'Bookings' area of the plugin admin.
     - There you'll be able to view and modify any bookings that have been placed on your site.
     - You'll also be able to manually create a new restaurant reservation (e.g. a reservation you took over the phone).
+    - To record a walk-in, select Add New and check the walk-in option in the modal.
 
 For a list of specific features, see the Restaurant Reservations description page here: https://wordpress.org/plugins/restaurant-reservations/.
 
@@ -311,23 +312,14 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 
 == Changelog ==
 
-= 2.8.1 (2026-10-16) =
-- Fix for issue where, in some instances, you could not save a notification's message content. 
-
-= 2.8.0 (2026-09-30) =
-- **IMPORTANT NOTE: This is a major update with several big changes. We suggest testing this update in a staging or development environment before updating your live environment. Or wait a few days before updating in the event that an issue is identified that requires a fix/new update.**
-- Changed the public booking flow to Party Size → Date → Time, with party-size-aware capacity and table availability checks.
-- Improved booking reliability when multiple reservation requests compete for the same remaining capacity.
-- Improved custom field data integrity so option identities are preserved when choices are reordered, disabled or recreated.
-- Added notification send attempt diagnostics to help authorized managers troubleshoot email notification issues.
-- Fixed issue allowing the selection of unavailable dates in certain instances.
-- The view bookings form can now only be displayed on protected pages (e.g. require login, password-protected, etc., and not on totally public pages).
+= 2.9.0 (2026-10-22) =
+- Added staff walk-in entry option. (When you create a booking in the admin, you can now mark it as a walk-in, which lets you create the booking without an email address or phone number.)
+- Added quick booking status and table controls on the Bookings overview page.
+- Improved availability checks across new bookings, edits, cancellations and table changes.
+- Improved license-check messages, saved-key validation and recovery links.
+- Fixed notification editing that could overwrite another message.
+- Fixed daily summaries that omitted future-only bookings.
+- Improved notification history labels and dates to use the site's date, time and timezone settings (for the mini notification log found in the Details modal for a booking accessed form the Bookings overview screen).
+- Updated PDF exports for PHP compatibility.
 
 [See changelog for all versions](https://www.fivestarplugins.com/changelogs/restaurant-reservations.txt).
-
-== Upgrade Notice ==
-
-= 2.8.0 =
-This update changes the public booking sequence to Party Size → Date → Time and includes important changes to booking availability, concurrent reservation handling, custom field data integrity, notification diagnostics and Premium Helper compatibility.
-If you use Premium or Ultimate features, update FSP Premium Helper to version >= 0.1.0 as part of the 2.8.0 update.
-Because the order and availability behavior of the booking fields have changed, we recommend testing the update on a staging site first if you use custom booking-form JavaScript, template customizations, extensive custom CSS, table or capacity restrictions, or other integrations that depend on the previous booking workflow.

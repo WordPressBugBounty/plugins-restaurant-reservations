@@ -581,7 +581,7 @@ class rtbBookingsTable extends WP_List_Table {
 
 		$row_classes = apply_filters( 'rtb_admin_bookings_list_row_classes', $row_classes, $item );
 
-		echo '<tr class="' . implode( ' ', $row_classes ) . '">';
+		echo '<tr class="' . esc_attr( implode( ' ', $row_classes ) ) . '" data-booking-id="' . absint( $item->ID ) . '" data-revision="' . esc_attr( rtbBookingAdmission::revision( $item ) ) . '">';
 		$this->single_row_columns( $item );
 		echo '</tr>';
 	}
@@ -715,9 +715,11 @@ class rtbBookingsTable extends WP_List_Table {
 
 			case 'email' :
 				$value = esc_html( $booking->email );
-				$value .= '<div class="actions">';
-				$value .= '<a href="#" data-id="' . esc_attr( $booking->ID ) . '" data-action="email" data-email="' . esc_attr( $booking->email ) . '" data-name="' . esc_attr( $booking->name ) . '">' . __( 'Send Email', 'restaurant-reservations' ) . '</a>';
-				$value .= '</div>';
+				if ( ! empty( $booking->email ) ) {
+					$value .= '<div class="actions">';
+					$value .= '<a href="#" data-id="' . esc_attr( $booking->ID ) . '" data-action="email" data-email="' . esc_attr( $booking->email ) . '" data-name="' . esc_attr( $booking->name ) . '">' . __( 'Send Email', 'restaurant-reservations' ) . '</a>';
+					$value .= '</div>';
+				}
 				break;
 
 			case 'phone' :
@@ -732,6 +734,15 @@ class rtbBookingsTable extends WP_List_Table {
 			case 'table' :
 				$table = is_array( $booking->table ) ? $booking->table : array();
 				$value = esc_html( implode( ',', $table ) );
+				if ( $booking->post_status !== 'trash' && current_user_can( 'manage_bookings' ) && $rtb_controller->settings->get_setting( 'enable-tables' ) ) {
+					$tables = $rtb_controller->settings->get_sorted_tables( $booking->date, $booking->location );
+					$value .= '<div class="rtb-service-control"><label for="rtb-service-tables-' . absint( $booking->ID ) . '">' . esc_html__( 'Assign tables', 'restaurant-reservations' ) . '</label>';
+					$value .= '<select id="rtb-service-tables-' . absint( $booking->ID ) . '" class="rtb-service-tables" multiple>';
+					foreach ( array_keys( (array) $tables ) as $number ) {
+						$value .= '<option value="' . esc_attr( $number ) . '"' . selected( in_array( (string) $number, array_map( 'strval', $table ), true ), true, false ) . '>' . esc_html( $number ) . '</option>';
+					}
+					$value .= '</select><button type="button" class="button rtb-service-save" data-field="table">' . esc_html__( 'Save tables', 'restaurant-reservations' ) . '</button></div>';
+				}
 				break;
 
 			case 'status' :
@@ -742,6 +753,19 @@ class rtbBookingsTable extends WP_List_Table {
 					$value = _x( 'Trash', 'Status label for bookings put in the trash', 'restaurant-reservations' );
 				} else {
 					$value = $booking->post_status;
+				}
+				$value = esc_html( $value );
+				if ( $booking->post_status !== 'trash' && current_user_can( 'manage_bookings' ) ) {
+					$value .= '<div class="rtb-service-control"><label for="rtb-service-status-' . absint( $booking->ID ) . '">' . esc_html__( 'Change status', 'restaurant-reservations' ) . '</label>';
+					$value .= '<select id="rtb-service-status-' . absint( $booking->ID ) . '" class="rtb-service-status">';
+					foreach ( $rtb_controller->cpts->booking_statuses as $status => $details ) {
+						$value .= '<option value="' . esc_attr( $status ) . '"' . selected( $status, $booking->post_status, false ) . '>' . esc_html( $details['label'] ) . '</option>';
+					}
+					$value .= '</select><button type="button" class="button rtb-service-save" data-field="status">' . esc_html__( 'Save status', 'restaurant-reservations' ) . '</button>';
+					if ( $rtb_controller->settings->get_setting( 'rtb-admin-ignore-maximums' ) ) {
+						$value .= '<label class="rtb-service-override"><input type="checkbox" class="rtb-service-override-input"> ' . esc_html__( 'Override availability', 'restaurant-reservations' ) . '</label>';
+					}
+					$value .= '<span class="rtb-service-feedback" role="status" aria-live="polite"></span></div>';
 				}
 				break;
 
@@ -794,14 +818,16 @@ class rtbBookingsTable extends WP_List_Table {
 						$value .= '<div class="consent">' . sprintf( esc_html__( '✘ Consent not acquired', 'restaurant-reservations' ) ) . '</div>';
 					}
 				}
-				$value .= '<div class="actions">';
-				$value .= '<a href="#" data-action="ban" data-email="' . esc_attr( $booking->email ) . '" data-id="' . absint( $booking->ID ) . '" data-ip="' . $ip . '">';
-				$value .= __( 'Ban', 'restaurant-reservations' );
-				$value .= '</a>';
-				$value .= ' | <a href="#" data-action="delete" data-email="' . esc_attr( $booking->email ) . '" data-id="' . absint( $booking->ID ) . '">';
-				$value .= __( 'Delete Customer', 'restaurant-reservations' );
-				$value .= '</a>';
-				$value .= '</div>';
+				if ( ! empty( $booking->email ) ) {
+					$value .= '<div class="actions">';
+					$value .= '<a href="#" data-action="ban" data-email="' . esc_attr( $booking->email ) . '" data-id="' . absint( $booking->ID ) . '" data-ip="' . esc_attr( $ip ) . '">';
+					$value .= __( 'Ban', 'restaurant-reservations' );
+					$value .= '</a>';
+					$value .= ' | <a href="#" data-action="delete" data-email="' . esc_attr( $booking->email ) . '" data-id="' . absint( $booking->ID ) . '">';
+					$value .= __( 'Delete Customer', 'restaurant-reservations' );
+					$value .= '</a>';
+					$value .= '</div>';
+				}
 				break;
 
 			default:
@@ -857,7 +883,7 @@ class rtbBookingsTable extends WP_List_Table {
 	}
 
 	/**
-	 * Add recent transport diagnostics to the booking details panel.
+	 * Add recent notification events to the booking details panel.
 	 *
 	 * @since 2.8.0
 	 */
@@ -868,19 +894,41 @@ class rtbBookingsTable extends WP_List_Table {
 		}
 
 		foreach ( array_reverse( array_slice( $booking->notification_diagnostics, -5 ) ) as $diagnostic ) {
-			$status = isset( $diagnostic['status'] ) ? str_replace( '_', ' ', $diagnostic['status'] ) : 'unknown';
-			$value = sprintf(
-				'%1$s — %2$s/%3$s/%4$s: %5$s',
-				isset( $diagnostic['timestamp'] ) ? $diagnostic['timestamp'] : '',
-				isset( $diagnostic['event'] ) ? $diagnostic['event'] : '',
-				isset( $diagnostic['type'] ) ? $diagnostic['type'] : '',
-				isset( $diagnostic['target'] ) ? $diagnostic['target'] : '',
-				$status
+			if ( ! is_array( $diagnostic ) ) { continue; }
+			$timestamp = __( 'Unknown date', 'restaurant-reservations' );
+			if ( ! empty( $diagnostic['timestamp'] ) && is_string( $diagnostic['timestamp'] ) ) {
+				try {
+					$date = new DateTimeImmutable( $diagnostic['timestamp'], new DateTimeZone( 'UTC' ) );
+					$timestamp = wp_date( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), $date->getTimestamp(), wp_timezone() );
+				} catch ( Exception $exception ) {
+					// A malformed historical entry must not break the details modal.
+				}
+			}
+			$types = array( 'email' => __( 'Email', 'restaurant-reservations' ), 'sms' => __( 'SMS', 'restaurant-reservations' ) );
+			$targets = array( 'user' => __( 'User', 'restaurant-reservations' ), 'admin' => __( 'Administrator', 'restaurant-reservations' ) );
+			$statuses = array(
+				'send_accepted' => __( 'Accepted by the sending service (delivery not confirmed)', 'restaurant-reservations' ),
+				'send_failed'   => __( 'Send failed', 'restaurant-reservations' ),
+				'not_generated' => __( 'Not sent (notification could not be prepared)', 'restaurant-reservations' ),
 			);
+			$unknown = __( 'Unknown', 'restaurant-reservations' );
+			$type = isset( $diagnostic['type'] ) && is_string( $diagnostic['type'] ) ? $diagnostic['type'] : '';
+			$target = isset( $diagnostic['target'] ) && is_string( $diagnostic['target'] ) ? $diagnostic['target'] : '';
+			$status = isset( $diagnostic['status'] ) && is_string( $diagnostic['status'] ) ? $diagnostic['status'] : '';
+			$lines = array(
+				__( 'Date/Time', 'restaurant-reservations' ) => $timestamp,
+				__( 'Type', 'restaurant-reservations' )      => $types[ $type ] ?? $unknown,
+				__( 'Target', 'restaurant-reservations' )    => $targets[ $target ] ?? $unknown,
+				__( 'Status', 'restaurant-reservations' )    => $statuses[ $status ] ?? $unknown,
+			);
+			$value = '';
+			foreach ( $lines as $label => $text ) {
+				$value .= '<div>' . esc_html( $label ) . ': ' . esc_html( $text ) . '</div>';
+			}
 
 			$details[] = array(
-				'label' => esc_html__( 'Notification transport', 'restaurant-reservations' ),
-				'value' => esc_html( $value ),
+				'label' => esc_html__( 'Notification event', 'restaurant-reservations' ),
+				'value' => $value,
 			);
 		}
 

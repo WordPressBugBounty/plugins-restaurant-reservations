@@ -63,6 +63,7 @@ class rtbImport {
 			<h2>Import</h2>
 			<?php if ( $import_permission ) { ?> 
 				<form method='post' enctype="multipart/form-data">
+					<?php wp_nonce_field( 'rtb-import-bookings', 'rtb_import_nonce' ); ?>
 					<p>
 						<label for="rtb_bookings_spreadsheet"><?php _e("Spreadsheet Containing Bookings", 'restaurant-reservations') ?></label><br />
 						<input name="rtb_bookings_spreadsheet" type="file" value=""/>
@@ -79,6 +80,10 @@ class rtbImport {
 
 	public function import_bookings() {
 		global $rtb_controller;
+		if ( ! current_user_can( 'manage_bookings' ) || ! $rtb_controller->permissions->can_edit_permission( 'import' )
+			|| empty( $_POST['rtb_import_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['rtb_import_nonce'] ) ), 'rtb-import-bookings' ) ) {
+			wp_die( esc_html__( 'You cannot import bookings.', 'restaurant-reservations' ), '', array( 'response' => 403 ) );
+		}
 
 		$fields = $rtb_controller->settings->get_booking_form_fields();
 

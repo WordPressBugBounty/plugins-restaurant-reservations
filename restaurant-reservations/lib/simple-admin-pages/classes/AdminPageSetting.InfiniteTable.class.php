@@ -31,6 +31,8 @@ class sapAdminPageSettingInfiniteTable_2_7_4_rtb extends sapAdminPageSetting_2_7
 	public $add_label = '+ Add Row'; // Label applied to the add row button
 	public $del_label = 'Delete'; // Label applied to the delete row button
 	public $fields = array(); // Settings that can be set for each row in the table
+	public $preserve_unavailable_values = false; // Keep saved, temporarily unavailable select values.
+	private $printing_nested_options = false;
 
 	public $sanitize_callback = 'sap_sanitize_infinite_table';
 
@@ -227,12 +229,24 @@ class sapAdminPageSettingInfiniteTable_2_7_4_rtb extends sapAdminPageSetting_2_7
 	 */
 	public function print_options( $options, $row = false, $field_id = 0 ) {
 
+		if ( ! $this->printing_nested_options && $this->preserve_unavailable_values && $row && isset( $row->$field_id ) && is_scalar( $row->$field_id )
+			&& '' !== (string) $row->$field_id && ! $this->contains_option( $options, $row->$field_id ) ) {
+			// The unavailable choice is a saved preference, not a runtime grant.
+			echo '<option value="' . esc_attr( $row->$field_id ) . '" selected="selected">'
+				. esc_html__( 'Saved value (currently unavailable)', 'restaurant-reservations' ) . '</option>';
+		}
+
 		foreach ( $options as $option_value => $option_name ) {
 
 			if ( is_array( $option_name ) ) { ?>
 
 				<optgroup label='<?php echo esc_attr( $option_value ); ?>'>
-					<?php $this->print_options( $option_name, $row, $field_id ); ?>
+					<?php
+					$was_nested = $this->printing_nested_options;
+					$this->printing_nested_options = true;
+					try { $this->print_options( $option_name, $row, $field_id ); }
+					finally { $this->printing_nested_options = $was_nested; }
+					?>
 				</optgroup>
 
 				<?php
@@ -250,6 +264,15 @@ class sapAdminPageSettingInfiniteTable_2_7_4_rtb extends sapAdminPageSetting_2_7
 		
 			<?php 
 		}
+	}
+
+	private function contains_option( $options, $value ) {
+		foreach ( $options as $key => $label ) {
+			if ( is_array( $label ) ) {
+				if ( $this->contains_option( $label, $value ) ) { return true; }
+			} elseif ( (string) $key === (string) $value ) { return true; }
+		}
+		return false;
 	}
 
 	/**

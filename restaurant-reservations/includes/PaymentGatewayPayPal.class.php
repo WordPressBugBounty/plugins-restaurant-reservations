@@ -1,5 +1,6 @@
 <?php
 if ( !defined( 'ABSPATH' ) ) exit;
+require_once __DIR__ . '/PaymentAttempt.class.php';
 
 if ( !class_exists( 'rtbPaymentGatewayPayPal' ) ) {
 /**
@@ -108,8 +109,8 @@ class rtbPaymentGatewayPayPal implements rtbPaymentGateway
     $debug = get_option( 'rtb_enable_payment_debugging' );
 
     // Set to 0 once you're ready to go live
-    define("RTB_USE_SANDBOX", 0);
-    define("RTB_LOG_FILE", "ipn.log");
+    if ( ! defined( 'RTB_USE_SANDBOX' ) ) { define( 'RTB_USE_SANDBOX', 0 ); }
+    if ( ! defined( 'RTB_LOG_FILE' ) ) { define( 'RTB_LOG_FILE', 'ipn.log' ); }
 
     // Read POST data
     // reading posted data directly from $_POST causes serialization
@@ -209,41 +210,34 @@ class rtbPaymentGatewayPayPal implements rtbPaymentGateway
 
       if ( ! $booking || empty( $booking->ID ) ) { return; }
 
-      // Booking must still be waiting on payment (prevents replay against an already-paid or otherwise-finalized booking)
-      if ( $booking->post_status !== 'payment_pending' ) {
-
-        if ( $debug ) { update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN rejected: booking {$booking_id} not payment_pending" . PHP_EOL ); }
-        
-        return;
-      }
-
       // Amount must meet the expected deposit for this booking
       $expected_deposit = (float) $booking->calculate_deposit();
+      if ( '' === $paypal_receipt_number ) { return; }
 
-      if ( $mc_gross < $expected_deposit ) {
-
-        if ( $debug ) { update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN rejected: amount {$mc_gross} below expected {$expected_deposit}" . PHP_EOL ); }
-        
-        return;
-      }
-
-      // txn_id must not have been used before (replay protection)
-      $used_txn_ids = get_option( 'rtb_used_paypal_txn_ids', [] );
-
-      if ( in_array( $paypal_receipt_number, $used_txn_ids, true ) ) {
-
-        if ( $debug ) { update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN rejected: duplicate txn_id {$paypal_receipt_number}" . PHP_EOL ); }
-
-        return;
-      }
-
-      $used_txn_ids[] = $paypal_receipt_number;
-      update_option( 'rtb_used_paypal_txn_ids', $used_txn_ids );
+      $claim = rtbPaymentAttempt::claim_paypal( $booking_id, $paypal_receipt_number );
+      if ( 'duplicate' === $claim ) { return; }
 
       $booking->deposit    = $mc_gross;
       $booking->receipt_id = $paypal_receipt_number;
 
-      $booking->payment_paid();
+      if ( 'process' !== $claim || $mc_gross < $expected_deposit ) {
+        $booking->record_payment_reconciliation( 'paypal' );
+        $attempt = rtbPaymentAttempt::get( $booking_id );
+        if ( 'paypal' === ( $attempt['provider'] ?? '' ) && $paypal_receipt_number === ( $attempt['receipt_id'] ?? '' ) ) {
+          rtbPaymentAttempt::update( $booking_id, $attempt['id'], array( 'state' => 'review' ) );
+        }
+        return;
+      }
+
+      $saved = $booking->payment_paid( 'paypal' );
+      $attempt = rtbPaymentAttempt::get( $booking_id );
+      if ( 'paypal' === ( $attempt['provider'] ?? '' ) && $paypal_receipt_number === ( $attempt['receipt_id'] ?? '' ) ) {
+        if ( $saved ) { rtbPaymentAttempt::clear( $booking_id, $attempt['id'] ); }
+        else { rtbPaymentAttempt::update( $booking_id, $attempt['id'], array( 'state' => 'review' ) ); }
+      }
+      if ( ! $saved && $debug ) {
+        update_option( 'rtb_debugging', get_option( 'rtb_debugging' ) . "IPN payment received but booking {$booking_id} requires reconciliation" . PHP_EOL );
+      }
     }
   }
 

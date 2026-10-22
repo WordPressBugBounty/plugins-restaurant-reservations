@@ -187,10 +187,9 @@ class rtbCustomPostTypes {
 	* has been toggled on.
 	*/
 	public function add_arrived_status( $booking_statuses = array() ) {
-		global $rtb_controller;
-
-		if ( $rtb_controller->settings->get_setting( 'view-bookings-arrivals' ) ) {
-			$booking_statuses['arrived'] = array(
+		// FOH walk-ins and staff service controls use the existing Arrived state
+		// even when the paid public arrivals view is not configured.
+		$booking_statuses['arrived'] = array(
 				'label'                     => _x( 'Arrived', 'The guests have arrived for their reservation', 'restaurant-reservations' ),
 				'default'					=> false, // Whether or not this status is part of WP Core
 				'user_selectable'			=> true, // Whether or not a user can set a booking to this status
@@ -199,8 +198,7 @@ class rtbCustomPostTypes {
 				'show_in_admin_all_list'    => true,
 				'show_in_admin_status_list' => true,
 				'label_count'               => _n_noop( 'Arrived <span class="count">(%s)</span>', 'Arrived <span class="count">(%s)</span>', 'restaurant-reservations' )
-			);
-		}
+		);
 
 		return $booking_statuses;
 	}
@@ -303,10 +301,10 @@ class rtbCustomPostTypes {
 		if ( !empty( $_GET['status'] ) && $_GET['status'] == 'trash' ) {
 			$screen = get_current_screen();
 			if ( $screen->base == 'toplevel_page_rtb-bookings' ) {
-				$result = wp_delete_post( $id, true );
+				$result = rtbBookingAdmission::delete( $id, true );
 			}
 		} else {
-			$result = wp_trash_post( $id );
+			$result = rtbBookingAdmission::delete( $id );
 		}
 
 		if ( $result === false ) {
@@ -341,11 +339,8 @@ class rtbCustomPostTypes {
 			return null;
 		}
 
-		$booking->post_status = $status;
-
-		if ( $status == 'confirmed' ) { $booking->temp_confirmed_user = get_current_user_id(); }
-
-		return $booking->insert_post_data();
+		$result = rtbBookingAdmission::mutate( $id, array( 'status' => $status ), '', get_current_user_id() );
+		return ! is_wp_error( $result );
 	}
 
 	/**

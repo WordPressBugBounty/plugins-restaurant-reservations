@@ -1,5 +1,6 @@
 <?php
 if ( !defined( 'ABSPATH' ) ) exit;
+require_once __DIR__ . '/PaymentAttempt.class.php';
 
 if ( !class_exists( 'rtbPaymentGatewayStripe' ) ) {
 /**
@@ -13,7 +14,7 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
 
   private static $_instance;
 
-  private final function __construct() {
+  protected function __construct() {
 
     add_action( 'rtb_booking_form_init', array( $this, 'process_payment' ) );
 
@@ -207,10 +208,16 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
       );
 
       // redirect back to our previous page with the added query variable
-      wp_redirect( $redirect ); 
-
-      exit;
+      $this->redirect_payment( $redirect );
+      return;
     }
+
+    $started = rtbPaymentAttempt::start( $booking_id, 'stripe_legacy' );
+    if ( is_wp_error( $started ) ) {
+      $this->redirect_payment( add_query_arg( array( 'payment' => 'review', 'booking_id' => $booking_id, 'booking_email' => $booking->email ), $booking_page ) );
+      return;
+    }
+    $attempt = $started['attempt'];
 
     // load the stripe libraries
     require_once( RTB_PLUGIN_DIR . '/lib/stripe/init.php' );
@@ -221,6 +228,7 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
     // JPY currency does not have any decimal places
     $payment_amount = $rtb_controller->settings->get_setting( 'rtb-currency' ) != 'JPY' ? $booking->calculate_deposit() * 100 : $booking->calculate_deposit();
 
+    $charged = false;
     try {
 
       $metadata = array_filter( 
@@ -240,22 +248,31 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
           'currency'  => strtolower( $rtb_controller->settings->get_setting( 'rtb-currency' ) ),
           'card'      => $token,
           'metadata'  => $metadata
-        )
+        ),
+        array( 'idempotency_key' => $attempt['idempotency_key'] )
       );
+
+      if ( ! $charge->paid ) {
+        rtbPaymentAttempt::clear( $booking_id, $attempt['id'] );
+        $booking->payment_failed( __( 'The payment was not completed.', 'restaurant-reservations' ) );
+        $this->redirect_payment( add_query_arg( array( 'payment' => 'failed', 'booking_id' => $booking_id, 'booking_email' => $booking->email ), $booking_page ) );
+        return;
+      }
+
+      $charged = true;
+      rtbPaymentAttempt::update( $booking_id, $attempt['id'], array( 'state' => 'charged', 'receipt_id' => (string) $charge->id ) );
 
       $booking->deposit = $rtb_controller->settings->get_setting( 'rtb-currency' ) != 'JPY' ? $payment_amount / 100 : $payment_amount;
       $booking->receipt_id = $charge->id;
 
-      $booking->determine_status( true );
-
-      $booking->insert_post_data();
-
-      do_action( 'rtb_booking_paid', $booking );
+      $saved = $booking->payment_paid( 'stripe' );
+      if ( $saved ) { rtbPaymentAttempt::clear( $booking_id, $attempt['id'] ); }
+      else { rtbPaymentAttempt::update( $booking_id, $attempt['id'], array( 'state' => 'review' ) ); }
 
       // redirect on successful payment
       $redirect = add_query_arg(
         array(
-          'payment' => 'paid',
+          'payment' => $saved ? 'paid' : 'review',
           'booking_id' => $booking_id,
           'booking_email' => $booking->email,
         ),
@@ -265,23 +282,38 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
     }
     catch ( Exception $ex ) {
 
-      $booking->payment_failed( $ex->getMessage() );
+      $declined = ! $charged && $ex instanceof \rtbStripe\Exception\CardException;
+      if ( $charged ) {
+        $booking->receipt_id = $charge->id;
+        $booking->deposit = $rtb_controller->settings->get_setting( 'rtb-currency' ) != 'JPY' ? $payment_amount / 100 : $payment_amount;
+        $booking->record_payment_reconciliation( 'stripe' );
+      } elseif ( $declined ) {
+        rtbPaymentAttempt::clear( $booking_id, $attempt['id'] );
+        $booking->payment_failed( $ex->getMessage() );
+      } else {
+        $booking->receipt_id = 'stripe-attempt:' . $attempt['id'];
+        $booking->record_payment_reconciliation( 'stripe' );
+      }
+      if ( ! $declined ) { rtbPaymentAttempt::update( $booking_id, $attempt['id'], array( 'state' => 'review' ) ); }
 
       // redirect on failed payment
       $redirect = add_query_arg(
         array(
-          'payment' => 'failed',
+          'payment' => $declined ? 'failed' : 'review',
           'booking_id' => $booking_id,
           'booking_email' => $booking->email,
-          'error_code' => urlencode( $ex->getMessage() )
+          'error_code' => $declined ? urlencode( $ex->getMessage() ) : ''
         ),
         $booking_page
       );
     }
 
     // redirect back to our previous page with the added query variable
-    wp_redirect( $redirect ); 
+    $this->redirect_payment( $redirect );
+  }
 
+  protected function redirect_payment( $url ) {
+    wp_redirect( $url );
     exit;
   }
 
@@ -294,12 +326,16 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
   public function create_stripe_pmtIntnt() {
     global $rtb_controller;
 
-    if ( !check_ajax_referer( 'rtb-stripe-payment', 'nonce' ) ) { $this->response_message( false, __( 'The request has been rejected because it does not appear to have come from this site.', 'restaurant-reservations' ) ); }
+    if ( !check_ajax_referer( 'rtb-stripe-payment', 'nonce' ) ) { return $this->response_message( false, __( 'The request has been rejected because it does not appear to have come from this site.', 'restaurant-reservations' ) ); }
 
-    if ( ! isset( $_POST['booking_id'] ) ) { $this->response_message( false, __( 'Invalid booking.', 'restaurant-reservations' ) ); }
+    if ( ! isset( $_POST['booking_id'] ) ) { return $this->response_message( false, __( 'Invalid booking.', 'restaurant-reservations' ) ); }
 
     $booking = new rtbBooking();
-    $booking->load_post( intval( $_POST['booking_id'] ) );
+    if ( ! $booking->load_post( intval( $_POST['booking_id'] ) ) ) { return $this->response_message( false, __( 'Invalid booking.', 'restaurant-reservations' ) ); }
+
+    $started = rtbPaymentAttempt::start( $booking->ID, 'stripe_sca' );
+    if ( is_wp_error( $started ) ) { return $this->response_message( false, $started->get_error_message() ); }
+    $attempt = $started['attempt'];
 
     $return_url = ! empty( $_POST['return_url'] ) ? sanitize_url( $_POST['return_url'] ) : get_permalink();
 
@@ -311,6 +347,17 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
     try {
 
       \rtbStripe\Stripe::setApiKey( $this->get_secret() );
+
+      if ( $started['reused'] ) {
+        $intent = \rtbStripe\PaymentIntent::retrieve( $attempt['intent_id'] );
+        if ( ! in_array( $intent->status, array( 'requires_payment_method', 'requires_confirmation', 'requires_action' ), true ) ) {
+          return $this->response_message( false, __( 'This payment is already processing or needs administrator review. Please do not pay again.', 'restaurant-reservations' ) );
+        }
+        return $this->response_message( true, __( 'Existing payment attempt resumed.', 'restaurant-reservations' ), array(
+          'clientSecret' => $intent->client_secret, 'name' => $booking->name, 'email' => $booking->email,
+          'redirect_url' => add_query_arg( 'booking_id', $booking->ID, $return_url ),
+        ) );
+      }
 
       // $customer = \rtbStripe\Customer::create(array(
       //  'email' => $booking->email,
@@ -359,12 +406,28 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
         $intent_data['capture_method'] = 'manual';
       }
 
-      $intent = \rtbStripe\PaymentIntent::create( $intent_data );
+      $intent = \rtbStripe\PaymentIntent::create( $intent_data, array( 'idempotency_key' => $attempt['idempotency_key'] ) );
+
+      if ( ! rtbPaymentAttempt::update( $booking->ID, $attempt['id'], array( 'state' => 'created', 'intent_id' => (string) $intent->id ) ) ) {
+        $this->void_unpersisted_intent( $booking, $intent, $attempt );
+        return $this->response_message( false, __( 'Payment could not be prepared safely. Please contact the site administrator before trying again.', 'restaurant-reservations' ) );
+      }
 
       // Used this for verification of two step payment processing under SCA
       $booking->stripe_payment_intent_id = $intent->id;
 
-      $booking->insert_post_data();
+      $saved = $booking->insert_post_data();
+      $persisted = new rtbBooking();
+      if ( ! $saved || ! $persisted->load_post( (int) $booking->ID )
+        || (string) $persisted->stripe_payment_intent_id !== (string) $intent->id ) {
+        $this->void_unpersisted_intent( $booking, $intent, $attempt );
+        return $this->response_message( false, __( 'Payment could not be prepared safely. Please contact the site administrator before trying again.', 'restaurant-reservations' ) );
+      }
+
+      if ( ! rtbPaymentAttempt::update( $booking->ID, $attempt['id'], array( 'state' => 'ready' ) ) ) {
+        $this->void_unpersisted_intent( $booking, $intent, $attempt );
+        return $this->response_message( false, __( 'Payment could not be prepared safely. Please contact the site administrator before trying again.', 'restaurant-reservations' ) );
+      }
 
       $args = array(
         'clientSecret'  => $intent->client_secret,
@@ -373,11 +436,27 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
         'redirect_url'  => add_query_arg( 'booking_id', $booking->ID, $return_url ),
       );
 
-      $this->response_message( true, __( 'Payment Intent generated succsssfully', 'restaurant-reservations' ), $args );
+      return $this->response_message( true, __( 'Payment Intent generated succsssfully', 'restaurant-reservations' ), $args );
     }
     catch( Exception $ex ) {
+      rtbPaymentAttempt::update( $booking->ID, $attempt['id'], array( 'state' => 'review' ) );
+      $booking->receipt_id = ! empty( $intent->id ) ? (string) $intent->id : 'stripe-attempt:' . $attempt['id'];
+      $booking->record_payment_reconciliation( 'stripe' );
+      return $this->response_message( false, __( 'The payment state could not be verified. Please contact the site administrator before trying again.', 'restaurant-reservations' ) );
+    }
+  }
 
-      $this->response_message( false, 'Please try again.', array( 'error' => $ex->getError() ) );
+  /** Do not reveal a client secret when the corresponding booking write failed. */
+  private function void_unpersisted_intent( $booking, $intent, $attempt ) {
+    $voided = false;
+    try {
+      $canceled = $intent->cancel();
+      $voided = 'canceled' === $canceled->status;
+    } catch ( Exception $ignored ) {}
+    rtbPaymentAttempt::update( $booking->ID, $attempt['id'], array( 'state' => $voided ? 'voided' : 'review', 'intent_id' => (string) $intent->id ) );
+    if ( ! $voided ) {
+      $booking->receipt_id = (string) $intent->id;
+      $booking->record_payment_reconciliation( 'stripe' );
     }
   }
 
@@ -400,38 +479,63 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
     $url_params = '';
     $data = array();
 
-    if ( ! isset( $_POST['booking_id'] ) ) { $this->sca_response( $success, $url_params, $data ); }
+    if ( ! isset( $_POST['booking_id'] ) ) { return $this->sca_response( $success, $url_params, $data ); }
 
     $booking = new rtbBooking();
     $loaded = $booking->load_post( intval( $_POST['booking_id'] ) );
+    $posted_id = sanitize_text_field( $_POST['payment_id'] ?? '' );
+    $review_url = $loaded ? array( 'payment' => 'review', 'booking_id' => intval( $booking->ID ), 'booking_email' => $booking->email ) : array();
 
-    // If already paid, just return the success URL params.
-    if ( $loaded && ! empty( $booking->receipt_id ) && 'paid' === $booking->post_status ) {
+    if ( $loaded && get_option( 'rtb-payment-reconciliation-' . (int) $booking->ID ) ) {
+      if ( $posted_id && $posted_id !== (string) $booking->receipt_id ) {
+        $extra = $this->verified_intent_for_booking( $booking, $posted_id );
+        if ( $extra ) { $booking->receipt_id = $posted_id; $booking->deposit = (float) $extra->amount / 100; $booking->record_payment_reconciliation( 'stripe' ); }
+      }
+      return $this->sca_response( true, $review_url );
+    }
 
-      $this->sca_response( true, array(
+    // A different successful intent must never be acknowledged as the old payment.
+    if ( $loaded && ! empty( $booking->receipt_id ) && in_array( $booking->post_status, array( 'pending', 'confirmed', 'arrived' ), true ) ) {
+
+      if ( $posted_id && $posted_id !== (string) $booking->receipt_id ) {
+        $extra = $this->verified_intent_for_booking( $booking, $posted_id );
+        if ( $extra ) { $booking->receipt_id = $posted_id; $booking->deposit = (float) $extra->amount / 100; $booking->record_payment_reconciliation( 'stripe' ); }
+        return $this->sca_response( true, $review_url );
+      }
+      return $this->sca_response( true, array(
         'payment'       => 'paid',
         'booking_id'    => intval( $booking->ID ),
         'booking_email' => $booking->email,
       ));
     }    
 
+    $provider_succeeded = false;
     try {
 
       if ( isset( $_POST['success'] ) && 'false' != sanitize_text_field( $_POST['success'] ) ) {
 
-        if ( ! $loaded || ! $this->valid_payment( $booking ) ) {
-
-          throw new Exception( __( 'Invalid submission. Please contact admin', 'restaurant-reservations' ) );
+        if ( ! $loaded || ! $posted_id ) { throw new Exception( __( 'Invalid submission. Please contact admin', 'restaurant-reservations' ) ); }
+        $intent = $this->verified_intent_for_booking( $booking, $posted_id );
+        if ( ! $intent ) { throw new Exception( __( 'Payment could not be verified. Please contact the site administrator.', 'restaurant-reservations' ) ); }
+        $provider_succeeded = true;
+        if ( (string) $booking->stripe_payment_intent_id !== $posted_id ) {
+          $booking->receipt_id = $posted_id;
+          $booking->deposit = $rtb_controller->settings->get_setting( 'rtb-currency' ) != 'JPY' ? $intent->amount / 100 : $intent->amount;
+          $booking->record_payment_reconciliation( 'stripe' );
+          return $this->sca_response( true, $review_url );
         }
-
-        // Read the amount from the verified Stripe intent:
-
-        // load the stripe libraries
-        require_once( RTB_PLUGIN_DIR . '/lib/stripe/init.php' );
-
-        \rtbStripe\Stripe::setApiKey( $this->get_secret() );
-
-        $intent = \rtbStripe\PaymentIntent::retrieve( $booking->stripe_payment_intent_id );
+        $attempt = rtbPaymentAttempt::get( $booking->ID );
+        if ( 'stripe_sca' === ( $attempt['provider'] ?? '' ) && 'finalizing' === ( $attempt['state'] ?? '' )
+          && (string) ( $attempt['intent_id'] ?? '' ) === $posted_id ) {
+          return $this->sca_response( true, $review_url );
+        }
+        if ( ! $attempt || 'stripe_sca' !== ( $attempt['provider'] ?? '' ) || (string) ( $attempt['intent_id'] ?? '' ) !== $posted_id
+          || ! rtbPaymentAttempt::transition( $booking->ID, $attempt['id'], array( 'ready', 'created' ), 'finalizing' ) ) {
+          $booking->receipt_id = $posted_id;
+          $booking->deposit = $rtb_controller->settings->get_setting( 'rtb-currency' ) != 'JPY' ? $intent->amount / 100 : $intent->amount;
+          $booking->record_payment_reconciliation( 'stripe' );
+          return $this->sca_response( true, $review_url );
+        }
 
         $booking->deposit = $rtb_controller->settings->get_setting( 'rtb-currency' ) != 'JPY' ? $intent->amount / 100 : $intent->amount;
 
@@ -441,13 +545,15 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
         unset( $booking->stripe_payment_intent_id );
 
         // 'processing' here would mean a Bancomat-type payment returned as processing, which is safe to treat as succeeded
-        $booking->payment_paid();
+        $saved = $booking->payment_paid( 'stripe' );
+        if ( $saved ) { rtbPaymentAttempt::clear( $booking->ID, $attempt['id'] ); }
+        else { rtbPaymentAttempt::update( $booking->ID, $attempt['id'], array( 'state' => 'review', 'receipt_id' => $posted_id ) ); }
 
         // url_params on successful payment
         $success = true;
 
         $url_params = array(
-          'payment'    => 'paid',
+          'payment'    => $saved ? 'paid' : 'review',
           'booking_id' => intval( $booking->ID ),
           'booking_email' => $booking->email,
         );
@@ -464,11 +570,31 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
     }
     catch(Exception $ex) {
 
-      $loaded && $booking->payment_failed( $ex->getMessage() );
-      $data['message'] = $ex->getMessage();
+      if ( $provider_succeeded && $loaded ) {
+        $booking->receipt_id = $booking->receipt_id ?: sanitize_text_field( $_POST['payment_id'] ?? '' );
+        $booking->record_payment_reconciliation( 'stripe' );
+        $attempt = rtbPaymentAttempt::get( $booking->ID );
+        if ( $attempt ) { rtbPaymentAttempt::update( $booking->ID, $attempt['id'], array( 'state' => 'review' ) ); }
+        $success = true;
+        $url_params = $review_url;
+      } elseif ( $loaded && $posted_id && isset( $_POST['success'] ) && 'false' !== sanitize_text_field( $_POST['success'] ) ) {
+        // The browser reports success but the provider lookup may be unavailable.
+        // Never mark this as a failed charge or invite a second payment.
+        $attempt = rtbPaymentAttempt::get( $booking->ID );
+        if ( $posted_id === (string) $booking->stripe_payment_intent_id || $posted_id === (string) ( $attempt['intent_id'] ?? '' ) ) {
+          $booking->receipt_id = $posted_id;
+          $booking->record_payment_reconciliation( 'stripe' );
+          if ( $attempt ) { rtbPaymentAttempt::update( $booking->ID, $attempt['id'], array( 'state' => 'review' ) ); }
+        }
+        $success = true;
+        $url_params = $review_url;
+      } else {
+        $loaded && $booking->payment_failed( $ex->getMessage() );
+        $data['message'] = $ex->getMessage();
+      }
     }
 
-    $this->sca_response( $success, $url_params, $data );
+    return $this->sca_response( $success, $url_params, $data );
   }
 
   /**
@@ -478,16 +604,15 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
    * @return bool true if Stripe confirms payment else false
    */
   public function valid_payment( $booking ) {
+    return ! empty( $booking->stripe_payment_intent_id )
+      && (string) $booking->stripe_payment_intent_id === sanitize_text_field( $_POST['payment_id'] ?? '' )
+      && (bool) $this->verified_intent_for_booking( $booking, $booking->stripe_payment_intent_id );
+  }
+
+  /** Verify a provider result and its booking binding before recording money received. */
+  private function verified_intent_for_booking( $booking, $intent_id ) {
     global $rtb_controller;
-
-    // Must have an intent ID stored server-side from the intent-creation step
-    if ( empty( $booking->stripe_payment_intent_id ) ) { return false; }
-
-    // The posted payment_id must match what we stored
-    $posted_id = sanitize_text_field( $_POST['payment_id'] ?? '' );
-    if ( $posted_id !== $booking->stripe_payment_intent_id ) { return false; }
-
-    // Ask Stripe if the intent was actually paid
+    if ( ! $intent_id ) { return false; }
     try {
 
       // load the stripe libraries
@@ -495,7 +620,7 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
   
       \rtbStripe\Stripe::setApiKey( $this->get_secret() );
 
-      $intent = \rtbStripe\PaymentIntent::retrieve( $booking->stripe_payment_intent_id );
+      $intent = \rtbStripe\PaymentIntent::retrieve( $intent_id );
 
       $is_hold = $rtb_controller->settings->get_setting( 'rtb-stripe-hold' );
 
@@ -504,9 +629,9 @@ class rtbPaymentGatewayStripe implements rtbPaymentGateway {
       // For hold/manual-capture: status must be 'requires_capture'
       $valid_statuses = $is_hold ? array( 'requires_capture' ) : array( 'succeeded', 'processing' );
 
-      $result = in_array( $intent->status, $valid_statuses, true );
-
-      return $result;
+      return (string) $intent->id === (string) $intent_id
+        && (int) ( $intent->metadata['Booking ID'] ?? 0 ) === (int) $booking->ID
+        && in_array( $intent->status, $valid_statuses, true ) ? $intent : false;
     }
     catch ( Exception $ex ) {
 

@@ -223,9 +223,9 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 					}
 					else {
 
-						wp_update_post( array( 'ID' => $booking->ID, 'post_status' => 'cancelled' ) );
-
-						$success = true;
+						$result = rtbBookingAdmission::mutate( $booking->ID, array( 'status' => 'cancelled' ) );
+						$success = ! is_wp_error( $result );
+						if ( ! $success ) { $error = array( 'error' => 'bookingchanged', 'msg' => $result->get_error_message() ); }
 					}
 				}
 				else {

@@ -3,7 +3,7 @@
  * Plugin Name: Five Star Restaurant Reservations - WordPress Booking Plugin
  * Plugin URI: http://www.fivestarplugins.com/plugins/five-star-restaurant-reservations/
  * Description: Restaurant reservations made easy. Accept bookings online. Quickly confirm or reject reservations, send email notifications, set booking times and more.
- * Version: 2.8.1
+ * Version: 2.9.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * License: GPLv3
@@ -62,7 +62,7 @@ class rtbInit {
 	public function __construct() {
 
 		// Common strings
-		define( 'RTB_VERSION', '2.8.1' );
+		define( 'RTB_VERSION', '2.9.0' );
 		define( 'RTB_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 		define( 'RTB_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 		define( 'RTB_PLUGIN_FNAME', plugin_basename( __FILE__ ) );
@@ -87,6 +87,7 @@ class rtbInit {
 	public function boot() {
 
 		// Load booking post wrapper class
+		require_once( RTB_PLUGIN_DIR . '/includes/BookingAdmission.class.php' );
 		require_once( RTB_PLUGIN_DIR . '/includes/Booking.class.php' );
 
 		// Load helper class
@@ -455,7 +456,7 @@ class rtbInit {
 		$screen = get_current_screen();
 		$screenID = $screen->id;
 		
-		if ( $screenID != $admin_page_hooks['rtb-bookings'] . '_page_rtb-settings' && $screenID != 'toplevel_page_rtb-bookings' && $screenID != $admin_page_hooks['rtb-bookings'] . '_page_rtb-dashboard' && $screenID != $admin_page_hooks['rtb-bookings'] . '_page_cffrtb-editor' && $screenID != $admin_page_hooks['rtb-bookings'] . '_page_rtb-about-us' ) {return;}
+		if ( $screenID != $admin_page_hooks['rtb-bookings'] . '_page_rtb-settings' && $screenID != 'toplevel_page_rtb-bookings' && $screenID != $admin_page_hooks['rtb-bookings'] . '_page_rtb-dashboard' && $screenID != $admin_page_hooks['rtb-bookings'] . '_page_cffrtb-editor' && $screenID != $admin_page_hooks['rtb-bookings'] . '_page_rtb-about-us' && $screenID != $admin_page_hooks['rtb-bookings'] . '_page_fspph-rtb-license' ) {return;}
 
 		if ( ! $rtb_controller->permissions->check_permission( 'styling' ) or get_option("RTB_Trial_Happening") == "Yes" or get_option("RTU_Trial_Happening") == "Yes" ) {
 			?>
@@ -518,6 +519,9 @@ class rtbInit {
 						<?php _e("Custom Fields", 'restaurant-reservations'); ?>
 					</a>
 				<?php } ?>
+				<?php if ( current_user_can( 'manage_options' ) && 'fspph-rtb-license' === ( $_GET['page'] ?? '' ) ) { ?>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=fspph-rtb-license' ) ); ?>" class="menu-tab nav-tab nav-tab-active" aria-current="page"><?php esc_html_e( 'License', 'restaurant-reservations' ); ?></a>
+				<?php } ?>
 			</h2>
 		</div>
 		<?php
@@ -557,9 +561,10 @@ class rtbInit {
 			|| $screen->base == $admin_page_hooks['rtb-bookings'] . '_page_cffrtb-editor'
 			|| $screen->base == $admin_page_hooks['rtb-bookings'] . '_page_rtb-dashboard'
 			|| $screen->base == $admin_page_hooks['rtb-bookings'] . '_page_rtb-about-us'
+			|| $screen->base == $admin_page_hooks['rtb-bookings'] . '_page_fspph-rtb-license'
 		) {
 			wp_enqueue_style( 'rtb-admin-css', RTB_PLUGIN_URL . '/assets/css/admin.css', array(), RTB_VERSION );
-			wp_enqueue_script( 'rtb-admin-js', RTB_PLUGIN_URL . '/assets/js/admin.js', array( 'jquery' ), '', true );
+			wp_enqueue_script( 'rtb-admin-js', RTB_PLUGIN_URL . '/assets/js/admin.js', array( 'jquery' ), RTB_VERSION, true );
 			wp_enqueue_style( 'rtb-spectrum-css', RTB_PLUGIN_URL . '/assets/css/spectrum.css' );
 			wp_enqueue_script( 'rtb-spectrum-js', RTB_PLUGIN_URL . '/assets/js/spectrum.js', array( 'jquery' ), '', true );
 			wp_enqueue_script( 'rtb-admin-settings-js', RTB_PLUGIN_URL . '/assets/js/admin-settings.js', array( 'jquery' ), '', true );
@@ -577,6 +582,7 @@ class rtbInit {
 				'rtb_admin',
 				array(
 					'nonce'		=> wp_create_nonce( 'rtb-admin' ),
+					'booking_statuses' => array_keys( $rtb_controller->cpts->booking_statuses ),
 					'strings'	=> array(
 						'add_booking'		=> __( 'Add Booking', 'restaurant-reservations' ),
 						'edit_booking'		=> __( 'Edit Booking', 'restaurant-reservations' ),
@@ -806,36 +812,49 @@ class rtbInit {
 	public function maybe_display_helper_notice() {
 		global $rtb_controller;
 		if ( ! current_user_can( 'manage_options' ) ) { return; }
-	
-		if ( empty( $rtb_controller->permissions->check_permission( 'premium' ) ) ) { return; }
+		$stored_level = $rtb_controller->permissions->get_stored_permission_level();
+		if ( $stored_level < 2 && ! get_option( 'rtb-license-key' ) && ! get_option( 'rtb-ultimate-license-key' ) ) { return; }
 
 		$helper_active = is_plugin_active( 'fsp-premium-helper/fsp-premium-helper.php' );
-		$is_ultimate = 3 <= $rtb_controller->permissions->get_stored_permission_level();
+		$is_ultimate = 3 <= $stored_level || (bool) get_option( 'rtb-ultimate-license-key' );
 		$message = '';
+		$notice_class = 'notice-error';
 
 		if ( ! $helper_active ) {
 			$message = sprintf(
 				__( 'The Premium Helper is not active. Please re-activate it, or <a target="_blank" href="%s">download and install it</a>, to restore paid integration.', 'restaurant-reservations' ),
 				'https://www.fivestarplugins.com/2021/12/23/requiring-premium-helper-plugin/'
 			);
-		} elseif ( $is_ultimate && ! $rtb_controller->permissions->has_compatible_helper() ) {
-			$message = __( 'Restaurant Reservations 2.8.0 requires Premium Helper 0.1.0 or newer for Ultimate license validation. Update the Helper to restore full Ultimate access.', 'restaurant-reservations' );
-		} elseif ( $is_ultimate && ! $rtb_controller->permissions->has_active_ultimate_entitlement() ) {
-			$state = $rtb_controller->permissions->get_entitlement_state();
-			$status = ! empty( $state['status'] ) ? $state['status'] : 'unverifiable';
-			$check_url = wp_nonce_url( admin_url( 'admin-post.php?action=fspph_rtb_check_license' ), 'fspph_rtb_check_license' );
+		} elseif ( ! $rtb_controller->permissions->has_compatible_helper() ) {
+			$message = __( 'Restaurant Reservations 2.9.0 requires Premium Helper 0.2.0 or newer to verify Premium and Ultimate rights. Update the Helper; saved settings and bookings remain intact.', 'restaurant-reservations' );
+		} else {
+			$contract = $rtb_controller->permissions->get_contract();
+			$premium = $contract['premium'] ?? array();
+			$ultimate = $contract['ultimate'] ?? array();
+			if ( $is_ultimate && empty( $ultimate['active'] ) ) {
+				$status = $ultimate['status'] ?? 'unverifiable';
 			$reasons = array(
-				'missing' => __( 'No Ultimate license key is saved.', 'restaurant-reservations' ),
+				'missing_or_changed' => __( 'Ultimate access has not been verified for the currently saved key and site. Check the license now; this does not mean it has expired.', 'restaurant-reservations' ),
 				'invalid' => __( 'The licensing service did not recognize the saved Ultimate key.', 'restaurant-reservations' ),
 				'expired' => __( 'The Ultimate license has expired according to its verified expiry.', 'restaurant-reservations' ),
 				'unauthorized' => __( 'The Ultimate license key you\'re using is valid for a different site, not the current one.', 'restaurant-reservations' ),
 			);
 			$message = isset( $reasons[$status] ) ? $reasons[$status] : __( 'The Ultimate license could not be verified. This does not mean it has expired.', 'restaurant-reservations' );
-			$message .= ' ' . __( 'Reminders and API access are disabled; existing payment and table policies remain enforced and read-only.', 'restaurant-reservations' );
-			$message .= ' <a href="' . esc_url( $check_url ) . '">' . esc_html__( 'Check license now', 'restaurant-reservations' ) . '</a>';
-			if ( function_exists( 'fspph_rtb_license_recovery_links' ) ) { $message .= ' ' . fspph_rtb_license_recovery_links(); }
-		} else {
-			return;
+			$message .= ! empty( $premium['active'] )
+				? ' ' . __( 'Your separately validated lifetime Premium features remain available.', 'restaurant-reservations' )
+				: ' ' . __( 'Paid features are suspended; configured payment and table safety policies remain enforced and read-only.', 'restaurant-reservations' );
+			} elseif ( empty( $premium['active'] ) && empty( $ultimate['active'] ) && $stored_level >= 2 ) {
+				$message = __( 'Premium access could not be verified for this site. Your settings and bookings are preserved; check or replace the saved license key.', 'restaurant-reservations' );
+			} elseif ( ! empty( $premium['active'] ) && 'expired' === ( $premium['support_status'] ?? '' ) ) {
+				$notice_class = 'notice-warning';
+				$message = __( 'Premium support and updates have expired. Your lifetime Premium features remain available; renew support separately if you need updates or assistance.', 'restaurant-reservations' );
+			} else { return; }
+			// Recovery applies to either unverified tier, not just Ultimate.
+			if ( 'notice-error' === $notice_class ) {
+				$check_url = wp_nonce_url( admin_url( 'admin-post.php?action=fspph_rtb_check_license' ), 'fspph_rtb_check_license' );
+				$message .= ' <a href="' . esc_url( $check_url ) . '">' . esc_html__( 'Check license now', 'restaurant-reservations' ) . '</a>';
+				if ( function_exists( 'fspph_rtb_license_recovery_links' ) ) { $message .= ' ' . fspph_rtb_license_recovery_links(); }
+			}
 		}
 	
 		// Separate from the old seven-day dismissal so upgrades cannot inherit it.
@@ -843,7 +862,7 @@ class rtbInit {
 	
 		?>
 	
-		<div class='notice notice-error is-dismissible rtb-helper-install-notice'>
+		<div class='notice <?php echo esc_attr( $notice_class ); ?> is-dismissible rtb-helper-install-notice'>
 				
 			<div class='rtb-helper-install-notice-img'>
 				<img src='<?php echo esc_url( RTB_PLUGIN_URL . '/assets/img/rtb-icon.png' ); ?>' alt='' />

@@ -1,5 +1,6 @@
 <?php
 if ( !defined( 'ABSPATH' ) ) exit;
+require_once __DIR__ . '/PaymentAttempt.class.php';
 
 if ( !class_exists( 'rtbBooking' ) ) {
 /**
@@ -79,6 +80,7 @@ class rtbBooking {
 	public $receipt_id;
 	public $mc_optin;
 	public $cancellation_code;
+	public $staff_walk_in = false;
 
 	// notifications
 	public $reminder_sent;
@@ -196,6 +198,7 @@ class rtbBooking {
 		$this->payment_failure_message = $meta['payment_failure_message'];
 		$this->receipt_id = $meta['receipt_id'];
 		$this->cancellation_code = $meta['cancellation_code'];
+		$this->staff_walk_in = ! empty( $meta['staff_walk_in'] );
 
 		$this->reminder_sent = $meta['reminder_sent'];
 		$this->late_arrival_sent = $meta['late_arrival_sent'];
@@ -338,27 +341,44 @@ class rtbBooking {
 			$action = 'update';
 		}
 
+		$original = null;
+		$original_revision = '';
+		if ( 'update' === $action ) {
+			$original = new rtbBooking();
+			if ( ! $original->load_post( (int) $this->ID ) ) { return false; }
+			$original_revision = rtbBookingAdmission::revision( $original );
+		}
 		$this->validate_submission($action);
 		if ( $this->is_valid_submission() === false ) {
 			return false;
 		}
 
-		$lock = false;
-		if ( 'insert' === $action ) {
-			$lock = $this->acquire_admission_lock();
-			if ( ! $lock ) {
-				$this->validation_errors[] = array(
-					'field'   => 'time',
-					'message' => esc_html__( 'Another booking is being completed for this time. Please confirm availability and try again.', 'restaurant-reservations' ),
-				);
-
-				return false;
-			}
+		$scopes = array( rtbBookingAdmission::scope( $this->date, $this->location ) );
+		if ( $original ) { $scopes[] = rtbBookingAdmission::scope( $original->date, $original->location ); }
+		$lock = rtbBookingAdmission::acquire( $scopes );
+		if ( false === $lock ) {
+			$this->validation_errors[] = array(
+				'field' => 'time',
+				'message' => esc_html__( 'Another booking is being completed for this time. Please confirm availability and try again.', 'restaurant-reservations' ),
+			);
+			return false;
 		}
 
 		try {
-			if ( 'insert' === $action && ! $this->passes_locked_admission_check() ) {
+			if ( $original ) {
+				$reloaded = new rtbBooking();
+				if ( ! $reloaded->load_post( (int) $this->ID ) || ! hash_equals( $original_revision, rtbBookingAdmission::revision( $reloaded ) ) ) {
+					$this->validation_errors[] = array( 'field' => 'time', 'message' => esc_html__( 'This booking changed. Reload it and try again.', 'restaurant-reservations' ) );
+					return false;
+				}
+			}
+			if ( ! $this->passes_locked_admission_check() ) {
 				return false;
+			}
+			if ( $this->by_admin && get_current_user_id() ) {
+				global $rtb_controller;
+				$override = ! empty( $rtb_controller->settings->get_setting( 'rtb-admin-ignore-maximums' ) );
+				$this->add_log( 'staff', 'Booking saved', sprintf( 'User %d; action %s; availability override %s', get_current_user_id(), $action, $override ? 'yes' : 'no' ) );
 			}
 
 			if ( $this->insert_post_data( $lock ) === false ) {
@@ -367,7 +387,7 @@ class rtbBooking {
 
 			$this->request_inserted = true;
 		} finally {
-			if ( $lock ) { $this->release_admission_lock( $lock ); }
+			rtbBookingAdmission::release( $lock );
 		}
 
 		do_action( 'rtb_' . $action . '_booking', $this );
@@ -375,85 +395,9 @@ class rtbBooking {
 		return true;
 	}
 
-	private function acquire_admission_lock() {
-		global $wpdb;
-
-		// Lock the whole location/day so overlapping dining blocks cannot pass
-		// their final capacity checks concurrently under different start times.
-		$scope = get_current_blog_id() . '|' . (int) $this->location . '|' . substr( (string) $this->date, 0, 10 );
-		$name = 'rtb-booking-admission-lock-' . substr( hash( 'sha256', $scope ), 0, 32 );
-		$value = array(
-			'owner'   => wp_generate_uuid4(),
-			'expires' => time() + 15,
-		);
-
-		if ( add_option( $name, $value, '', 'no' ) ) {
-			return array( 'name' => $name, 'value' => $value );
-		}
-
-		$existing = get_option( $name );
-		if ( ! is_array( $existing ) || empty( $existing['expires'] ) || (int) $existing['expires'] >= time() ) {
-			return false;
-		}
-
-		$updated = $wpdb->query(
-			$wpdb->prepare(
-				"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND option_value = %s",
-				maybe_serialize( $value ),
-				$name,
-				maybe_serialize( $existing )
-			)
-		);
-
-		wp_cache_delete( $name, 'options' );
-
-		return 1 === $updated ? array( 'name' => $name, 'value' => $value ) : false;
-	}
-
-	private function release_admission_lock( $lock ) {
-		global $wpdb;
-
-		$wpdb->query(
-			$wpdb->prepare(
-				"DELETE FROM {$wpdb->options} WHERE option_name = %s AND option_value = %s",
-				$lock['name'],
-				maybe_serialize( $lock['value'] )
-			)
-		);
-
-		wp_cache_delete( $lock['name'], 'options' );
-	}
-
-	private function refresh_admission_lock( &$lock ) {
-		global $wpdb;
-
-		if ( empty( $lock['name'] ) || empty( $lock['value']['owner'] ) ) {
-			return false;
-		}
-
-		$refreshed = $lock['value'];
-		$refreshed['expires'] = max( time() + 15, (int) $lock['value']['expires'] + 15 );
-		$updated = $wpdb->query(
-			$wpdb->prepare(
-				"UPDATE {$wpdb->options} SET option_value = %s WHERE option_name = %s AND option_value = %s",
-				maybe_serialize( $refreshed ),
-				$lock['name'],
-				maybe_serialize( $lock['value'] )
-			)
-		);
-
-		wp_cache_delete( $lock['name'], 'options' );
-		if ( 1 !== $updated ) {
-			return false;
-		}
-
-		$lock['value'] = $refreshed;
-
-		return true;
-	}
-
 	private function passes_locked_admission_check() {
 		global $rtb_controller;
+		if ( ! rtbBookingAdmission::consumes( $this->post_status ) ) { return true; }
 
 		$ignore_maximums = $this->by_admin && ! empty( $rtb_controller->settings->get_setting( 'rtb-admin-ignore-maximums' ) );
 		if ( ! $ignore_maximums && ! $this->is_under_max_reservations() ) {
@@ -530,6 +474,7 @@ class rtbBooking {
 		 * Its name implies the requirement of sanitization explicitly
 		 */
 		$this->raw_input =& $_POST;
+		$this->staff_walk_in = $this->by_admin && current_user_can( 'manage_bookings' ) && ! empty( $_POST['rtb-walk-in'] );
 
 		do_action( 'rtb_pre_validate_booking_submission', $this );
 
@@ -850,13 +795,13 @@ class rtbBooking {
 
 		// Email
 		$this->email = empty( $_POST['rtb-email'] ) ? '' : sanitize_email( $_POST['rtb-email'] ); // @todo email validation? send notification back to form on bad email address.
-		if ( empty( $this->email ) ) {
+		if ( empty( $this->email ) && ! $this->staff_walk_in ) {
 			$this->validation_errors[] = array(
 				'field'			=> 'email',
 				'post_variable'	=> $this->email,
 				'message'	=> esc_html( $rtb_controller->settings->get_setting( 'label-enter-email-address-to-confirm-booking' ) ),
 			);
-		} elseif ( !is_email( $this->email ) && apply_filters( 'rtb_require_valid_email', true ) ) {
+		} elseif ( ! empty( $this->email ) && ! is_email( $this->email ) && apply_filters( 'rtb_require_valid_email', true ) ) {
 			$this->validation_errors[] = array(
 				'field'			=> 'email',
 				'post_variable'	=> $this->email,
@@ -867,7 +812,7 @@ class rtbBooking {
 		// Phone
 		$this->phone = empty( $_POST['rtb-phone'] ) ? '' : sanitize_text_field( $_POST['rtb-phone'] );
 		$phone_required = $rtb_controller->settings->get_setting( 'require-phone' );
-		if ( $phone_required && empty( $this->phone ) ) {
+		if ( $phone_required && empty( $this->phone ) && ! $this->staff_walk_in ) {
 			$this->validation_errors[] = array(
 				'field'			=> 'phone',
 				'post_variable'	=> $this->phone,
@@ -1200,7 +1145,7 @@ class rtbBooking {
 
     	$args = array(
     	  'posts_per_page' => -1,
-    	  'post_status'    => array( 'pending', 'payment_pending', 'confirmed', 'arrived' ),
+		  'post_status'    => rtbBookingAdmission::consuming_statuses(),
     	  'date_query'     => array(
     	    'before' => date( 'c', $before_time ),
     	    'after'  => date( 'c', $after_time )
@@ -1273,7 +1218,7 @@ class rtbBooking {
 
 		$args = array(
 			'posts_per_page' => -1,
-			'post_status'    => array( 'pending', 'payment_pending', 'confirmed', 'arrived' ),
+			'post_status'    => rtbBookingAdmission::consuming_statuses(),
 			'date_query'     => array(
 				'before' => date( 'c', $before_time ),
 				'after'  => date( 'c', $after_time )
@@ -1578,6 +1523,8 @@ class rtbBooking {
 		if ( $this->by_admin && !empty( $_POST['rtb-post-status'] ) && array_key_exists( $_POST['rtb-post-status'], $rtb_controller->cpts->booking_statuses ) ) {
 			$post_status = sanitize_text_field( $_POST['rtb-post-status'] );
 			if ( $post_status == 'confirmed' ) { $this->temp_confirmed_user = get_current_user_id(); }
+		} elseif ( $this->staff_walk_in && empty( $this->ID ) ) {
+			$post_status = 'arrived';
 		} elseif (
 			(
 				$rtb_controller->settings->get_setting( 'require-deposit' )
@@ -1672,6 +1619,38 @@ class rtbBooking {
 	 * @since 0.0.1
 	 */
 	public function insert_post_data( &$admission_lock = null ) {
+		// Payment gateways and legacy integrations call this method directly.
+		// They must not bypass the same final inventory boundary used by forms.
+		if ( ! $admission_lock ) {
+			$scopes = array( rtbBookingAdmission::scope( $this->date, $this->location ) );
+			$original_revision = '';
+			if ( ! empty( $this->ID ) ) {
+				$original = new rtbBooking();
+				if ( ! $original->load_post( (int) $this->ID ) ) { return false; }
+				$original_revision = rtbBookingAdmission::revision( $original );
+				$scopes[] = rtbBookingAdmission::scope( $original->date, $original->location );
+			}
+			$locks = rtbBookingAdmission::acquire( $scopes );
+			if ( false === $locks ) { return false; }
+			try {
+				if ( $original_revision ) {
+					$reloaded = new rtbBooking();
+					if ( ! $reloaded->load_post( (int) $this->ID ) || ! hash_equals( $original_revision, rtbBookingAdmission::revision( $reloaded ) ) ) { return false; }
+				}
+				// A status-only change between consuming statuses does not claim
+				// additional inventory. Existing bookings must remain payable even
+				// after capacity is lowered or a table is retired.
+				$same_claim = isset( $reloaded ) && rtbBookingAdmission::consumes( $reloaded->post_status )
+					&& (string) $reloaded->date === (string) $this->date
+					&& (int) $reloaded->location === (int) $this->location
+					&& (int) $reloaded->party === (int) $this->party
+					&& wp_json_encode( $reloaded->table ) === wp_json_encode( $this->table );
+				if ( rtbBookingAdmission::consumes( $this->post_status ) && ! $same_claim && ! $this->passes_locked_admission_check() ) { return false; }
+				return $this->insert_post_data( $locks );
+			} finally {
+				rtbBookingAdmission::release( $locks );
+			}
+		}
 
 		$args = array(
 			'post_type'		=> RTB_BOOKING_POST_TYPE,
@@ -1694,16 +1673,34 @@ class rtbBooking {
 		}
 
 		$args = apply_filters( 'rtb_insert_booking_data', $args, $this );
+		global $rtb_controller;
+		$has_location_taxonomy = ! empty( $rtb_controller->locations->post_type ) && taxonomy_exists( $rtb_controller->locations->location_taxonomy );
+		$updating = ! empty( $this->ID );
+		$prior_post = $updating ? get_post( (int) $this->ID ) : null;
+		$prior_terms = $updating && $has_location_taxonomy
+			? wp_get_object_terms( (int) $this->ID, $rtb_controller->locations->location_taxonomy, array( 'fields' => 'ids' ) ) : array();
+		if ( is_wp_error( $prior_terms ) ) { return false; }
 
 		// When updating a booking, we need to update the metadata first, so that
 		// notifications hooked to the status changes go out with the new metadata.
 		// If we're inserting a new booking, we have to insert it before we can
 		// add metadata, and the default notifications don't fire until it's all done.
 		if ( !empty( $this->ID ) ) {
+			if ( $admission_lock && ! rtbBookingAdmission::refresh( $admission_lock ) ) {
+				$this->validation_errors[] = array( 'field' => 'time', 'message' => esc_html__( 'Availability changed while this booking was being completed. Please try again.', 'restaurant-reservations' ) );
+				return false;
+			}
+			$had_meta = metadata_exists( 'post', $this->ID, 'rtb' );
+			$prior_meta = $had_meta ? get_post_meta( $this->ID, 'rtb', true ) : null;
 			$this->insert_post_meta();
-			$id = wp_insert_post( $args );
+			$id = wp_insert_post( $args, true );
+			if ( is_wp_error( $id ) || (int) $id <= 0 ) {
+				if ( $had_meta ) { update_post_meta( $this->ID, 'rtb', $prior_meta ); }
+				else { delete_post_meta( $this->ID, 'rtb' ); }
+				return false;
+			}
 		} else {
-			if ( $admission_lock && ! $this->refresh_admission_lock( $admission_lock ) ) {
+			if ( $admission_lock && ! rtbBookingAdmission::refresh( $admission_lock ) ) {
 				$this->validation_errors[] = array(
 					'field'   => 'time',
 					'message' => esc_html__( 'Availability changed while this booking was being completed. Please try again.', 'restaurant-reservations' ),
@@ -1712,14 +1709,54 @@ class rtbBooking {
 				return false;
 			}
 
-			$id = wp_insert_post( $args );
+			$id = wp_insert_post( $args, true );
+			if ( is_wp_error( $id ) ) {
+				$this->validation_errors[] = array( 'field' => 'date', 'message' => esc_html__( 'The booking could not be saved. Please try again.', 'restaurant-reservations' ) );
+				return false;
+			}
 			if ( $id && !is_wp_error( $id ) ) {
 				$this->ID = $id;
 				$this->insert_post_meta();
 			}
 		}
 
-		return !is_wp_error( $id ) && $id !== false;
+		if ( is_wp_error( $id ) || (int) $id <= 0 ) { return false; }
+		if ( $has_location_taxonomy ) {
+			$location_result = $rtb_controller->locations->save_booking_location( $this );
+			if ( is_wp_error( $location_result ) ) {
+				$this->validation_errors[] = array( 'field' => 'location', 'message' => esc_html__( 'The booking location could not be saved. Please try again.', 'restaurant-reservations' ) );
+				if ( $updating && $prior_post ) {
+					$notifications = isset( $rtb_controller->notifications ) ? $rtb_controller->notifications : null;
+					$prior_disabled = $notifications ? $notifications->notifications_disabled : null;
+					if ( $notifications ) { $notifications->notifications_disabled = true; }
+					try {
+						$restored_post = wp_update_post( array(
+							'ID' => (int) $id, 'post_title' => $prior_post->post_title,
+							'post_content' => $prior_post->post_content, 'post_date' => $prior_post->post_date,
+							'post_date_gmt' => $prior_post->post_date_gmt, 'post_status' => $prior_post->post_status,
+						), true );
+					} finally {
+						if ( $notifications ) { $notifications->notifications_disabled = $prior_disabled; }
+					}
+					if ( $had_meta ) { update_post_meta( $id, 'rtb', $prior_meta ); }
+					else { delete_post_meta( $id, 'rtb' ); }
+					$restored_terms = wp_set_object_terms( $id, array_map( 'intval', $prior_terms ), $rtb_controller->locations->location_taxonomy );
+					$meta_restored = $had_meta
+						? metadata_exists( 'post', $id, 'rtb' ) && get_post_meta( $id, 'rtb', true ) === $prior_meta
+						: ! metadata_exists( 'post', $id, 'rtb' );
+					$rolled_back = ! is_wp_error( $restored_post ) && (int) $restored_post > 0 && ! is_wp_error( $restored_terms ) && $meta_restored;
+				} else {
+					$rolled_back = (bool) wp_delete_post( (int) $id, true );
+					if ( $rolled_back ) { $this->ID = 0; }
+				}
+				if ( ! $rolled_back ) {
+					// Never describe a potentially committed booking as an ordinary failed insert.
+					wp_die( sprintf( esc_html__( 'Booking %d was saved, but its location could not be restored. Contact the site administrator before retrying.', 'restaurant-reservations' ), (int) $id ) );
+				}
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -1733,6 +1770,7 @@ class rtbBooking {
 			'email'             => $this->email,
 			'phone'             => $this->phone,
 			'cancellation_code' => $this->cancellation_code,
+			'staff_walk_in' => $this->staff_walk_in ? 1 : 0,
 		);
 
 		if ( !empty( $this->ip ) ) {
@@ -1796,15 +1834,55 @@ class rtbBooking {
 		return update_post_meta( $this->ID, 'rtb', $meta );
 	}
 
-	public function payment_paid()
+	public function payment_paid( $provider = '' )
 	{
-		if( isset( $this->ID ) ) {
-			$this->determine_status( true );
-
-			$this->insert_post_data();
-
-			do_action( 'rtb_booking_paid', $this );
+		if ( empty( $this->ID ) ) { return false; }
+		$this->determine_status( true );
+		$saved = $this->insert_post_data();
+		$persisted = new rtbBooking();
+		$verified = $saved && $persisted->load_post( (int) $this->ID )
+			&& $persisted->post_status === $this->post_status
+			&& (string) $persisted->receipt_id === (string) $this->receipt_id
+			&& (float) $persisted->deposit === (float) $this->deposit;
+		if ( ! $verified ) {
+			// Provider payment has already succeeded. Keep a separate durable
+			// reference for reconciliation even when the booking meta write fails.
+			$this->record_payment_reconciliation( $provider );
+			return false;
 		}
+		$marker = get_option( 'rtb-payment-reconciliation-' . (int) $this->ID );
+		if ( ! is_array( $marker ) || ( (string) ( $marker['receipt_id'] ?? '' ) === (string) $this->receipt_id && empty( $marker['additional'] ) ) ) {
+			delete_option( 'rtb-payment-reconciliation-' . (int) $this->ID );
+		}
+		delete_option( rtbPaymentAttempt::ledger_name( $this->ID, $provider, (string) $this->receipt_id ) );
+		do_action( 'rtb_booking_paid', $this );
+		return true;
+	}
+
+	public function record_payment_reconciliation( $provider = '' ) {
+		if ( empty( $this->ID ) ) { return false; }
+		$transaction = array( 'provider' => (string) $provider, 'receipt_id' => (string) $this->receipt_id, 'deposit' => (float) $this->deposit, 'recorded_at' => time() );
+		$ledger_name = rtbPaymentAttempt::ledger_name( $this->ID, $provider, (string) $this->receipt_id );
+		$ledger_saved = add_option( $ledger_name, $transaction, '', false );
+		$existing_transaction = get_option( $ledger_name );
+		if ( ! $ledger_saved && ( ! is_array( $existing_transaction ) || (string) ( $existing_transaction['receipt_id'] ?? '' ) !== (string) $this->receipt_id
+			|| (string) ( $existing_transaction['provider'] ?? '' ) !== (string) $provider ) ) { return false; }
+		$locks = rtbPaymentAttempt::acquire( $this->ID );
+		if ( false === $locks ) { return true; } // The per-transaction ledger remains durable and admin-visible.
+		try {
+			$name = 'rtb-payment-reconciliation-' . (int) $this->ID;
+			$marker = get_option( $name, array() );
+			if ( ! is_array( $marker ) || ! $marker ) {
+				$marker = $transaction;
+			} elseif ( (string) ( $marker['receipt_id'] ?? '' ) !== (string) $this->receipt_id || (string) ( $marker['provider'] ?? '' ) !== (string) $provider ) {
+				$additional = is_array( $marker['additional'] ?? null ) ? $marker['additional'] : array();
+				$key = hash( 'sha256', $provider . ':' . (string) $this->receipt_id );
+				$additional[ $key ] = $transaction;
+				$marker['additional'] = $additional;
+			}
+			update_option( $name, $marker, false );
+			return get_option( $name ) === $marker;
+		} finally { rtbPaymentAttempt::release( $locks ); }
 	}
 
 	public function payment_failed( $message = '' )
@@ -1812,9 +1890,7 @@ class rtbBooking {
 		$this->post_status = 'payment_failed';
 		$this->payment_failure_message = $message;
 
-		$this->insert_post_data();
-
-		do_action( 'rtb_booking_paid', $this );
+		return $this->insert_post_data();
 	}
 
 	function is_conditional_deposit_enabled() {

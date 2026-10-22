@@ -76,8 +76,8 @@ if ( ! class_exists( 'rtbMultipleLocations', false ) ) {
 			add_action( 'rtb_booking_form_fields',                    array( $this, 'add_location_field' ), 10, 3 );
 			add_action( 'rtb_view_bookings_form_filters',             array( $this, 'add_view_bookings_location_field' ) );
 			add_action( 'rtb_pre_validate_booking_submission',        array( $this, 'validate_location' ) );
-			add_action( 'rtb_insert_booking',                         array( $this, 'save_booking_location' ) );
-			add_action( 'rtb_update_booking',                         array( $this, 'save_booking_location' ) );
+			// Booking location is persisted by insert_post_data() while its
+			// destination admission lock is still held.
 			add_action( 'rtb_booking_load_post_data',                 array( $this, 'load_booking_location' ), 10, 2 );
 			add_filter( 'rtb_query_args',                             array( $this, 'modify_query' ), 10, 2 );
 			add_filter( 'rtb_bookings_all_table_columns',             array( $this, 'add_location_column' ) );
@@ -409,9 +409,7 @@ if ( ! class_exists( 'rtbMultipleLocations', false ) ) {
 		 */
 		public function save_booking_location( $booking ) {
 
-			if ( !empty( $booking->location ) ) {
-				wp_set_object_terms( $booking->ID, $booking->location, $this->location_taxonomy );
-			}
+			return wp_set_object_terms( $booking->ID, empty( $booking->location ) ? array() : array( (int) $booking->location ), $this->location_taxonomy );
 		}
 
 		/**

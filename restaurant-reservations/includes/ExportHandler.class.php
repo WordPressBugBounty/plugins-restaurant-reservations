@@ -53,7 +53,8 @@ class rtbExportHandler {
 
 
 		// No warning needed if the directory is writable
-		if ( wp_is_writable( RTB_PLUGIN_DIR . '/lib/mpdf/vendor/mpdf/mpdf/tmp/ttfontdata/' ) ) {
+		$cache_dir = trailingslashit( get_temp_dir() ) . 'rtb-mpdf-' . substr( hash( 'sha256', ABSPATH ), 0, 12 ) . '-' . get_current_blog_id();
+		if ( ( is_dir( $cache_dir ) || wp_mkdir_p( $cache_dir ) ) && wp_is_writable( $cache_dir ) ) {
 			return;
 		}
 
@@ -63,7 +64,7 @@ class rtbExportHandler {
 
 		<div class="error">
 			<p>
-				<?php printf( __( 'Warning from Export Bookings for Restaurant Reservations: The server is not able to write to the font directory for the mPDF generator. Your PDF exports may not work properly until you change the file permissions for the directory /wp-content/plugins/export-for-rtb/lib/mpdf/ttfontdata/. Your web host can help you change the file permissions to be compatible. Or you can switch to the TCPDF renderer in the %s.', 'restaurant-reservations' ), $rtb_settings_link ); ?>
+				<?php printf( __( 'Restaurant Reservations cannot write to its temporary mPDF cache directory. Ask your host to make the WordPress temporary directory writable, or switch to the TCPDF renderer in the %s.', 'restaurant-reservations' ), $rtb_settings_link ); ?>
 			</p>
 		</div>
 

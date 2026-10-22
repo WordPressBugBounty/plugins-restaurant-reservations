@@ -186,6 +186,58 @@ jQuery(document).ready(function ($) {
 		e.preventDefault();
 		rtb_toggle_booking_form_modal( true );
 	});
+	$( document ).on( 'click', '.rtb-service-save', function() {
+		var button = $( this );
+		var row = button.closest( 'tr[data-booking-id]' );
+		var field = button.data( 'field' );
+		var feedback = row.find( '.rtb-service-feedback' );
+		var params = {
+			action: 'rtb-admin-service-update',
+			nonce: rtb_admin.nonce,
+			booking_id: row.data( 'booking-id' ),
+			revision: row.attr( 'data-revision' ),
+			override: row.find( '.rtb-service-override-input' ).is( ':checked' ) ? 1 : 0
+		};
+		if ( field === 'status' ) { params.status = row.find( '.rtb-service-status' ).val(); }
+		if ( field === 'table' ) {
+			params.table_present = 1;
+			params.table = row.find( '.rtb-service-tables' ).val() || [];
+		}
+		button.prop( 'disabled', true );
+		feedback.text( '' );
+		$.post( ajaxurl, params ).done( function( response ) {
+			if ( response.success ) {
+				row.attr( 'data-revision', response.data.revision );
+				// Use the persisted status, preserving extension/alternating classes.
+				if ( ( rtb_admin.booking_statuses || [] ).indexOf( response.data.status ) !== -1 ) {
+					row.removeClass( rtb_admin.booking_statuses.join( ' ' ) ).addClass( response.data.status );
+					row.find( '.rtb-service-status' ).val( response.data.status );
+				}
+				feedback.text( 'Saved.' );
+			} else {
+				feedback.text( response.data && response.data.msg ? response.data.msg : 'Booking changed. Reload and retry.' );
+			}
+		} ).fail( function( xhr ) {
+			var response = xhr.responseJSON;
+			feedback.text( response && response.data && response.data.msg ? response.data.msg : 'Could not save. Reload and retry.' );
+		} ).always( function() { button.prop( 'disabled', false ); } );
+	});
+	$( document ).on( 'change', 'input[name="rtb-walk-in"]', function() {
+		if ( ! this.checked || rtb_booking_modal.find( 'input[name=ID]' ).val() ) { return; }
+		rtb_booking_modal_fields.find( '#rtb-post-status' ).val( 'arrived' );
+		var date = rtb_booking_modal_fields.find( '#rtb-date' );
+		var time = rtb_booking_modal_fields.find( '#rtb-time' );
+		if ( ! date.val() ) {
+			var datePicker = date.pickadate( 'picker' );
+			if ( datePicker ) { datePicker.set( 'select', rtb_booking_modal.data( 'today' ), { format: 'yyyy/mm/dd' } ); }
+			else { date.val( rtb_booking_modal.data( 'today' ) ); }
+		}
+		if ( ! time.val() ) {
+			var timePicker = time.pickatime( 'picker' );
+			if ( timePicker ) { timePicker.set( 'select', rtb_booking_modal.data( 'now' ), { format: 'h:i A' } ); }
+			else { time.val( rtb_booking_modal.data( 'now' ) ); }
+		}
+	});
 
 	// Show column configuration modal
 	$( '.rtb-columns-button' ).click( function( e ) {
@@ -253,6 +305,7 @@ jQuery(document).ready(function ($) {
 
 			if ( typeof booking == 'undefined' ) {
 				rtb_booking_modal_fields.find( '#rtb-post-status' ).val( 'confirmed' );
+				rtb_booking_modal.find( 'input[name="rtb-revision"]' ).val( '' );
 				rtb_booking_modal_submit.html( rtb_admin.strings.add_booking );
 			} else {
 				rtb_booking_modal_submit.html( rtb_admin.strings.edit_booking );
@@ -272,6 +325,7 @@ jQuery(document).ready(function ($) {
 			rtb_booking_modal_submit.prop( 'disabled', false );
 			rtb_booking_modal_cancel.prop( 'disabled', false );
 			rtb_booking_modal.find( 'input[name=ID]' ).val( '' );
+			rtb_booking_modal.find( 'input[name="rtb-revision"]' ).val( '' );
 
 			$( 'body' ).removeClass( 'rtb-hide-body-scroll' );
 		}
@@ -432,6 +486,7 @@ jQuery(document).ready(function ($) {
 	function rtb_reset_booking_form_modal_fields() {
 		rtb_booking_modal_fields.find( 'input,select, textarea' ).not( 'input[type="checkbox"],input[type="radio"]' ).val( '' );
 		rtb_booking_modal_fields.find( 'input[name=rtb-notifications]' ).removeAttr( 'checked' );
+		rtb_booking_modal_fields.find( 'input[name="rtb-walk-in"]' ).prop( 'checked', false );
 	}
 
 	/**
@@ -453,6 +508,7 @@ jQuery(document).ready(function ($) {
 
 			if ( r.success ) {
 				rtb_toggle_booking_form_modal( true, r.data.fields, r.data.booking );
+				rtb_booking_modal.find( 'input[name="rtb-revision"]' ).val( r.data.revision );
 
 			} else {
 

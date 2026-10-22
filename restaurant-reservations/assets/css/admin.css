@@ -2288,3 +2288,12 @@ New plugin notice
   color: #7e56dc;
   text-decoration: underline;
 }
+.rtb-service-control { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: 8px; }
+.rtb-service-control select { min-width: 120px; max-width: 100%; }
+.rtb-service-control .button, .rtb-service-control select { min-height: 44px; }
+.rtb-service-control label { font-weight: 600; }
+.rtb-service-feedback { display: block; max-width: 18rem; }
+@media (max-width: 960px) {
+	.rtb-service-control { min-width: 150px; }
+	.rtb-service-control .button { width: 100%; }
+}

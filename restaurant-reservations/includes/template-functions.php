@@ -144,7 +144,9 @@ function rtb_print_booking_form( $args = array() )
 			<?php
 		}
 
-	elseif ( $rtb_controller->request->request_inserted === true or isset($_GET['payment']) ) :
+	elseif ( isset( $_GET['payment'] ) && 'review' === $_GET['payment'] ) : ?>
+		<div class="rtb-message"><p><?php echo esc_html__( 'Your payment was received, but the reservation update needs administrator review. Please do not pay again; contact the site administrator with your booking number.', 'restaurant-reservations' ); ?></p></div>
+	<?php elseif ( $rtb_controller->request->request_inserted === true or isset($_GET['payment']) ) :
 		if ( isset($_GET['payment']) && 'rtb-delayed-deposit' != $_GET['payment'] ) { ?>
 			<div class="rtb-message">
 				<p><?php printf( __( 'Your reservation deposit payment has failed with the following message "%s" Please contact the site administrator for assistance.', 'restaurant-reservations' ), isset( $_GET['error_code'] ) ? esc_html( urldecode( $_GET['error_code'] ) ) : ' unknown error.' ); ?></p>
@@ -1094,6 +1096,7 @@ if ( ! function_exists( 'rtb_get_table_availability_context' ) ) {
 
 		$args = array(
 			'posts_per_page' => -1,
+			'post_status'    => rtbBookingAdmission::consuming_statuses(),
 			'date_range'     => 'dates',
 			'start_date'     => $request_time->format( 'Y-m-d' ),
 			'end_date'       => $request_time->format( 'Y-m-d' ),
@@ -1169,7 +1172,7 @@ if ( ! function_exists( 'rtb_get_valid_tables') ) {
 		$tmzn = wp_timezone();
 
 		foreach ( $bookings as $booking ) {
-			if ( $booking->post_status == 'cancelled' ) { continue; }
+			if ( ! rtbBookingAdmission::consumes( $booking->post_status ) ) { continue; }
 
 			$booking_time = ( new DateTime( $booking->date, $tmzn ) )->format( 'U' );
 

@@ -66,53 +66,63 @@ class rtbPermissions {
 	}
 
 	public function check_permission( $permission_type = '' ) {
-		if ( ! $this->permission_level ) { $this->get_permission_level(); }
-
-		if ( ! array_key_exists( $permission_type, $this->plugin_permissions ) || $this->permission_level < $this->plugin_permissions[ $permission_type ] ) {
+		if ( ! array_key_exists( $permission_type, $this->plugin_permissions ) ) {
 			return false;
 		}
-
-		if ( 3 !== $this->plugin_permissions[ $permission_type ] ) {
+		if ( $this->has_capability( $permission_type ) ) {
 			return true;
 		}
 
-		// Existing payment and table policies remain enforced while entitlement
-		// is degraded, but their settings are made read-only by can_edit_permission().
+		// Preserve configured safety policies only. This does not permit editing
+		// their settings or grant any other paid capability.
 		if ( in_array( $permission_type, array( 'payments', 'premium_table_restrictions' ), true ) ) {
-			return true;
+			if ( ! $this->permission_level ) { $this->get_permission_level(); }
+			if ( $this->permission_level < 3 ) { return false; }
+			global $rtb_controller;
+			if ( empty( $rtb_controller->settings ) ) { return false; }
+			return 'payments' === $permission_type
+				? ! empty( $rtb_controller->settings->get_setting( 'require-deposit' ) )
+				: ! empty( $rtb_controller->settings->get_setting( 'enable-tables' ) );
 		}
-
-		return $this->has_active_ultimate_entitlement();
+		return false;
 	}
 
 	public function can_edit_permission( $permission_type = '' ) {
-		if ( ! $this->permission_level ) { $this->get_permission_level(); }
-
-		if ( ! array_key_exists( $permission_type, $this->plugin_permissions ) || $this->permission_level < $this->plugin_permissions[ $permission_type ] ) {
-			return false;
-		}
-
-		return 3 !== $this->plugin_permissions[ $permission_type ] || $this->has_active_ultimate_entitlement();
+		return $this->has_capability( $permission_type );
 	}
 
 	public function has_active_ultimate_entitlement() {
-		return $this->has_compatible_helper() && fspph_rtb_is_ultimate_active();
+		$contract = $this->get_contract();
+		return ! empty( $contract['ultimate']['active'] );
 	}
 
 	public function has_compatible_helper() {
 		return defined( 'FSPPH_VERSION' )
-			&& version_compare( FSPPH_VERSION, '0.1.0', '>=' )
-			&& function_exists( 'fspph_rtb_entitlement_contract_version' )
-			&& 1 === (int) fspph_rtb_entitlement_contract_version()
-			&& function_exists( 'fspph_rtb_is_ultimate_active' );
+			&& version_compare( FSPPH_VERSION, '0.2.0', '>=' )
+			&& function_exists( 'fspph_rtb_supported_entitlement_contracts' )
+			&& in_array( 2, fspph_rtb_supported_entitlement_contracts(), true )
+			&& function_exists( 'fspph_rtb_get_entitlement_contract' );
 	}
 
 	public function get_entitlement_state() {
-		if ( ! $this->has_compatible_helper() || ! function_exists( 'fspph_rtb_get_entitlement_state' ) ) {
+		if ( ! $this->has_compatible_helper() ) {
 			return array( 'status' => 'incompatible', 'active' => false );
 		}
+		$contract = $this->get_contract();
+		$ultimate = isset( $contract['ultimate'] ) && is_array( $contract['ultimate'] ) ? $contract['ultimate'] : array();
+		return array( 'status' => $ultimate['status'] ?? 'unverifiable', 'active' => ! empty( $ultimate['active'] ), 'expires_at' => $ultimate['runtime_expires_at'] ?? null );
+	}
 
-		return fspph_rtb_get_entitlement_state();
+	public function get_contract() {
+		if ( ! $this->has_compatible_helper() ) { return array(); }
+		$contract = fspph_rtb_get_entitlement_contract( 2 );
+		return is_array( $contract ) && 2 === ( $contract['contract_version'] ?? null ) && ! empty( $contract['compatible'] ) && isset( $contract['capabilities'] ) && is_array( $contract['capabilities'] ) ? $contract : array();
+	}
+
+	private function has_capability( $permission_type ) {
+		if ( ! isset( $this->plugin_permissions[ $permission_type ] ) ) { return false; }
+		$contract = $this->get_contract();
+		return in_array( $permission_type, $contract['capabilities'] ?? array(), true );
 	}
 
 	public function get_stored_permission_level() {

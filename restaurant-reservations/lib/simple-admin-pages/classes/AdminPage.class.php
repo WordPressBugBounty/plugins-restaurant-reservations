@@ -140,7 +140,9 @@ class sapAdminPage_2_7_4_rtb {
 
 		foreach ( $this->sections as $section ) {
 			foreach ( $section->settings as $setting ) {
-				if ( $setting->tab == $current_page ) {
+				// Disabled controls are read-only, not empty submitted values.
+				// This also rejects forged edits to locked licensed settings.
+				if ( $setting->tab == $current_page && empty( $setting->disabled ) ) {
 					$setting_value = isset( $value[$setting->id] ) ? $value[$setting->id] : '';
 					$new_value[$setting->id] = $setting->sanitize_callback_wrapper( $setting_value );
 				}

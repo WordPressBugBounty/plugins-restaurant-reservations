@@ -25,6 +25,7 @@ class rtbAdminBookings {
 
 		// Add the admin menu
 		add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
+		add_action( 'admin_notices', array( $this, 'payment_reconciliation_notice' ) );
 
 		// Print the modals
 		add_action( 'admin_footer-toplevel_page_rtb-bookings', array( $this, 'print_modals' ) );
@@ -48,6 +49,7 @@ class rtbAdminBookings {
 
 		add_action( 'wp_ajax_nopriv_rtb_set_reservation_arrived' , array( $this , 'nopriv_ajax' ) );
 		add_action( 'wp_ajax_rtb_set_reservation_arrived', array( $this, 'set_booking_arrived' ) );
+		add_action( 'wp_ajax_rtb-admin-service-update', array( $this, 'service_update_ajax' ) );
 
 		// Validate post status and notification fields
 		add_action( 'rtb_validate_booking_submission', array( $this, 'validate_admin_fields' ) );
@@ -58,6 +60,29 @@ class rtbAdminBookings {
 		// Add the columns configuration button to the table
 		add_action( 'rtb_bookings_table_actions', array( $this, 'print_columns_config_button' ), 9 );
 
+	}
+
+	/** Surface provider-success/local-save failures until a booking is reconciled. */
+	public function payment_reconciliation_notice() {
+		if ( ! current_user_can( 'manage_bookings' ) ) { return; }
+		global $wpdb;
+		$prefix = 'rtb-payment-reconciliation-';
+		$names = $wpdb->get_col( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( $prefix ) . '%' ) );
+		$ids = array_map( 'intval', array_map( function( $name ) use ( $prefix ) { return substr( $name, strlen( $prefix ) ); }, $names ) );
+		$ledger_prefix = 'rtb-payment-ledger-';
+		$ledger_names = $wpdb->get_col( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( $ledger_prefix ) . '%' ) );
+		foreach ( $ledger_names as $name ) { $ids[] = (int) substr( $name, strlen( $ledger_prefix ) ); }
+		$attempt_prefix = 'rtb-payment-attempt-';
+		$attempt_names = $wpdb->get_col( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( $attempt_prefix ) . '%' ) );
+		foreach ( $attempt_names as $name ) {
+			$id = (int) substr( $name, strlen( $attempt_prefix ) );
+			$attempt = rtbPaymentAttempt::get( $id );
+			if ( in_array( $attempt['state'] ?? '', array( 'reserved', 'created', 'finalizing', 'review', 'voided' ), true )
+				&& ( 'review' === $attempt['state'] || (int) ( $attempt['created_at'] ?? 0 ) + MINUTE_IN_SECONDS < time() ) ) { $ids[] = $id; }
+		}
+		$ids = array_unique( $ids );
+		if ( ! $ids ) { return; }
+		echo '<div class="notice notice-error"><p>' . esc_html__( 'Restaurant Reservations: a payment was received but its booking update needs reconciliation. Do not charge these bookings again. Booking IDs:', 'restaurant-reservations' ) . ' ' . esc_html( implode( ', ', $ids ) ) . '</p></div>';
 	}
 
 	/**
@@ -150,11 +175,12 @@ class rtbAdminBookings {
 		?>
 
 		<!-- Restaurant Reservations add/edit booking modal -->
-		<div id="rtb-booking-modal" class="rtb-admin-modal">
+		<div id="rtb-booking-modal" class="rtb-admin-modal" data-today="<?php echo esc_attr( current_time( 'Y/m/d' ) ); ?>" data-now="<?php echo esc_attr( current_time( 'h:i A' ) ); ?>">
 			<div class="rtb-booking-form rtb-container">
 				<form method="POST">
 					<input type="hidden" name="action" value="admin_booking_request">
 					<input type="hidden" name="ID" value="">
+					<input type="hidden" name="rtb-revision" value="">
 
 					<?php
 					/**
@@ -411,6 +437,11 @@ class rtbAdminBookings {
 
 		$fields['admin'] = array(
 			'fields'	=> array(
+				'walk-in' => array(
+					'title' => __( 'Walk-in (email and phone optional)', 'restaurant-reservations' ),
+					'request_input' => ! empty( $request->staff_walk_in ),
+					'callback' => array( $this, 'print_form_send_notifications_field' ),
+				),
 				'post-status'	=> array(
 					'title'			=> __( 'Booking Status', 'restaurant-reservations' ),
 					'request_input'	=> empty( $request->post_status ) ? '' : $request->post_status,
@@ -524,6 +555,7 @@ class rtbAdminBookings {
 				wp_send_json_success(
 					array(
 						'booking'	=> $rtb_controller->request,
+						'revision' => rtbBookingAdmission::revision( $rtb_controller->request ),
 						'fields'	=> $this->print_booking_form_fields(),
 					)
 				);
@@ -575,6 +607,10 @@ class rtbAdminBookings {
 						)
 					);
 				}
+				$revision = isset( $_POST['rtb-revision'] ) ? sanitize_text_field( wp_unslash( $_POST['rtb-revision'] ) ) : '';
+				if ( '' === $revision || ! hash_equals( rtbBookingAdmission::revision( $rtb_controller->request ), $revision ) ) {
+					wp_send_json_error( array( 'error' => 'booking_stale', 'msg' => __( 'This booking changed. Reload it and try again.', 'restaurant-reservations' ) ) );
+				}
 			}
 
 			// Disable notifications
@@ -622,7 +658,7 @@ class rtbAdminBookings {
 			$this->nopriv_ajax(); 
 		}
 
-		$result = wp_trash_post( $id );
+		$result = rtbBookingAdmission::delete( $id );
 
 		if ( $result === false ) {
 			wp_send_json_error(
@@ -685,7 +721,9 @@ class rtbAdminBookings {
 		foreach ( $ids as $id ) { 
 
 			$booking = new rtbBooking();
-			$booking->load_post( $id );
+			if ( ! $booking->load_post( $id ) ) {
+				wp_send_json_error( array( 'error' => 'booking_missing', 'msg' => __( 'The booking could not be loaded; no further emails were sent.', 'restaurant-reservations' ) ) );
+			}
 
 			$email = new rtbNotificationEmail( 'admin_email_notice', 'user' );
 			$email->subject = empty( $subject ) ? $rtb_controller->settings->get_setting( 'subject-admin-notice' ) : $subject;
@@ -693,12 +731,22 @@ class rtbAdminBookings {
 			$email->set_booking( $booking );
 			$rtb_controller->notifications->dispatch_notification( $email );
 
-			// Store email in postmeta for log
-			$booking->add_log( 'email', $email->subject, $email->message );
-			$booking->insert_post_data();
+			if ( ! $this->save_dispatched_email_log( $booking, $email->subject, $email->message ) ) {
+				wp_send_json_error( array( 'error' => 'booking_log_not_saved', 'msg' => sprintf( __( 'The email was sent, but its activity log could not be saved for booking %d. Do not resend automatically; review the booking.', 'restaurant-reservations' ), (int) $id ) ) );
+			}
 		}
 
 		wp_send_json_success();
+	}
+
+	/** Email has already been dispatched; verify its audit log without sending again. */
+	public function save_dispatched_email_log( $booking, $subject, $message ) {
+		$booking->add_log( 'email', $subject, $message );
+		$expected_logs = $booking->logs;
+		if ( ! $booking->insert_post_data() ) { return false; }
+		$persisted_meta = get_post_meta( (int) $booking->ID, 'rtb', true );
+		return is_array( $persisted_meta ) && isset( $persisted_meta['logs'] )
+			&& $persisted_meta['logs'] === wp_unslash( $expected_logs );
 	}
 
 	/**
@@ -810,8 +858,7 @@ class rtbAdminBookings {
 			$deleted = 0;
 			foreach( $bookings as $booking ) {
 				if ( isset( $booking->email ) && $booking->email === $email) {
-					wp_delete_post( $booking->ID, true );
-					$deleted++;
+					if ( rtbBookingAdmission::delete( $booking->ID, true ) ) { $deleted++; }
 				}
 			}
 
@@ -854,22 +901,45 @@ class rtbAdminBookings {
 
 		$booking_id = isset($_POST['booking']) ? intval( $_POST['booking']['ID'] ) : 0;
 
-		$booking_id = wp_update_post(array(
-			'ID' => $booking_id,
-			'post_status' => 'arrived'
-		) );
+		$result = rtbBookingAdmission::mutate( $booking_id, array( 'status' => 'arrived' ), '', get_current_user_id() );
 
-		if ( $booking_id ) {
+		if ( ! is_wp_error( $result ) ) {
 			wp_send_json_success();
 		}
 		else {
 			wp_send_json_error(
 				array(
-					'error' => 'loggedout',
-					'msg' => sprintf( __( 'You have been logged out. Please %slogin again%s.', 'restaurant-reservations' ), '<a href="' . wp_login_url( ) . '">', '</a>' ),
+					'error' => $result->get_error_code(),
+					'msg' => $result->get_error_message(),
 				)
 			);
 		}
+	}
+
+	/** Fast service-time status/table controls on the existing booking list. */
+	public function service_update_ajax() {
+		if ( ! check_ajax_referer( 'rtb-admin', 'nonce', false ) || ! current_user_can( 'manage_bookings' ) ) {
+			wp_send_json_error( array( 'error' => 'forbidden', 'msg' => __( 'You cannot change this booking.', 'restaurant-reservations' ) ), 403 );
+		}
+		$id = isset( $_POST['booking_id'] ) ? absint( $_POST['booking_id'] ) : 0;
+		$revision = isset( $_POST['revision'] ) ? sanitize_text_field( wp_unslash( $_POST['revision'] ) ) : '';
+		if ( ! $id || '' === $revision || get_post_type( $id ) !== RTB_BOOKING_POST_TYPE ) {
+			wp_send_json_error( array( 'error' => 'invalid_booking', 'msg' => __( 'Reload this booking and try again.', 'restaurant-reservations' ) ), 400 );
+		}
+		$changes = array();
+		if ( isset( $_POST['status'] ) ) { $changes['status'] = sanitize_key( wp_unslash( $_POST['status'] ) ); }
+		if ( ! empty( $_POST['table_present'] ) ) {
+			$raw = isset( $_POST['table'] ) ? wp_unslash( $_POST['table'] ) : array();
+			$changes['table'] = is_array( $raw ) ? array_map( 'sanitize_text_field', $raw ) : array();
+		}
+		if ( ! $changes ) { wp_send_json_error( array( 'error' => 'empty_change', 'msg' => __( 'Choose a status or table.', 'restaurant-reservations' ) ), 400 ); }
+		global $rtb_controller;
+		$override = ! empty( $_POST['override'] ) && ! empty( $rtb_controller->settings->get_setting( 'rtb-admin-ignore-maximums' ) );
+		$result = rtbBookingAdmission::mutate( $id, $changes, $revision, get_current_user_id(), $override );
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'error' => $result->get_error_code(), 'msg' => $result->get_error_message() ), 409 );
+		}
+		wp_send_json_success( $result );
 	}
 
 	/**

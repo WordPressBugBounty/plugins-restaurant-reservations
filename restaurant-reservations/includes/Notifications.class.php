@@ -313,7 +313,7 @@ class rtbNotifications {
 	}
 
 	/**
-	 * Send a summary of bookings today, if enabled
+	 * Send a summary of bookings on any included day, if enabled.
 	 * @since 2.3.6
 	 */
 	public function maybe_send_daily_summary() {
@@ -321,14 +321,15 @@ class rtbNotifications {
 
 		if ( empty( $rtb_controller->settings->get_setting( 'daily-summary-address' ) ) ) { return; }
 
-		$last_send_datetime = new DateTime( get_option( 'rtb-daily-summary-send-date', date( 'Y-m-d', strtotime( '-1 day' ) ) ), wp_timezone() );
+		$now = new DateTimeImmutable( 'now', wp_timezone() );
+		$last_send_datetime = new DateTime( get_option( 'rtb-daily-summary-send-date', $now->modify( '-1 day' )->format( 'Y-m-d' ) ), wp_timezone() );
 
 		$last_send_datetime->add( new DateInterval( 'P1D' ) );
 
 		$send_time_hours = substr( $rtb_controller->settings->get_setting( 'daily-summary-address-send-time' ), 0, strpos( $rtb_controller->settings->get_setting( 'daily-summary-address-send-time' ), ':' ) );
 		$send_time_minutes = substr( $rtb_controller->settings->get_setting( 'daily-summary-address-send-time' ), strpos( $rtb_controller->settings->get_setting( 'daily-summary-address-send-time' ), ':' ) + 1 );
 		
-		$next_send_time = $last_send_datetime->format('U') + $send_time_hours * 60*60 + $send_time_minutes * 60;
+		$next_send_time = $last_send_datetime->setTime( (int) $send_time_hours, (int) $send_time_minutes )->getTimestamp();
 		
 		if ( $next_send_time > time() ) { return; }
 
@@ -339,14 +340,17 @@ class rtbNotifications {
 
 		$display_table = $rtb_controller->settings->get_setting( 'enable-tables' );
 		$multiple_locations = $rtb_controller->locations->do_locations_exist();
+		$future_bookings_days = max( 0, min( 7, (int) $rtb_controller->settings->get_setting( 'daily-summary-future-bookings' ) ) );
+		$start_time = $now->setTime( 0, 0, 0 );
+		$end_time = $start_time->modify( '+' . $future_bookings_days . ' days' )->setTime( 23, 59, 59 );
 
 		$args = array(
 			'post_type' 		=> 'rtb-booking',
 			'posts_per_page'	=> -1,
 			'date_query' 		=> array(
-				'year' 				=> date( 'Y' ),
-				'month' 			=> date( 'm' ),
-				'day' 				=> date( 'd' )
+				'after'     => $start_time->format( 'Y-m-d H:i:s' ),
+				'before'    => $end_time->format( 'Y-m-d H:i:s' ),
+				'inclusive' => true,
 			),
 			'post_status' 		=> array_keys( $rtb_controller->cpts->booking_statuses ),
 			'orderby' 			=> 'date',
@@ -355,7 +359,7 @@ class rtbNotifications {
 
 		$bookings = get_posts( $args );
 
-		// Don't send an email today if there are no bookings
+		// Skip only when the entire configured date range is empty.
 		if ( empty( $bookings ) ) {
 
 			$now = new DateTime( 'now', wp_timezone() );
@@ -375,12 +379,13 @@ class rtbNotifications {
 
 		<?php } else { ?>
 
-			<p><?php _e( 'Please find a summary of today\'s reservations in the table below.', 'restaurant-reservations' ); ?></p>
+			<p><?php echo $future_bookings_days ? esc_html__( 'Please find a summary of today\'s and upcoming reservations in the table below.', 'restaurant-reservations' ) : esc_html__( 'Please find a summary of today\'s reservations in the table below.', 'restaurant-reservations' ); ?></p>
 			
 			<table class='rtb-view-bookings-table'>
 				<thead>
 					<tr>
 						<?php if ( $multiple_locations ) {?> <th><?php _e('Location', 'restaurant-reservations'); ?></th><?php } ?>
+						<?php if ( $future_bookings_days ) { ?> <th><?php esc_html_e( 'Date', 'restaurant-reservations' ); ?></th><?php } ?>
 						<th><?php _e('Time', 'restaurant-reservations'); ?></th>
 						<th><?php _e('Party', 'restaurant-reservations'); ?></th>
 						<th><?php _e('Name', 'restaurant-reservations'); ?></th>
@@ -407,6 +412,7 @@ class rtbNotifications {
 						?>
 						<tr>
 							<?php if ( $multiple_locations ) { $term = get_term( $booking_object->location ); echo ( ! is_wp_error( $term ) ? "<td>{$term->name}</td>" : '<td></td>' ); } ?>
+							<?php if ( $future_bookings_days ) { ?> <td><?php echo esc_html( mysql2date( get_option( 'date_format' ), $booking_object->date ) ); ?></td><?php } ?>
 							<td><?php echo ( new DateTime( $booking_object->date ) )->format( 'H:i:s' ); ?></td>
 							<td><?php echo esc_html( $booking_object->party ); ?></td>
 							<td><?php echo esc_html( $booking_object->name ); ?></td>
