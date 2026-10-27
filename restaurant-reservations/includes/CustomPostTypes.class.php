@@ -339,7 +339,7 @@ class rtbCustomPostTypes {
 			return null;
 		}
 
-		$result = rtbBookingAdmission::mutate( $id, array( 'status' => $status ), '', get_current_user_id() );
+		$result = rtbBookingAdmission::mutate( $id, array( 'status' => $status ), '', get_current_user_id(), false, true );
 		return ! is_wp_error( $result );
 	}
 

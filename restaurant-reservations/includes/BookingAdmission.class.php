@@ -96,7 +96,7 @@ class rtbBookingAdmission {
 	}
 
 	/** Shared guarded entry for public cancellation, staff and Helper API status. */
-	public static function mutate( $id, $changes, $revision = '', $actor = 0, $override = false ) {
+	public static function mutate( $id, $changes, $revision = '', $actor = 0, $override = false, $send_notifications = false ) {
 		global $rtb_controller;
 		$booking = new rtbBooking();
 		if ( ! $booking->load_post( (int) $id ) ) { return new WP_Error( 'rtb_booking_missing', __( 'Booking not found.', 'restaurant-reservations' ) ); }
@@ -149,11 +149,11 @@ class rtbBookingAdmission {
 				update_post_meta( $id, 'rtb', $meta );
 			}
 			if ( $status !== $before ) {
-				// Staff quick actions default to no customer notification, matching
-				// the existing admin booking form. Public/API paths keep prior hooks.
+				// Callers opt status quick actions into normal event notifications.
+				// Other staff/API mutations retain their existing suppression policy.
 				$notifications = isset( $rtb_controller->notifications ) ? $rtb_controller->notifications : null;
 				$prior_disabled = $notifications ? $notifications->notifications_disabled : null;
-				if ( $actor && $notifications ) { $notifications->notifications_disabled = true; }
+				if ( $actor && ! $send_notifications && $notifications ) { $notifications->notifications_disabled = true; }
 				try {
 					$result = wp_update_post( array( 'ID' => (int) $id, 'post_status' => $status ), true );
 				} finally {

@@ -935,7 +935,7 @@ class rtbAdminBookings {
 		if ( ! $changes ) { wp_send_json_error( array( 'error' => 'empty_change', 'msg' => __( 'Choose a status or table.', 'restaurant-reservations' ) ), 400 ); }
 		global $rtb_controller;
 		$override = ! empty( $_POST['override'] ) && ! empty( $rtb_controller->settings->get_setting( 'rtb-admin-ignore-maximums' ) );
-		$result = rtbBookingAdmission::mutate( $id, $changes, $revision, get_current_user_id(), $override );
+		$result = rtbBookingAdmission::mutate( $id, $changes, $revision, get_current_user_id(), $override, isset( $changes['status'] ) );
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'error' => $result->get_error_code(), 'msg' => $result->get_error_message() ), 409 );
 		}

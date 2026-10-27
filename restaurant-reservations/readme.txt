@@ -4,7 +4,7 @@ Tags: restaurant reservations, restaurant booking, reservation, reservation syst
 Requires at Least: 6.0
 Tested Up To: 7.1
 Requires PHP: 8.0
-Stable tag: 2.9.0
+Stable tag: 2.9.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -311,6 +311,10 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 - [Our Support Center](https://www.fivestarplugins.com/support-center/)
 
 == Changelog ==
+
+= 2.9.1 (2026-10-26) =
+- Fixed an issue with notification triggering related to bulk status changes, using the new quick status change feature and the accept/reject links in the email an admin receives when a new booking is submitted.
+- Removed/fixed deprecated notices.
 
 = 2.9.0 (2026-10-22) =
 - Added staff walk-in entry option. (When you create a booking in the admin, you can now mark it as a walk-in, which lets you create the booking without an email address or phone number.)

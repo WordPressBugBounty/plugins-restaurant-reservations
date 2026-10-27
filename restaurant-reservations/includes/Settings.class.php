@@ -2451,13 +2451,15 @@ If you were not the one to cancel this booking, please contact us.
 	public function get_sorted_tables( $datetime = false, $location_id = 0 ) {
 
 		$timeslot = ! empty( $datetime ) ? rtb_get_timeslot( $datetime, $location_id ) : false;
+		$location_key = null === $location_id ? '' : $location_id;
+		$timeslot_key = null === $timeslot ? '' : $timeslot;
 
-		if ( ! isset( $this->sorted_tables[ $location_id ][ $timeslot ] ) ){
+		if ( ! isset( $this->sorted_tables[ $location_key ][ $timeslot_key ] ) ){
 
 			$this->load_sorted_tables( $timeslot, $location_id );
 		}
 		
-		return $this->sorted_tables[ $location_id ][ $timeslot ];
+		return $this->sorted_tables[ $location_key ][ $timeslot_key ];
 	}
 
 	/**
@@ -2492,7 +2494,9 @@ If you were not the one to cancel this booking, please contact us.
 			$sorted_tables[ $table->number ] = $table;
 		}
 
-		$this->sorted_tables[ $location_id ][ $timeslot ] = $sorted_tables;
+		$location_key = null === $location_id ? '' : $location_id;
+		$timeslot_key = null === $timeslot ? '' : $timeslot;
+		$this->sorted_tables[ $location_key ][ $timeslot_key ] = $sorted_tables;
 	}
 
 	/**
