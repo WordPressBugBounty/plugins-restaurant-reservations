@@ -1,5 +1,6 @@
 <?php
 if ( !defined( 'ABSPATH' ) ) exit;
+require_once __DIR__ . '/SenderAddress.class.php';
 
 if ( !class_exists( 'rtbNotificationEmail' ) ) {
 /**
@@ -191,19 +192,21 @@ class rtbNotificationEmail extends rtbNotification {
 
 		global $rtb_controller;
 
-		$from_email = apply_filters( 'rtb_notification_email_header_from_email', $rtb_controller->settings->get_setting( 'from-email-address' ) );
+		$from_email = rtbSenderAddress::safe_effective( apply_filters( 'rtb_notification_email_header_from_email', $rtb_controller->settings->get_setting( 'from-email-address' ) ) );
+		$reply_address = rtbSenderAddress::safe_effective( $this->from_email );
+		if ( '' === $from_email || '' === $reply_address ) { $this->headers = ''; return; }
 
-		$reply_to_name = $this->get_utf_encoded_string( $rtb_controller->settings->get_setting( 'reply-to-name' ) );
+		$reply_to_name = $this->get_utf_encoded_string( rtbSenderAddress::header_name( $rtb_controller->settings->get_setting( 'reply-to-name' ) ) );
 
 		$headers = "From: " . ( ( $reply_to_name != $rtb_controller->settings->get_setting( 'reply-to-name' ) ) ? "=?UTF-8?Q?" : "" ) .
 			$reply_to_name . 
 			( ( $reply_to_name != $rtb_controller->settings->get_setting( 'reply-to-name' ) ) ? "?=" : "" ) . " <" . $from_email . ">\r\n";
 
-		$from_name = $this->get_utf_encoded_string( $this->from_name );
+		$from_name = $this->get_utf_encoded_string( rtbSenderAddress::header_name( $this->from_name ) );
 
 		$headers .= "Reply-To: " . ( ( $from_name != $this->from_name ) ? "=?UTF-8?Q?" : "" ) . 
 			$from_name . 
-			( ( $from_name != $this->from_name ) ? "?=" : "" ) . " <" . $this->from_email . ">\r\n";
+			( ( $from_name != $this->from_name ) ? "?=" : "" ) . " <" . $reply_address . ">\r\n";
 		
 		$headers .= "Content-Type: text/html; charset=utf-8\r\n";
 
@@ -303,6 +306,7 @@ class rtbNotificationEmail extends rtbNotification {
 	 * @since 0.0.1
 	 */
 	public function send_notification() {
+		if ( ! $this->is_runtime_authorized() ) { return false; }
 		return wp_mail( $this->to_email, $this->subject, $this->message, $this->headers, apply_filters( 'rtb_notification_email_attachments', array(), $this ) );
 	}
 

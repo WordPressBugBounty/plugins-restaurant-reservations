@@ -198,7 +198,8 @@ class rtbBookingsTable extends WP_List_Table {
 	{
 		global $rtb_controller;
 
-		foreach ( $rtb_controller->cpts->booking_statuses as $status => $data ) {
+		foreach ( $rtb_controller->cpts->get_query_statuses() as $status ) {
+			$data = $rtb_controller->cpts->booking_statuses[ $status ];
 			$this->booking_statuses[ $status ] = array(
 				'label' => $data['label'],
 				'count' => $data['label_count']
@@ -888,50 +889,11 @@ class rtbBookingsTable extends WP_List_Table {
 	 * @since 2.8.0
 	 */
 	public function add_notification_diagnostic_items( $details, $booking ) {
-
-		if ( ! current_user_can( 'manage_bookings' ) || empty( $booking->notification_diagnostics ) || ! is_array( $booking->notification_diagnostics ) ) {
-			return $details;
-		}
-
-		foreach ( array_reverse( array_slice( $booking->notification_diagnostics, -5 ) ) as $diagnostic ) {
-			if ( ! is_array( $diagnostic ) ) { continue; }
-			$timestamp = __( 'Unknown date', 'restaurant-reservations' );
-			if ( ! empty( $diagnostic['timestamp'] ) && is_string( $diagnostic['timestamp'] ) ) {
-				try {
-					$date = new DateTimeImmutable( $diagnostic['timestamp'], new DateTimeZone( 'UTC' ) );
-					$timestamp = wp_date( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), $date->getTimestamp(), wp_timezone() );
-				} catch ( Exception $exception ) {
-					// A malformed historical entry must not break the details modal.
-				}
-			}
-			$types = array( 'email' => __( 'Email', 'restaurant-reservations' ), 'sms' => __( 'SMS', 'restaurant-reservations' ) );
-			$targets = array( 'user' => __( 'User', 'restaurant-reservations' ), 'admin' => __( 'Administrator', 'restaurant-reservations' ) );
-			$statuses = array(
-				'send_accepted' => __( 'Accepted by the sending service (delivery not confirmed)', 'restaurant-reservations' ),
-				'send_failed'   => __( 'Send failed', 'restaurant-reservations' ),
-				'not_generated' => __( 'Not sent (notification could not be prepared)', 'restaurant-reservations' ),
-			);
-			$unknown = __( 'Unknown', 'restaurant-reservations' );
-			$type = isset( $diagnostic['type'] ) && is_string( $diagnostic['type'] ) ? $diagnostic['type'] : '';
-			$target = isset( $diagnostic['target'] ) && is_string( $diagnostic['target'] ) ? $diagnostic['target'] : '';
-			$status = isset( $diagnostic['status'] ) && is_string( $diagnostic['status'] ) ? $diagnostic['status'] : '';
-			$lines = array(
-				__( 'Date/Time', 'restaurant-reservations' ) => $timestamp,
-				__( 'Type', 'restaurant-reservations' )      => $types[ $type ] ?? $unknown,
-				__( 'Target', 'restaurant-reservations' )    => $targets[ $target ] ?? $unknown,
-				__( 'Status', 'restaurant-reservations' )    => $statuses[ $status ] ?? $unknown,
-			);
-			$value = '';
-			foreach ( $lines as $label => $text ) {
-				$value .= '<div>' . esc_html( $label ) . ': ' . esc_html( $text ) . '</div>';
-			}
-
-			$details[] = array(
-				'label' => esc_html__( 'Notification event', 'restaurant-reservations' ),
-				'value' => $value,
-			);
-		}
-
+		if ( ! rtbNotificationDiagnostics::can_read( $booking->ID ) ) { return $details; }
+		$details[] = array(
+			'label' => esc_html__( 'Notification history', 'restaurant-reservations' ),
+			'value' => '<div class="rtb-notification-history" data-booking-id="' . absint( $booking->ID ) . '"><p role="status" aria-live="polite">' . esc_html__( 'Open Details to load notification history.', 'restaurant-reservations' ) . '</p></div>',
+		);
 		return $details;
 	}
 

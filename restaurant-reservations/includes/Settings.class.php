@@ -2187,9 +2187,35 @@ If you were not the one to cancel this booking, please contact us.
 	    );
 
 		$sap = apply_filters( 'rtb_settings_page', $sap, $this );
+		$this->normalize_sender_setting( $sap );
 
 		$sap->add_admin_menus();
 
+	}
+
+	/** Free owns this control; normalize after old/new Helper settings filters. */
+	public static function owns_sender_setting() { return true; }
+
+	public function normalize_sender_setting( $sap ) {
+		require_once __DIR__ . '/SenderAddress.class.php';
+		foreach ( $sap->pages['rtb-settings']->sections as $section_key => $section ) {
+			$had_sender = isset( $section->settings['from-email-address'] );
+			$sap->remove_setting( 'rtb-settings', $section->id, 'from-email-address' );
+			// Retire only the empty sender sections; keep extension controls and callbacks.
+			if ( ( $had_sender || 'rtb-notifications-advanced' === $section->id ) && empty( $section->settings )
+				&& empty( $section->callback ) && empty( $section->is_tab ) ) {
+				unset( $sap->pages['rtb-settings']->sections[ $section_key ] );
+			}
+		}
+		$sap->add_section( 'rtb-settings', array(
+			'id' => 'rtb-notifications-sender', 'title' => __( 'Sender Address', 'restaurant-reservations' ), 'tab' => 'rtb-notifications-tab',
+		) );
+		$sap->add_setting( 'rtb-settings', 'rtb-notifications-sender', 'text', array(
+			'id' => 'from-email-address', 'title' => __( 'FROM Email Address Header', 'restaurant-reservations' ),
+			'description' => __( 'Use one email address authorized by your mail provider. Leave empty to use the site administrator address. This setting does not guarantee delivery.', 'restaurant-reservations' ),
+			'placeholder' => get_option( 'admin_email' ), 'sanitize_callback' => 'rtbSenderAddress::sanitize_setting',
+		) );
+		return $sap;
 	}
 
 	public function show_submit_button( $permission_type = '' ) {

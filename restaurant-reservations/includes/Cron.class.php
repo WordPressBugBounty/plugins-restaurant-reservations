@@ -16,6 +16,7 @@ class rtbCron {
 	 */
 	public function __construct() {
 		add_filter( 'cron_schedules', array($this, 'add_cron_interval') );
+		add_filter( 'option_cron', array( $this, 'normalize_payment_pending_args' ) );
 
 		add_filter( 'sanitize_option_rtb-settings', array( $this, 'check_cron_on_settings_save' ) );
 
@@ -26,6 +27,26 @@ class rtbCron {
 		add_action( 'rtb_cron_jobs', array( $this, 'handle_table_notifications' ) );
 
 		// if ( isset($_GET['debug']) ) { add_action('admin_init', array($this, 'handle_post_reservation_follow_up_task') ); } // Used for testing
+	}
+
+	/** Adapt already queued legacy jobs as well as new jobs, without changing other hooks. */
+	public function normalize_payment_pending_args( $crons ) {
+		if ( ! is_array( $crons ) ) { return $crons; }
+		foreach ( $crons as $timestamp => $hooks ) {
+			if ( ! is_array( $hooks ) || empty( $hooks['rtb_booking_payment_pending'] ) || ! is_array( $hooks['rtb_booking_payment_pending'] ) ) { continue; }
+			foreach ( $hooks['rtb_booking_payment_pending'] as $key => $event ) {
+				if ( ! is_array( $event ) || ! isset( $event['args'] ) || ! is_array( $event['args'] )
+					|| 1 !== count( $event['args'] ) || ! array_key_exists( 'booking', $event['args'] ) ) { continue; }
+				$event['args'] = array_values( $event['args'] );
+				// WordPress unschedules by the hash of args. Re-key too, or old jobs would repeat.
+				$normalized_key = md5( serialize( $event['args'] ) );
+				unset( $crons[ $timestamp ]['rtb_booking_payment_pending'][ $key ] );
+				if ( ! isset( $crons[ $timestamp ]['rtb_booking_payment_pending'][ $normalized_key ] ) ) {
+					$crons[ $timestamp ]['rtb_booking_payment_pending'][ $normalized_key ] = $event;
+				}
+			}
+		}
+		return $crons;
 	}
 
 	/**
@@ -82,48 +103,8 @@ class rtbCron {
 	 * @since 2.0.0
 	 */
 	public function handle_reminder_task() {
-		global $rtb_controller;
-
-		if ( ! $rtb_controller->permissions->check_permission( 'reminders' ) ) { return; }
-
-		if ( empty( $rtb_controller->settings->get_setting( 'time-reminder-user' ) ) ) { return; }
-
-		if ( ! empty( $rtb_controller->settings->get_setting( 'booking-notifications' ) ) ) { return; }
-
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.class.php' );
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.Email.class.php' );
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.SMS.class.php' );
-
-		$time_interval = $this->get_time_interval( 'time-reminder-user' );
-		
-		$start_time_seconds = time() - ( $time_interval + 3600 );
-		
-		$max_late_window = 3 * HOUR_IN_SECONDS;
-		$end_time_seconds = time() + ( $time_interval - $max_late_window );
-
-		$bookings = $this->get_booking_posts( $start_time_seconds, $end_time_seconds );
- 		
-		foreach ($bookings as $booking) {
-			
-			if ( ! $booking->reminder_sent ) {
-				if ( $rtb_controller->settings->get_setting( 'reminder-notification-format' ) == 'text' ) {
-					$notification = new rtbNotificationSMS( 'reminder', 'user' ); 
-				}
-				elseif ( $rtb_controller->settings->get_setting( 'reminder-notification-format' ) == 'email' ) {
-					$notification = new rtbNotificationEmail( 'reminder', 'user' ); 
-				}
-				
-				$notification->set_booking( $booking );
-				$sent = $rtb_controller->notifications->dispatch_notification( $notification );
-
-				if ( $sent ) {
-					$booking->reminder_sent = true;
-					$booking->insert_post_meta();
-				}
-			}
-		}
-
-		wp_reset_postdata();
+		if ( ! rtbPaidFeatures::can( 'reminders' ) || ! class_exists( 'fspphRTBReminderTasks', false ) ) { return; }
+		return fspphRTBReminderTasks::handle_reminder_task(  );
 	}
 
 	/**
@@ -132,48 +113,8 @@ class rtbCron {
 	 * @since 2.0.0
 	 */
 	public function handle_late_arrivals_task() {
-		global $rtb_controller;
-
-		if ( ! $rtb_controller->permissions->check_permission( 'reminders' ) ) { return; }
-
-		if ( empty( $rtb_controller->settings->get_setting( 'time-late-user' ) ) ) { return; }
-
-		if ( ! empty( $rtb_controller->settings->get_setting( 'booking-notifications' ) ) ) { return; }
-
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.class.php' );
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.Email.class.php' );
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.SMS.class.php' );
-
-		$time_interval = $this->get_time_interval( 'time-late-user' );
-
-		$start_time_seconds = time() - ( $time_interval + 3600 );
-		
-		$max_late_window = 1 * HOUR_IN_SECONDS;
-		$end_time_seconds = time() + ( $time_interval - $max_late_window );
-
-		$bookings = $this->get_booking_posts( $start_time_seconds, $end_time_seconds );
-
-		foreach ($bookings as $booking) {
-			
-			if ( ! $booking->late_arrival_sent ) {
-				if ( $rtb_controller->settings->get_setting( 'late-notification-format' ) == 'text' ) {
-					$notification = new rtbNotificationSMS( 'late_user', 'user' ); 
-				}
-				elseif ( $rtb_controller->settings->get_setting( 'late-notification-format' ) == 'email' ) {
-					$notification = new rtbNotificationEmail( 'late_user', 'user' ); 
-				}
-
-				$notification->set_booking( $booking );
-				$sent = $rtb_controller->notifications->dispatch_notification( $notification );
-
-  				if ( $sent ) {
-  					$booking->late_arrival_sent = true;
-  					$booking->insert_post_meta();
-  				}
-			}
-		}
-
-		wp_reset_postdata();
+		if ( ! rtbPaidFeatures::can( 'reminders' ) || ! class_exists( 'fspphRTBReminderTasks', false ) ) { return; }
+		return fspphRTBReminderTasks::handle_late_arrivals_task(  );
 	}
 
 	/**
@@ -182,48 +123,8 @@ class rtbCron {
 	 * @since 2.5.14
 	 */
 	public function handle_post_reservation_follow_up_task() {
-		global $rtb_controller;
-
-		if ( ! $rtb_controller->permissions->check_permission( 'reminders' ) ) { return; }
-
-		if ( empty( $rtb_controller->settings->get_setting( 'time-post-reservation-follow-up-user' ) ) ) { return; }
-
-		if ( ! empty( $rtb_controller->settings->get_setting( 'booking-notifications' ) ) ) { return; }
-
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.class.php' );
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.Email.class.php' );
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.SMS.class.php' );
-
-		$time_interval = $this->get_time_interval( 'time-post-reservation-follow-up-user' );
-
-		$start_time_seconds = time() - ( $time_interval + 3600 );
-		
-		$max_late_window = 3 * HOUR_IN_SECONDS;
-		$end_time_seconds = time() + ( $time_interval - $max_late_window );
-
-		$bookings = $this->get_booking_posts( $start_time_seconds, $end_time_seconds );
-		
-		foreach ( $bookings as $booking ) {
-			
-			if ( ! $booking->post_reservation_follow_up_sent ) {
-				if ( $rtb_controller->settings->get_setting( 'post-reservation-follow-up-notification-format' ) == 'text' ) {
-					$notification = new rtbNotificationSMS( 'post_reservation_follow_up_user', 'user' ); 
-				}
-				elseif ( $rtb_controller->settings->get_setting( 'post-reservation-follow-up-notification-format' ) == 'email' ) {
-					$notification = new rtbNotificationEmail( 'post_reservation_follow_up_user', 'user' ); 
-				}
-
-				$notification->set_booking( $booking );
-				$sent = $rtb_controller->notifications->dispatch_notification( $notification );
-
-  				if ( $sent ) {
-  					$booking->post_reservation_follow_up_sent = true;
-  					$booking->insert_post_meta();
-  				}
-			}
-		}
-
-		wp_reset_postdata();
+		if ( ! rtbPaidFeatures::can( 'reminders' ) || ! class_exists( 'fspphRTBReminderTasks', false ) ) { return; }
+		return fspphRTBReminderTasks::handle_post_reservation_follow_up_task(  );
 	}
 
 	/**
@@ -232,57 +133,8 @@ class rtbCron {
 	 * @since 2.6.3
 	 */
 	public function handle_table_notifications() {
-		global $rtb_controller;
-
-		if ( ! $rtb_controller->permissions->check_permission( 'reminders' ) ) { return; }
-
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.class.php' );
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.Email.class.php' );
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.SMS.class.php' );
-
-		$notifications = rtb_decode_infinite_table_setting( $rtb_controller->settings->get_setting( 'booking-notifications' ) );
-
-		$cron_events = array(
-			'booking_reminder',
-			'late_for_booking',
-			'post_booking_follow_up',
-		);
-
-		foreach ( $notifications as $notification ) {
-
-			if ( ! $notification->enabled ) { continue; }
-
-			if ( ! in_array( $notification->event, $cron_events ) ) { continue; }
-
-			$time_interval = $this->convert_count_unit_to_time( $notification->timing1, $notification->timing2 );
-
-			$start_time_seconds = time() - ( $time_interval + 3600 );
-			$end_time_seconds = $notification->event == 'booking_reminder' ? time() + $time_interval : time() - $time_interval; // retrieve bookings post-reservation, except for reminders
-
-			$bookings = $this->get_booking_posts( $start_time_seconds, $end_time_seconds );
-			
-			foreach ( $bookings as $booking ) {
-
-				if ( in_array( $notification->id, $booking->reservation_notifications ) ) { continue; }
-
-				$booking_notification = $notification->type == 'sms' ? new rtbNotificationSMS( 'table_event', $notification->target ) : new rtbNotificationEmail( 'table_event', $notification->target );
-
-				$booking_notification->set( 'message', $notification->message );
-				$booking_notification->set( 'subject', $notification->subject );
-
-				$booking_notification->notification_id = $notification->id;
-
-				$booking_notification->set_booking( $booking );
-
-				$sent = $rtb_controller->notifications->dispatch_notification( $booking_notification );
-
-				if ( $sent ) {
-
-					$booking->reservation_notifications[] = $notification->id;
-					$booking->insert_post_meta();
-				}
-			}
-		}
+		if ( ! rtbPaidFeatures::can( 'reminders' ) || ! class_exists( 'fspphRTBReminderTasks', false ) ) { return; }
+		return fspphRTBReminderTasks::handle_table_notifications(  );
 	}
 
 	/**

@@ -158,26 +158,34 @@ class rtbCustomPostTypes {
 
 	/**
 	* @since 2.1.0
-	* Adds in a "Cancelled" status if the option to allow guest to cancel
-	* their reservation has been toggled on.
+	* Always register cancellation so existing authenticated cancellation links work.
+	* The settings control list visibility, not whether the status is valid.
 	*/
 	public function add_cancelled_status( $booking_statuses = array() ) {
 		global $rtb_controller;
 
-		if ( $rtb_controller->settings->get_setting( 'allow-cancellations' ) or $rtb_controller->settings->get_setting( 'show-cancelled-status' ) ) {
-			$booking_statuses['cancelled'] = array(
+		$visible = (bool) ( $rtb_controller->settings->get_setting( 'allow-cancellations' ) || $rtb_controller->settings->get_setting( 'show-cancelled-status' ) );
+		$booking_statuses['cancelled'] = array(
 				'label'                     => _x( 'Cancelled', 'The guest has cancelled their reservation themselves.', 'restaurant-reservations' ),
 				'default'					=> false, // Whether or not this status is part of WP Core
 				'user_selectable'			=> false, // Whether or not a user can set a booking to this status
 				'public'                    => false,
 				'exclude_from_search'       => true,
-				'show_in_admin_all_list'    => true,
-				'show_in_admin_status_list' => true,
+				'show_in_admin_all_list'    => $visible,
+				'show_in_admin_status_list' => $visible,
 				'label_count'               => _n_noop( 'Cancelled <span class="count">(%s)</span>', 'Cancelled <span class="count">(%s)</span>', 'restaurant-reservations' )
-			);
-		}
+		);
 
 		return $booking_statuses;
+	}
+
+	/** Default lists retain the visibility preference without invalidating cancellation. */
+	public function get_query_statuses() {
+		$statuses = array_keys( $this->booking_statuses );
+		if ( isset( $this->booking_statuses['cancelled'] ) && empty( $this->booking_statuses['cancelled']['show_in_admin_all_list'] ) ) {
+			$statuses = array_values( array_diff( $statuses, array( 'cancelled' ) ) );
+		}
+		return $statuses;
 	}
 
 

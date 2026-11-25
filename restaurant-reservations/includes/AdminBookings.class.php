@@ -82,7 +82,7 @@ class rtbAdminBookings {
 		}
 		$ids = array_unique( $ids );
 		if ( ! $ids ) { return; }
-		echo '<div class="notice notice-error"><p>' . esc_html__( 'Restaurant Reservations: a payment was received but its booking update needs reconciliation. Do not charge these bookings again. Booking IDs:', 'restaurant-reservations' ) . ' ' . esc_html( implode( ', ', $ids ) ) . '</p></div>';
+		echo '<div class="notice notice-error"><p>' . esc_html__( 'Restaurant Reservations: these payment attempts need review. Payment may be incomplete, canceled, or received without a completed booking update. Verify the provider and reconciliation records before retrying or charging again. Booking IDs:', 'restaurant-reservations' ) . ' ' . esc_html( implode( ', ', $ids ) ) . '</p></div>';
 	}
 
 	/**

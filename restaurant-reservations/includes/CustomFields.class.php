@@ -67,6 +67,7 @@ class rtbCustomFields {
 	 * @since 0.1
 	 */
 	public function validate_custom_fields_input( $booking ) {
+		if ( ! rtbPaidFeatures::can( 'custom_fields' ) ) { return; }
 
 		$fields = rtb_get_custom_fields();
 
@@ -179,6 +180,7 @@ class rtbCustomFields {
 	 */
 	public function never_require_phone( $value ) {
 		global $rtb_controller;
+		if ( ! rtbPaidFeatures::can( 'custom_fields' ) ) { return $value; }
 
 		$modified = get_option( $rtb_controller->custom_fields->modified_option_key );
 

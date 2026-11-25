@@ -20,6 +20,9 @@ abstract class rtbNotification {
 	 */
 	public $event;
 
+	/** Producer evidence, separate from table_event rendering. */
+	public $trigger_event;
+
 	/**
 	 * Target of the notification (who/what will receive it)
 	 * @since 0.0.1
@@ -46,6 +49,7 @@ abstract class rtbNotification {
 	public function __construct( $event, $target ) {
 
 		$this->event = $event;
+		$this->trigger_event = 'table_event' === $event ? null : $event;
 		$this->target = $target;
 
 	}
@@ -69,6 +73,14 @@ abstract class rtbNotification {
 	 */
 	public function set( $property, $value ) {
 		$this->$property = $value;
+	}
+
+	/** Last-hop gate also protects directly invoked saved/SMS notifications. */
+	public function is_runtime_authorized() {
+		if ( is_a( $this, 'rtbNotificationSMS' ) && ! rtbPaidFeatures::can( 'reminders' ) ) { return false; }
+		if ( 'table_event' === $this->event && ! rtbPaidFeatures::can( 'advanced' ) ) { return false; }
+		$trigger = $this->trigger_event ?: $this->event;
+		return ! in_array( $trigger, array( 'reminder', 'late_user', 'post_reservation_follow_up_user', 'booking_reminder', 'late_for_booking', 'post_booking_follow_up' ), true ) || rtbPaidFeatures::can( 'reminders' );
 	}
 
 	/**

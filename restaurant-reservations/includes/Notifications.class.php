@@ -59,7 +59,6 @@ class rtbNotifications {
 		// Register notifications
 		require_once( RTB_PLUGIN_DIR . '/includes/Notification.class.php' );
 		require_once( RTB_PLUGIN_DIR . '/includes/Notification.Email.class.php' );
-		require_once( RTB_PLUGIN_DIR . '/includes/Notification.SMS.class.php' );
 
 		if ( ! empty( $rtb_controller->settings->get_setting( 'booking-notifications' ) ) and $rtb_controller->permissions->check_permission( 'advanced' ) ) { $this->register_table_events(); }
 		else { $this->register_standard_events(); }
@@ -74,9 +73,14 @@ class rtbNotifications {
 	 * @since 2.8.0
 	 */
 	public function dispatch_notification( $notification, $prepared = false ) {
+		$context = rtbNotificationDiagnostics::context( $notification );
+		if ( ! $notification->is_runtime_authorized() ) {
+			rtbNotificationDiagnostics::append( $context, 'not_generated', 'paid_runtime_unavailable' );
+			return false;
+		}
 
 		if ( ! $prepared && ! $notification->prepare_notification() ) {
-			$this->record_notification_diagnostic( $notification, 'not_generated', 'preparation_failed' );
+			rtbNotificationDiagnostics::append( $context, 'not_generated', 'preparation_failed' );
 
 			return false;
 		}
@@ -85,8 +89,8 @@ class rtbNotifications {
 		$sent = (bool) $notification->send_notification();
 		do_action( 'rtb_send_notification_after', $notification );
 
-		$this->record_notification_diagnostic(
-			$notification,
+		rtbNotificationDiagnostics::append(
+			$context,
 			$sent ? 'send_accepted' : 'send_failed',
 			$sent ? '' : 'transport_rejected'
 		);
@@ -101,43 +105,7 @@ class rtbNotifications {
 	 *
 	 * @since 2.8.0
 	 */
-	private function record_notification_diagnostic( $notification, $status, $reason = '' ) {
 
-		if ( empty( $notification->booking ) || ! is_a( $notification->booking, 'rtbBooking' ) || empty( $notification->booking->ID ) ) {
-			return;
-		}
-
-		$booking = $notification->booking;
-
-		$entry = array(
-			'id'              => wp_generate_uuid4(),
-			'timestamp'       => gmdate( 'Y-m-d\TH:i:s\Z' ),
-			'event'           => sanitize_key( (string) $notification->event ),
-			'type'            => is_a( $notification, 'rtbNotificationSMS' ) ? 'sms' : 'email',
-			'target'          => sanitize_key( (string) $notification->target ),
-			'notification_id' => isset( $notification->notification_id ) ? absint( $notification->notification_id ) : 0,
-			'status'          => sanitize_key( $status ),
-		);
-
-		if ( $reason ) {
-			$entry['reason'] = sanitize_key( $reason );
-		}
-
-		if ( false === add_post_meta( $booking->ID, '_rtb_notification_diagnostic', $entry, false ) ) {
-			return;
-		}
-
-		$diagnostics = get_post_meta( $booking->ID, '_rtb_notification_diagnostic', false );
-		$excess = max( 0, count( $diagnostics ) - 50 );
-		for ( $index = 0; $index < $excess; $index++ ) {
-			delete_post_meta( $booking->ID, '_rtb_notification_diagnostic', $diagnostics[ $index ] );
-		}
-
-		$booking->notification_diagnostics = array_slice(
-			get_post_meta( $booking->ID, '_rtb_notification_diagnostic', false ),
-			-50
-		);
-	}
 
 	/**
 	 * Register the standard notification events
@@ -190,26 +158,8 @@ class rtbNotifications {
 	 * @since 2.6.3
 	 */
 	public function register_table_events() {
-
-		$hooks = array(
-			'rtb_insert_booking'			=> array( $this, 'handle_table_event' ), 				// Booking submitted
-			'rtb_booking_payment_pending'	=> array( $this, 'handle_table_event' ), 				// Booking deposit payment pending
-			'rtb_booking_paid'				=> array( $this, 'handle_table_event' ), 				// Booking deposit paid
-			'rtb_confirmed_booking'			=> array( $this, 'handle_table_event' ), 				// Booking confirmed
-			'pending_to_confirmed'			=> array( $this, 'handle_table_event' ), 				// Booking confirmed
-			'closed_to_confirmed'			=> array( $this, 'handle_table_event' ), 				// Booking confirmed
-			'cancelled_to_confirmed'		=> array( $this, 'handle_table_event' ), 				// Booking confirmed
-			'pending_to_closed'				=> array( $this, 'handle_table_event' ), 				// Booking can not be made
-			'confirmed_to_closed'			=> array( $this, 'handle_table_event' ), 				// Booking can not be made
-			'pending_to_cancelled'			=> array( $this, 'handle_table_event' ), 				// Booking cancelled
-			'confirmed_to_cancelled'		=> array( $this, 'handle_table_event' ), 				// Booking cancelled
-		);
-
-		$hooks = apply_filters( 'rtb_notification_transition_callbacks', $hooks );
-
-		foreach ( $hooks as $hook => $callback ) {
-			add_action( $hook, $callback );
-		}
+		if ( ! rtbPaidFeatures::can( 'advanced' ) || ! class_exists( 'fspphRTBNotifications', false ) ) { return; }
+		return fspphRTBNotifications::register_table_events(  );
 	}
 
 	/**
@@ -217,50 +167,8 @@ class rtbNotifications {
 	 * @since 2.6.3
 	 */
 	public function handle_table_event( $booking ) {
-		global $rtb_controller;
-
-		if ( $this->notifications_disabled ) { return; }
-
-		$event = $this->get_table_event_equivalent( $booking );
-
-		// If payment_pending event, refresh to get fresh booking object, not event stored object 
-		if ( $event == 'booking_payment_pending' ) { 
-
-			$booking_id = $booking->ID;
-
-			$booking = new rtbBooking();
-
-			$booking->load_post( $booking_id );
-		}
-
-		$notifications = rtb_decode_infinite_table_setting( $rtb_controller->settings->get_setting( 'booking-notifications' ) );
-
-		$this->set_booking( $booking );
-
-		// Don't send out notifications when a payment has failed and hasn't been made
-		if ( $this->booking->post_status == 'payment_failed' ) { return; }
-
-		foreach ( $notifications as $notification ) {
-
-			if ( ! $notification->enabled ) { continue; }
-
-			if ( $notification->event != $event ) { continue; }
-
-			if ( $this->booking->post_status == 'payment_pending' and $notification->event != 'booking_payment_pending' ) { continue; }
-
-			if ( $notification->event == 'booking_payment_pending' and $this->booking->post_status != 'payment_pending' ) { continue; }
-		
-			$booking_notification = $notification->type == 'sms' ? new rtbNotificationSMS( 'table_event', $notification->target ) : new rtbNotificationEmail( 'table_event', $notification->target );
-
-			$booking_notification->message = $notification->message;
-			$booking_notification->subject = $notification->subject;
-
-			$booking_notification->notification_id = $notification->id;
-			
-			$booking_notification->set_booking( $this->booking );
-			
-			$this->dispatch_notification( $booking_notification );
-		}
+		if ( ! rtbPaidFeatures::can( 'advanced' ) || ! class_exists( 'fspphRTBNotifications', false ) ) { return; }
+		return fspphRTBNotifications::handle_table_event( $booking );
 	}
 
 	/**
@@ -269,47 +177,8 @@ class rtbNotifications {
 	 * @since 2.6.3
 	 */
 	public function get_table_event_equivalent( $booking ) {
-
-		switch ( current_filter() ) {
-
-			case 'rtb_insert_booking':
-				$event = get_post_status( $booking ) == 'confirmed' ? 'auto_confirmed_booking' : 'new_booking';
-				break;
-
-			case 'rtb_booking_payment_pending':
-				$event = 'booking_payment_pending';
-				break;
-
-			case 'rtb_booking_paid':
-				$event = get_post_status( $booking ) == 'confirmed' ? 'auto_confirmed_booking' : 'new_booking';
-				break;
-
-			case 'rtb_confirmed_booking':
-				$event = 'auto_confirmed_booking';
-				break;
-
-			case 'pending_to_confirmed':
-			case 'closed_to_confirmed':
-			case 'cancelled_to_confirmed':
-				$event = 'booking_confirmed';
-				break;
-
-			case 'pending_to_closed':
-			case 'confirmed_to_closed':
-				$event = 'booking_closed';
-				break;
-
-			case 'pending_to_cancelled':
-			case 'confirmed_to_cancelled':
-				$event = 'booking_cancelled';
-				break;
-			
-			default:
-				$event = null;
-				break;
-		}
-
-		return $event;
+		if ( ! rtbPaidFeatures::can( 'advanced' ) || ! class_exists( 'fspphRTBNotifications', false ) ) { return; }
+		return fspphRTBNotifications::get_table_event_equivalent( $booking );
 	}
 
 	/**
@@ -352,7 +221,7 @@ class rtbNotifications {
 				'before'    => $end_time->format( 'Y-m-d H:i:s' ),
 				'inclusive' => true,
 			),
-			'post_status' 		=> array_keys( $rtb_controller->cpts->booking_statuses ),
+			'post_status' 		=> $rtb_controller->cpts->get_query_statuses(),
 			'orderby' 			=> 'date',
 			'order' 			=> 'ASC'
 		);

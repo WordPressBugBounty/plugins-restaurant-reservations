@@ -3,7 +3,7 @@
  * Plugin Name: Five Star Restaurant Reservations - WordPress Booking Plugin
  * Plugin URI: http://www.fivestarplugins.com/plugins/five-star-restaurant-reservations/
  * Description: Restaurant reservations made easy. Accept bookings online. Quickly confirm or reject reservations, send email notifications, set booking times and more.
- * Version: 2.9.1
+ * Version: 2.10.0
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * License: GPLv3
@@ -62,7 +62,10 @@ class rtbInit {
 	public function __construct() {
 
 		// Common strings
-		define( 'RTB_VERSION', '2.9.1' );
+		define( 'RTB_VERSION', '2.10.0' );
+		define( 'RTB_PAID_RUNTIME_API', 1 );
+		require_once __DIR__ . '/includes/PaidFeatures.class.php';
+		add_action( 'plugins_loaded', array( 'rtbPaidFeatures', 'boot' ), 9 );
 		define( 'RTB_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 		define( 'RTB_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 		define( 'RTB_PLUGIN_FNAME', plugin_basename( __FILE__ ) );
@@ -115,6 +118,8 @@ class rtbInit {
 		// Load review ask
 		require_once( RTB_PLUGIN_DIR . '/includes/ReviewAsk.class.php' );
 		new rtbReviewAsk();
+		require_once RTB_PLUGIN_DIR . '/includes/BlackFriday2026Notice.class.php';
+		new rtbBlackFriday2026Notice();
 
 		// Load multiple location support
 		require_once( RTB_PLUGIN_DIR . '/includes/MultipleLocations.class.php' );
@@ -143,12 +148,16 @@ class rtbInit {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
 
 		// Handle notifications
+		require_once RTB_PLUGIN_DIR . '/includes/NotificationDiagnostics.class.php';
 		require_once( RTB_PLUGIN_DIR . '/includes/Notifications.class.php' );
 		$this->notifications = new rtbNotifications();
 
 		// Load settings
 		require_once( RTB_PLUGIN_DIR . '/includes/Settings.class.php' );
 		$this->settings = new rtbSettings();
+		// Older Helpers read these UI fields even when paid code is unavailable.
+		// This is availability data only, not a substitute integration/provider.
+		$this->mailchimp = (object) array( 'status' => false, 'merge_fields' => array() );
 
 		// Load Payment Manager and GatewayInterface
 		require_once( RTB_PLUGIN_DIR . "/includes/PaymentGateway.interface.php" );
@@ -178,13 +187,6 @@ class rtbInit {
 		require_once( RTB_PLUGIN_DIR . '/includes/Ajax.class.php' );
 		$this->ajax = new rtbAJAX();
 
-		// Handle setting up exports
-		require_once( RTB_PLUGIN_DIR . '/includes/ExportHandler.class.php' );
-		$this->exports = new rtbExportHandler();
-
-		// Handle setting up exports
-		require_once( RTB_PLUGIN_DIR . '/includes/EmailTemplates.class.php' );
-		$this->email_templates = new rtbEmailTemplates();
 
 		// Load the custom fields
 		require_once( RTB_PLUGIN_DIR . '/includes/CustomFields.class.php' );
@@ -195,13 +197,6 @@ class rtbInit {
 		require_once( RTB_PLUGIN_DIR . '/includes/Field.class.php' );
 		$this->fields = new rtbFieldController();
 
-		// Load the custom fields editor page
-		require_once( RTB_PLUGIN_DIR . '/includes/Editor.class.php' );
-		$this->editor = new cffrtbEditor();
-
-		// Load MailChimp integration
-		require_once( RTB_PLUGIN_DIR . '/includes/MailChimp.class.php' );
-		$this->mailchimp = new mcfrtbInit();
 
 		// Append booking form to a post's $content variable
 		add_filter( 'the_content', array( $this, 'append_to_content' ) );
@@ -274,6 +269,10 @@ class rtbInit {
 		// Check if its a plugin update and see if it is ours.
 		if( null != $upgrader && ! ( $upgrader instanceof Plugin_Upgrader ) ) {
 			return;
+		}
+		if ( null !== $upgrader && is_array( $args ) ) {
+			$plugins = isset( $args['plugins'] ) ? (array) $args['plugins'] : ( isset( $args['plugin'] ) ? array( $args['plugin'] ) : array() );
+			if ( $plugins && ! in_array( RTB_PLUGIN_FNAME, $plugins, true ) ) { return; }
 		}
 
 		require_once( RTB_PLUGIN_DIR . '/includes/Migration.class.php' );
@@ -399,6 +398,9 @@ class rtbInit {
 		$delete_posts = $query->get_posts();
 
 		foreach ( $delete_posts as $delete_post ) {
+			if ( rtbPaymentAttempt::get( $delete_post->ID ) || rtbPaymentAttempt::has_ledger( $delete_post->ID )
+				|| get_option( 'rtb-payment-reconciliation-' . (int) $delete_post->ID )
+				|| ( 'payment_pending' === $delete_post->post_status && ! rtbPaidFeatures::can( 'payments' ) ) ) { continue; }
 
 			wp_delete_post( $delete_post->ID, true );
 		}
@@ -414,6 +416,8 @@ class rtbInit {
 	 * @since 2.0
 	 */
 	public function maybe_delete_payment_pending_reservations() {
+		// Missing payment implementation is a recovery state, not abandonment.
+		if ( ! rtbPaidFeatures::can( 'payments' ) ) { return; }
 		global $rtb_controller;
 
 		if ( get_transient( 'rtb-delete-reservations-check' ) ) { return; }
@@ -441,6 +445,13 @@ class rtbInit {
 		$payment_pending_posts = $query->get_posts();
 
 		foreach ( $payment_pending_posts as $delete_post ) {
+			// Provider recovery must never turn an uncertain or received payment
+			// into a deleted booking or a fresh charge opportunity.
+			$payment_meta = get_post_meta( $delete_post->ID, 'rtb', true );
+			if ( rtbPaymentAttempt::get( $delete_post->ID ) || rtbPaymentAttempt::has_ledger( $delete_post->ID )
+				|| get_option( 'rtb-payment-reconciliation-' . (int) $delete_post->ID )
+				|| ! empty( $payment_meta['receipt_id'] ) || ! empty( $payment_meta['deposit'] )
+				|| ! empty( $payment_meta['stripe_payment_intent_id'] ) ) { continue; }
 
 			wp_delete_post( $delete_post->ID, true );
 		}
@@ -564,9 +575,19 @@ class rtbInit {
 			|| $screen->base == $admin_page_hooks['rtb-bookings'] . '_page_fspph-rtb-license'
 		) {
 			wp_enqueue_style( 'rtb-admin-css', RTB_PLUGIN_URL . '/assets/css/admin.css', array(), RTB_VERSION );
-			wp_enqueue_script( 'rtb-admin-js', RTB_PLUGIN_URL . '/assets/js/admin.js', array( 'jquery' ), RTB_VERSION, true );
-			wp_enqueue_style( 'rtb-spectrum-css', RTB_PLUGIN_URL . '/assets/css/spectrum.css' );
-			wp_enqueue_script( 'rtb-spectrum-js', RTB_PLUGIN_URL . '/assets/js/spectrum.js', array( 'jquery' ), '', true );
+			wp_enqueue_script( 'rtb-admin-js', RTB_PLUGIN_URL . '/assets/js/admin.js', array( 'jquery' ), RTB_VERSION . '.' . filemtime( RTB_PLUGIN_DIR . '/assets/js/admin.js' ), true );
+			wp_enqueue_script( 'rtb-history-js', RTB_PLUGIN_URL . '/assets/js/notification-history.js', array( 'rtb-admin-js' ), RTB_VERSION, true );
+			wp_enqueue_style( 'rtb-history-css', RTB_PLUGIN_URL . '/assets/css/notification-history.css', array(), RTB_VERSION );
+			wp_localize_script( 'rtb-history-js', 'rtb_history', array(
+				'url' => admin_url( 'admin-ajax.php' ), 'nonce' => wp_create_nonce( 'rtb-admin' ),
+				'headers' => array( __( 'Date/Time', 'restaurant-reservations' ), __( 'Trigger', 'restaurant-reservations' ), __( 'Type', 'restaurant-reservations' ), __( 'Target', 'restaurant-reservations' ), __( 'Outcome', 'restaurant-reservations' ) ),
+				'loading' => __( 'Loading notification history…', 'restaurant-reservations' ), 'empty' => __( 'No retained notification history.', 'restaurant-reservations' ),
+				'error' => __( 'History could not be loaded. Refresh to try again.', 'restaurant-reservations' ),
+				'previous' => __( 'Previous', 'restaurant-reservations' ), 'next' => __( 'Next', 'restaurant-reservations' ), 'refresh' => __( 'Refresh history', 'restaurant-reservations' ),
+				'details' => __( 'Reason and identifiers', 'restaurant-reservations' ), 'id' => __( 'Entry ID', 'restaurant-reservations' ), 'notification_id' => __( 'Notification ID', 'restaurant-reservations' ),
+				'caption' => __( 'Notification transport history', 'restaurant-reservations' ),
+			) );
+			if ( rtbPaidFeatures::can( 'styling' ) && class_exists( 'fspphRTBStyling', false ) ) { fspphRTBStyling::enqueue_controls(); }
 			wp_enqueue_script( 'rtb-admin-settings-js', RTB_PLUGIN_URL . '/assets/js/admin-settings.js', array( 'jquery' ), '', true );
 
 			$refresh_time = $rtb_controller->settings->get_setting('refresh-booking-listing');
@@ -590,7 +611,7 @@ class rtbInit {
 					),
 					'banned_emails' => preg_split( '/\r\n|\r|\n/', (string) $rtb_controller->settings->get_setting( 'ban-emails' ) ),
 					'banned_ips' => preg_split( '/\r\n|\r|\n/', (string) $rtb_controller->settings->get_setting( 'ban-ips' ) ),
-					'export_url' => admin_url( '?action=ebfrtb-export' ),
+					'export_url' => add_query_arg( '_wpnonce', wp_create_nonce( 'ebfrtb-export' ), admin_url( '?action=ebfrtb-export' ) ),
 					'refresh_booking_listing' => $refresh_time
 				)
 			);
@@ -825,8 +846,8 @@ class rtbInit {
 				__( 'The Premium Helper is not active. Please re-activate it, or <a target="_blank" href="%s">download and install it</a>, to restore paid integration.', 'restaurant-reservations' ),
 				'https://www.fivestarplugins.com/2021/12/23/requiring-premium-helper-plugin/'
 			);
-		} elseif ( ! $rtb_controller->permissions->has_compatible_helper() ) {
-			$message = __( 'Restaurant Reservations 2.9.0 requires Premium Helper 0.2.0 or newer to verify Premium and Ultimate rights. Update the Helper; saved settings and bookings remain intact.', 'restaurant-reservations' );
+		} elseif ( ! rtbPaidFeatures::available() || ! $rtb_controller->permissions->has_compatible_helper() ) {
+			$message = __( 'Restaurant Reservations 2.10.0 requires a compatible Premium Helper 0.3.0 for paid features. Update the Helper; settings, bookings and payment records remain intact. Deposit-dependent bookings are safely paused until payment access is restored.', 'restaurant-reservations' );
 		} else {
 			$contract = $rtb_controller->permissions->get_contract();
 			$premium = $contract['premium'] ?? array();

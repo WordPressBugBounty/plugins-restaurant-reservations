@@ -32,6 +32,7 @@ class rtbPaymentAttempt {
 				return new WP_Error( 'payment_closed', 'This booking is already paid or needs payment review. Please do not pay again.' );
 			}
 			$existing = self::get( $booking_id );
+			if ( $existing && self::retire_confirmed_void( $booking_id, $existing ) ) { $existing = array(); }
 			if ( $existing ) {
 				if ( 'stripe_sca' === $provider && 'stripe_sca' === ( $existing['provider'] ?? '' )
 					&& 'ready' === ( $existing['state'] ?? '' ) && ! empty( $existing['intent_id'] )
@@ -49,6 +50,20 @@ class rtbPaymentAttempt {
 			}
 			return array( 'attempt' => $attempt, 'reused' => false );
 		} finally { self::release( $locks ); }
+	}
+
+	/** Caller holds the payment lock. Keep proof before releasing only a verified, unpaid cancellation. */
+	private static function retire_confirmed_void( $booking_id, $attempt ) {
+		global $wpdb;
+		if ( 'stripe_sca' !== ( $attempt['provider'] ?? '' ) || 'voided' !== ( $attempt['state'] ?? '' )
+			|| 'canceled' !== ( $attempt['void_status'] ?? '' ) || empty( $attempt['void_verified_at'] ) || empty( $attempt['intent_id'] )
+			|| 0 !== ( $attempt['void_amount_received'] ?? null ) ) { return false; }
+		$name = 'rtb-payment-attempt-archive-' . (int) $booking_id . '-' . sanitize_key( $attempt['id'] );
+		wp_cache_delete( $name, 'options' ); wp_cache_delete( 'notoptions', 'options' );
+		add_option( $name, $attempt, '', false );
+		// An object-cache value is not durable proof that a database write succeeded.
+		if ( $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $name ) ) !== maybe_serialize( $attempt ) ) { return false; }
+		return delete_option( self::option_name( $booking_id ) );
 	}
 
 	public static function update( $booking_id, $attempt_id, $changes ) {
@@ -99,8 +114,11 @@ class rtbPaymentAttempt {
 			if ( get_option( 'rtb_used_paypal_txn_ids' ) !== $used ) { return 'review'; }
 			$booking = new rtbBooking();
 			if ( ! $booking->load_post( (int) $booking_id ) || 'payment_pending' !== $booking->post_status
-				|| ! empty( $booking->receipt_id ) || self::get( $booking_id )
+				|| ! empty( $booking->receipt_id )
 				|| get_option( 'rtb-payment-reconciliation-' . (int) $booking_id ) || self::has_ledger( $booking_id ) ) { return 'review'; }
+			$existing = self::get( $booking_id );
+			if ( $existing && self::retire_confirmed_void( $booking_id, $existing ) ) { $existing = array(); }
+			if ( $existing ) { return 'review'; }
 			$uuid = wp_generate_uuid4();
 			$attempt = array( 'id' => $uuid, 'provider' => 'paypal', 'state' => 'claimed',
 				'idempotency_key' => '', 'intent_id' => '', 'receipt_id' => $transaction_id, 'created_at' => time() );

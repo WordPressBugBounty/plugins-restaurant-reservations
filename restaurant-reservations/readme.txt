@@ -4,7 +4,7 @@ Tags: restaurant reservations, restaurant booking, reservation, reservation syst
 Requires at Least: 6.0
 Tested Up To: 7.1
 Requires PHP: 8.0
-Stable tag: 2.9.1
+Stable tag: 2.10.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate Link: https://www.etoilewebdesign.com/plugin-donations/
@@ -312,18 +312,18 @@ Find answers to even more questions in the [FAQ](http://doc.fivestarplugins.com/
 
 == Changelog ==
 
-= 2.9.1 (2026-10-26) =
-- Fixed an issue with notification triggering related to bulk status changes, using the new quick status change feature and the accept/reject links in the email an admin receives when a new booking is submitted.
-- Removed/fixed deprecated notices.
-
-= 2.9.0 (2026-10-22) =
-- Added staff walk-in entry option. (When you create a booking in the admin, you can now mark it as a walk-in, which lets you create the booking without an email address or phone number.)
-- Added quick booking status and table controls on the Bookings overview page.
-- Improved availability checks across new bookings, edits, cancellations and table changes.
-- Improved license-check messages, saved-key validation and recovery links.
-- Fixed notification editing that could overwrite another message.
-- Fixed daily summaries that omitted future-only bookings.
-- Improved notification history labels and dates to use the site's date, time and timezone settings (for the mini notification log found in the Details modal for a booking accessed form the Bookings overview screen).
-- Updated PDF exports for PHP compatibility.
+= 2.10.0 (2026-11-25) =
+- **IMPORTANT NOTE: This is release 3 of a 4-part series. Full documentation for a number of the new features is not yet available, and will be added once the 4th update in the series is completed. Please delay updating until the final update round if documentation is required.**
+- **If you are using the premium or ultimate version, please make sure to also update the FSP Premium Helper plugin to version 0.3.0 at the same time.**
+- Several updates have been made to separate and streamline the functionality of the premium and ultimate versions via the FSP Premium Helper plugin.
+- Updated the notification history area in the booking details modal to have a paginated table layout.
+- Updated this notification history to have clearer send outcomes, including "delivery not confirmed."
+- Updated this notification history to also record the original triggering event (e.g. booking confirmation or reminder, etc.).
+- Moved the FROM Email Address Header setting (which is a feature of the free version of the plugin) out of the premium helper plugin and into the main plugin files.
 
 [See changelog for all versions](https://www.fivestarplugins.com/changelogs/restaurant-reservations.txt).
+
+== Upgrade Notice ==
+
+= 2.10.0 =
+Several updates have been made to separate and streamline the functionality of the premium and ultimate versions via the FSP Premium Helper plugin. If you are using the premium or ultimate version, please make sure to also update the FSP Premium Helper plugin to version 0.3.0 at the same time.

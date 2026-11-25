@@ -388,11 +388,20 @@ jQuery(document).ready(function ($) {
 	/**
 	 * Show or hide the booking details modal
 	 */
+	var rtb_details_cleanup_timer;
 	function rtb_toggle_details_modal( show, content ) {
+		clearTimeout( rtb_details_cleanup_timer );
 
 		if ( show ) {
 			rtb_details_modal.addClass( 'is-visible' ).scrollTop( 0 )
 				.find( '.rtb-details-data' ).html( content );
+			// Complete legacy text formatting before asynchronous history takes ownership
+			// of its panel. Replacing .value HTML afterwards detaches the pending request's node.
+			rtb_details_modal.find( '.details .value' ).each(function () {
+				if ( $(this).find( '.rtb-notification-history' ).length ) { return; }
+				var original = $(this).html(), formatted = original.replace(/&lt;(.*?)br(.*?)\/&gt;/gmi, '<br>');
+				if ( formatted !== original ) { $(this).html( formatted ); }
+			});
 			$( 'body' ).addClass( 'rtb-hide-body-scroll' );
 			rtb_details_modal.find( '.actions' ).click( function(e) {
 				var target = $( e.target );
@@ -405,18 +414,16 @@ jQuery(document).ready(function ($) {
 					rtb_toggle_delete_modal( true, target.data( 'id'), target.data( 'email' ) );
 				}
 			});
+			rtb_details_modal.trigger('rtb:details-open');
 
 		} else {
 			rtb_details_modal.removeClass( 'is-visible' );
+			rtb_details_modal.trigger('rtb:details-close');
 			$( 'body' ).removeClass( 'rtb-hide-body-scroll' );
-			setTimeout( function() {
+			rtb_details_cleanup_timer = setTimeout( function() {
 				rtb_details_modal.find( '.rtb-details-data' ).empty();
 			}, 300 );
 		}
-
-		$('#rtb-details-modal .details .value').each((i, x) => {
-			$(x).html( $(x).html().replace(/&lt;(.*?)br(.*?)\/&gt;/gmi, '<br>') );
-		});
 	}
 
 	/**
@@ -1005,147 +1012,6 @@ jQuery(document).ready(function ($) {
 });
 
 
-/* Javascript for Export Bookings for Restaurant Reservations admin */
-jQuery(document).ready(function ($) {
-
-	/**
-	 * Modal to generate an export
-	 */
-	var ebfrtb_export_modal = $( '#ebfrtb-options-modal' );
-	var ebfrtb_export_modal_form = ebfrtb_export_modal.find( 'form' );
-	var ebfrtb_export_modal_date_range = ebfrtb_export_modal_form.find( '.date-range' );
-	var ebfrtb_export_modal_submit = ebfrtb_export_modal_form.find( 'button' );
-	var ebfrtb_export_modal_cancel = ebfrtb_export_modal_form.find( '#ebfrtb-cancel-export-modal' );
-
-	/**
-	 * Show or hide the booking form modal
-	 */
-	function ebfrtb_toggle_export_modal( show ) {
-
-		if ( show ) {
-			ebfrtb_export_modal.scrollTop( 0 ).addClass( 'is-visible' );
-		} else {
-			ebfrtb_export_modal.removeClass( 'is-visible' );
-			ebfrtb_export_modal_form.find( 'select option:selected' ).attr( 'selected', false );
-			ebfrtb_export_modal_date_range.find( '.selector .options a' ).first().trigger( 'click' );
-			ebfrtb_export_modal_form.find( '.status input' ).each( function() {
-				if ( $(this).val() === 'confirmed' ) {
-					$(this).attr( 'checked', true );
-				} else {
-					$(this).attr( 'checked', false );
-				}
-			});
-
-			if ( ebfrtb_picker_start_date && ebfrtb_picker_end_date ) {
-				ebfrtb_picker_start_date.pickadate( 'picker' ).clear();
-				ebfrtb_picker_end_date.pickadate( 'picker' ).clear();
-			}
-		}
-	}
-
-	// Show export modal
-	$( '.ebfrtb-export-button').click( function(e) {
-
-		e.stopPropagation();
-		e.preventDefault();
-
-		ebfrtb_toggle_export_modal( true );
-	});
-
-	// Close export modal when background or cancel button is clicked
-	ebfrtb_export_modal.click( function(e) {
-
-		if ( $(e.target).is( ebfrtb_export_modal ) ) {
-			ebfrtb_toggle_export_modal( false );
-		}
-
-		if ( $(e.target).is( ebfrtb_export_modal_cancel ) && ebfrtb_export_modal_cancel ) {
-			ebfrtb_toggle_export_modal( false );
-		}
-	});
-
-	// Close export modal when ESC is keyed
-	$( document ).keyup( function(e) {
-		if ( e.which == '27' ) {
-			ebfrtb_toggle_export_modal( false );
-		}
-	});
-
-	// Select a date option
-	ebfrtb_export_modal_date_range.find( '.selector .options' ).click( function(e) {
-
-		var target = $( e.target );
-
-		if ( target.hasClass( 'current' ) || !target.data( 'type' ) ) {
-			return;
-		}
-
-		// Set the hidden field value
-		ebfrtb_export_modal_date_range.find( 'input[name="date_range"]' ).val( target.data( 'type' ) );
-
-		// Show selection details
-		ebfrtb_export_modal_date_range.find( '.selector > div' ).slideUp();
-		ebfrtb_export_modal_date_range.find( '.' + target.data( 'type' ) ).slideDown();
-
-		// Update current selection
-		ebfrtb_export_modal_date_range.find( '.options a' ).removeClass( 'current' );
-		target.addClass( 'current' );
-	})
-
-	// Select the first date option on page load
-	.find( 'a' ).first().trigger( 'click' );
-
-	// Load the date pickers
-	var ebfrtb_picker_start_date;
-	var ebfrtb_picker_end_date;
-	if ( typeof rtb_pickadate !== 'undefined' ) {
-
-		var settings = {
-			format: rtb_pickadate.date_format,
-			formatSubmit: 'yyyy-mm-dd',
-			hiddenName: true,
-			container: 'body'
-		};
-
-		var start_date = $( '#ebfrtb-start-date' ).val();
-		var end_date = $( '#ebfrtb-end-date' ).val();
-
-		ebfrtb_picker_start_date = $( '#ebfrtb-start-date' ).pickadate( settings );
-		ebfrtb_picker_end_date = $( '#ebfrtb-end-date' ).pickadate( settings );
-
-		if ( start_date ) { ebfrtb_picker_start_date.pickadate( 'picker' ).set( 'select', start_date, { format: 'yyyy-mm-dd' } ); }
-		if ( end_date ) { ebfrtb_picker_end_date.pickadate( 'picker' ).set( 'select', end_date, { format: 'yyyy-mm-dd' } ); }
-	}
-
-	// Load export
-	ebfrtb_export_modal_submit.click( function(e) {
-
-		e.stopPropagation();
-		e.preventDefault();
-
-		if ( $(this).prop( 'disabled' ) === true ) {
-			return;
-		}
-
-		var url = rtb_admin.export_url;
-		var statuses = [];
-		var form = ebfrtb_export_modal_form.serializeArray();
-		for( var i in form ) {
-
-			if ( form[i].name == 'status' ) {
-				statuses.push( form[i].value );
-			} else {
-				url += '&' + form[i].name + '=' + form[i].value;
-			}
-		}
-		url += '&status=' + statuses.join();
-
-		window.open( encodeURI( url ) );
-	});
-
-});
-
-
 /*NEW DASHBOARD MOBILE MENU AND WIDGET TOGGLING*/
 jQuery(document).ready(function($){
 	$('#rtb-dash-mobile-menu-open').click(function(){
@@ -1222,234 +1088,6 @@ jQuery(document).ready(function($){
 		}
 	});
 });
-
-// Reset button for notifications table
-jQuery( document ).ready( function() {
-	jQuery( '.rtb-settings-reset-notifications' ).on( 'click', function() {
-
-		if ( confirm( 'Are you sure that you want to delete all notifications data? This will empty the option in the DB, so you can safely create new notifications from scratch. Please scroll down and save the settings page after doing this.' ) ) {
-
-			jQuery( this ).parent().parent().addClass( 'rtb-hidden' );
-	
-	    	var params = {};
-	
-	    	params.nonce  				= rtb_admin.nonce;
-	    	params.action 				= 'rtb_reset_notifications';
-	
-	    	var data = jQuery.param( params );
-	    	jQuery.post( ajaxurl, data, function() {} );
-	    }
-	} );
-});
-
-// SMS segment estimator
-
-jQuery(document).ready(function ($) {
-    const extendedGsmChars = ['^', '{', '}', '\\', '[', '~', ']', '|', '€'];
-
-    // Template tag length mappings
-    const templateLengths = {
-        '{user_email}': 25,
-        '{user_name}': 10,
-        '{party}': 2,
-        '{date}': 12,
-        '{phone}': 12,
-        '{message}': 50,
-        '{booking_id}': 4,
-        '{booking_page_link}': 120,
-        '{booking_url}': 90,
-        '{cancel_link}': 135,
-        '{cancellation_url}': 100,
-        '{bookings_link}': 135,
-        '{bookings_link_url}': 100,
-        '{confirm_link}': 135,
-        '{confirm_link_url}': 100,
-        '{close_link}': 135,
-        '{close_link_url}': 100,
-        '{site_name}': 50,
-        '{site_link}': 100,
-        '{site_link_url}': 65,
-        '{current_time}': 12,
-        '{table}': 4
-    };
-
-    const customFieldRegex = /\{cf-[^}]+\}/g; // Matches {cf-something}
-
-    function isGsm7(text) {
-        const gsm7 = /^[\x00-\x7F€£¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæÉ!"#¤%&'()*+,\-./0-9:;<=>?@A-Z\[\\\]^_`a-z{|}~¡§¿ÄÖÑÜäöñüà^{}\\[~]|€]*$/;
-        return gsm7.test(text);
-    }
-
-    // Replaces template tags with dummy characters of estimated length
-    function replaceTemplateTags(text) {
-        for (let tag in templateLengths) {
-            const length = templateLengths[tag];
-            const re = new RegExp(escapeRegExp(tag), 'g');
-            text = text.replace(re, 'X'.repeat(length));
-        }
-
-        // Handle custom {cf-xxx} fields
-        text = text.replace(customFieldRegex, 'X'.repeat(40));
-
-        return text;
-    }
-
-    function escapeRegExp(string) {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
-    function getGsm7Length(text) {
-        let length = 0;
-        for (let char of text) {
-            length += extendedGsmChars.includes(char) ? 2 : 1;
-        }
-        return length;
-    }
-
-    function getSegmentCount(text) {
-        const processedText = replaceTemplateTags(text);
-        const encoding = isGsm7(processedText) ? 'GSM-7' : 'UCS-2';
-        const length = encoding === 'GSM-7' ? getGsm7Length(processedText) : processedText.length;
-
-        const segmentLimit = encoding === 'GSM-7'
-            ? (length <= 160 ? 160 : 153)
-            : (length <= 70 ? 70 : 67);
-
-        return Math.ceil(length / segmentLimit);
-    }
-
-    $( '#bookingnotifications.wp-editor-area' ).on('input', function () {
-
-    	$( '.rtb-sms-segment-length-estimate' ).remove();
-    	
-        const originalText = $(this).val();
-        const processedText = replaceTemplateTags(originalText);
-        const encoding = isGsm7(processedText) ? 'GSM-7' : 'UCS-2';
-        const length = encoding === 'GSM-7' ? getGsm7Length(processedText) : processedText.length;
-        const segments = getSegmentCount(originalText);
-
-        $( '.sap-infinite-table-editor-buttons' ).before(`
-            <div class='rtb-sms-segment-length-estimate'>
-            	Length estimate (after substitutions): <strong>${length}</strong><br>
-            	Estimated SMS Segments: <strong>${segments}</strong>
-        	</div>
-        `);
-    });
-
-    $( '#wp-bookingnotifications-wrap' ).parent().find( '.sap-infinite-table-editor-cancel, .sap-infinite-table-editor-save' ).on( 'click', function() {
-
-    	$( '.rtb-sms-segment-length-estimate' ).remove();
-    });
-});
-
-
-// OPTIONS PAGE TABLE COMBINATIONS
-jQuery(document).ready(function($) {
-	$( '.rtb-new-admin-add-button' ).on( 'click', function() {
-		setTimeout( rtb_combination_handler, 500);
-		setTimeout( rtb_table_section_added, 500);
-	});
-
-	rtb_combination_handler();
-	rtb_table_section_name_handler();
-	rtb_table_selection_delete_handler();
-}); 
-	
-function rtb_combination_handler() {
-	jQuery( '.sap-infinite-table-combinations' ).off( 'click' );
-	jQuery( '.sap-infinite-table-combinations' ).on( 'click', function() {
-
-		if ( jQuery( '#rtb-combinations-popup' ).length ) { return; }
-
-		var table_number = jQuery( this ).parent().parent().find( '.sap-infinite-table-number' ).val();
-		var combinations = jQuery( this ).val().split( ',' );
-
-		var html = '<div id="rtb-combinations-popup-background"></div>';
-		html += '<div id="rtb-combinations-popup" data-input_name="' + jQuery( this ).attr( 'name' ) + '">';
-		html += '<h4>Adjacent Tables</h4>';
-		html += '<div id="rtb-combinations-options">';
-		
-		jQuery( '.sap-infinite-table-number' ).each( function() {
-			if ( jQuery( this ).val() && jQuery( this ).val() != table_number ) {
-				html += '<div class="rtb-combinations-option-container">';
-				html += '<input type="checkbox" class="rtb-combination-option" value="' + jQuery( this ).val() + '" ' + ( combinations.includes( jQuery( this ).val() ) ? 'checked' : '' ) + ' /> ' + jQuery( this ).val();
-				html += '</div>';
-			}
-		}); 
-		
-		html += '</div>';
-		html += '<div id="rtb-combinations-submit">Confirm</div>'; 
-		html += '</div>'; 
-		
-		jQuery( 'body' ).append( html );
-
-		rtb_table_popup_handlers();
-	});
-
-}
-
-function rtb_table_popup_handlers() {
-
-	jQuery( '#rtb-combinations-submit' ).off( 'click' );
-	jQuery( '#rtb-combinations-submit' ).on( 'click', function() {
-		
-		var combinations = '';
-
-		jQuery( '.rtb-combination-option' ).each( function() {
-			if ( jQuery( this ).prop('checked') ) { combinations += ( combinations.length ? ',' : '' ) + jQuery( this ).val(); }
-		});
-
-		var input_name = jQuery( '#rtb-combinations-popup' ).data( 'input_name' );
-
-		jQuery( '.sap-infinite-table-combinations[name="' + input_name + '"]' ).attr( 'value', combinations );
-
-		jQuery( '#rtb-combinations-popup, #rtb-combinations-popup-background' ).remove();
-
-		infiniteTableSaveData( jQuery( '.sap-infinite-table-combinations[name="' + input_name + '"]' ).closest( '.sap-infinite-table' ) );
-	});
-
-	jQuery( '#rtb-combinations-popup-background' ).on( 'click', function() {
-		
-		jQuery( '#rtb-combinations-popup, #rtb-combinations-popup-background' ).remove();
-	});
-}
-
-function rtb_table_section_added() {
-
-	var new_row = jQuery( '#sap-table-rtb-table-sections tbody tr:last-of-type' );
-	var section_id = new_row.find( '.sap-infinite-table-section_id' ).val();
-	var section_name = new_row.find( '.sap-infinite-table-name' ).val();
-
-	if ( ! jQuery('.sap-infinite-table-section option[value="' + section_id + '"]' ).length )	{ 
-		jQuery( '.sap-infinite-table-section' ).append( '<option value="' + section_id + '">' + section_name + '</option>' );
-	}
-
-	rtb_table_section_name_handler();
-	rtb_table_selection_delete_handler();
-}
-
-function rtb_table_section_name_handler() {
-
-	jQuery( '.sap-infinite-table-name' ).off( 'keyup.table_section_name_update' );
-	jQuery( '.sap-infinite-table-name' ).on( 'keyup.table_section_name_update', function() {
-
-		var section_name = jQuery( this ).val();
-		var section_id = jQuery( this ).closest( '.sap-inifinite-table-row' ).find( '.sap-infinite-table-id' ).val();
-
-		jQuery( '.sap-infinite-table-section option[value="' + section_id + '"]' ).html( section_name );
-	});
-}
-
-function rtb_table_selection_delete_handler() {
-
-	jQuery( '#sap-table-rtb-table-sections' ).off( 'click.table_section_delete' );
-	jQuery( '#sap-table-rtb-table-sections' ).on( 'click.table_section_delete', function() {
-		
-		var section_id = jQuery( this ).closest( '.sap-inifinite-table-row' ).find( '.sap-infinite-table-section_id' ).val();
-
-		jQuery( '.sap-infinite-table-section option[value="' + section_id + '"]' ).remove();
-	});
-}
 
 /* Handle Trial Type Selection */
 jQuery(document).ready(function($) {

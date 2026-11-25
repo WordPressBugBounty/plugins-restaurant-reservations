@@ -120,6 +120,7 @@ class rtbPermissions {
 	}
 
 	private function has_capability( $permission_type ) {
+		if ( ! class_exists( 'rtbPaidFeatures' ) || ! rtbPaidFeatures::available( $permission_type ) ) { return false; }
 		if ( ! isset( $this->plugin_permissions[ $permission_type ] ) ) { return false; }
 		$contract = $this->get_contract();
 		return in_array( $permission_type, $contract['capabilities'] ?? array(), true );

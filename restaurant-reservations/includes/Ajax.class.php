@@ -58,6 +58,7 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 		public $location_id;
 
 		public function __construct() {
+			add_action( 'wp_ajax_rtb_get_notification_history', array( $this, 'get_notification_history' ) );
 
 			add_action( 'wp_ajax_rtb_get_available_time_slots', array( $this, 'get_time_slots' ) );
 			add_action( 'wp_ajax_nopriv_rtb_get_available_time_slots', array( $this, 'get_time_slots' ) );
@@ -100,6 +101,16 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 			$authorized_id = (int) apply_filters( 'rtb_authorized_availability_booking_id', 0, $requested_id );
 
 			return $requested_id === $authorized_id ? $requested_id : 0;
+		}
+
+		public function get_notification_history() {
+			nocache_headers();
+			if ( ! check_ajax_referer( 'rtb-admin', 'nonce', false ) ) { wp_send_json_error( array( 'message' => __( 'The request expired. Reload the page.', 'restaurant-reservations' ) ), 403 ); }
+			$id = isset( $_POST['booking_id'] ) && is_scalar( $_POST['booking_id'] ) ? absint( $_POST['booking_id'] ) : 0;
+			$cursor = isset( $_POST['cursor'] ) && is_string( $_POST['cursor'] ) ? wp_unslash( $_POST['cursor'] ) : '';
+			$result = rtbNotificationDiagnostics::page( $id, $cursor );
+			if ( is_wp_error( $result ) ) { wp_send_json_error( array( 'message' => $result->get_error_message() ), 'history_forbidden' === $result->get_error_code() ? 403 : 400 ); }
+			wp_send_json_success( $result );
 		}
 
 		/**
@@ -901,17 +912,8 @@ if ( !class_exists( 'rtbAJAX' ) ) {
 		 * @since 2.6.5
 		 */
 		public function reset_notifications() {
-			global $rtb_controller;
-
-			if ( !check_ajax_referer( 'rtb-admin', 'nonce' ) || !current_user_can( 'manage_options' ) ) {
-				rtbHelper::bad_nonce_ajax();
-			}
-
-			$rtb_controller->settings->set_setting( 'booking-notifications', null );
-
-  			$rtb_controller->settings->save_settings();
-
-  			die();
+			if ( ! rtbPaidFeatures::can( 'advanced' ) || ! class_exists( 'fspphRTBNotifications', false ) ) { wp_send_json_error( array( 'error' => 'paid_runtime_unavailable' ), 403 ); }
+			fspphRTBNotifications::reset_notifications();
 		}
 
 		/**

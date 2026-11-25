@@ -2627,35 +2627,6 @@ NEW STYLING FOR ADD/DELETE AREAS LIKE CUSTOM FIELDS
 /*********************************/
 /*** RESTAURANT TABLES ***/
 /*********************************/
-#rtb-combinations-popup {
-	position: fixed;
-	top: 10%;
-	right: 0;
-	left: 0;
-	width: 90%;
-	max-width: 600px;
-	padding: 2em;
-	background: #FFF;
-	margin: 3em auto 4em;
-	cursor: auto;
-	z-index: 10000;
-}
-#rtb-combinations-popup-background {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: rgba(0, 0, 0, 0.8);
-	z-index: 9999;
-	overflow-y: auto;
-	cursor: pointer;
-}
-#rtb-combinations-submit {
-	margin-top: 12px;
-	cursor: pointer;
-}
-
 body[class*="_rtb-settings"] .wrap form .form-table .sap-infinite-table input[type="number"],
 body[class*="_rtb-settings"] .wrap form .form-table .sap-infinite-table input[type="text"] {
   width: 64px;

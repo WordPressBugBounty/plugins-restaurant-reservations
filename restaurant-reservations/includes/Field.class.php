@@ -249,46 +249,8 @@ class cffrtbField {
 	 * @since 0.1
 	 */
 	public function prepare_options_input() {
-		$options = array();
-		if ( !empty( $this->ID ) ) {
-			$meta = get_post_meta( $this->ID, 'cffrtb', true );
-			if ( isset( $meta['options'] ) ) {
-				$options = $meta['options'];
-			}
-		}
-
-		$existing = array();
-		$max_id = -1;
-		foreach ( $options as $key => $option ) {
-			$id = isset( $option['id'] ) ? $option['id'] : $key;
-			$option['id'] = $id;
-			$existing[ (string) $id ] = $option;
-			if ( is_numeric( $id ) ) { $max_id = max( $max_id, (int) $id ); }
-		}
-
-		$merged = array();
-		$seen = array();
-		foreach ( (array) $this->options as $option ) {
-			$id = isset( $option['id'] ) ? (string) $option['id'] : 'new';
-			// Loaded historical records must not become active on a repeated save.
-			if ( ! empty( $option['disabled'] ) || isset( $seen[ $id ] ) ) { continue; }
-			if ( 0 === strpos( $id, 'new' ) || ! isset( $existing[ $id ] ) ) {
-				$id = (string) ++$max_id;
-			}
-
-			$option['id'] = (int) $id;
-			$option['disabled'] = false;
-			$merged[] = $option;
-			$seen[ $id ] = true;
-		}
-
-		foreach ( $existing as $id => $option ) {
-			if ( isset( $seen[ $id ] ) ) { continue; }
-			$option['disabled'] = true;
-			$merged[] = $option;
-		}
-
-		return $merged;
+		if ( ! rtbPaidFeatures::can( 'custom_fields' ) || ! class_exists( 'fspphRTBFieldWriter', false ) ) { return array( false, array( 'error' => 'paid_runtime_unavailable' ) ); }
+		return fspphRTBFieldWriter::prepare_options_input( $this );
 	}
 
 	/**
@@ -327,117 +289,8 @@ class cffrtbField {
 	 * @since 0.1
 	 */
 	public function save_label() {
-		global $rtb_controller;
-
-		// A default field shouldn't be saved as a custom field post
-		// type. Instead we need to overwrite the label for the slug.
-		if ( !$this->has_id() ) {
-
-			if ( empty( $this->slug ) ) {
-				return array(
-					false,
-					array(
-						'error' => 'missing_slug',
-						'msg'	=> __( 'No field slug was sent with this request to update a default field.', 'custom-fields-for-rtb' ) . ' ' . $rtb_controller->custom_fields->common_error_msg,
-						'data'	=> array( 'field' => $field, 'post_vars' => $_POST )
-					)
-				);
-			}
-
-			$modified = get_option( $rtb_controller->custom_fields->modified_option_key );
-
-			$new = $modified;
-
-			if ( empty( $new ) ) {
-				$new = array();
-			}
-
-			if ( empty( $new[ $this->slug ] ) ) {
-				$new[ $this->slug ] = array();
-			}
-
-			$new[ $this->slug ][ 'title'] = $this->title;
-			$new[ $this->slug ][ 'fieldset'] = $this->fieldset;
-
-			if ( update_option( $rtb_controller->custom_fields->modified_option_key, $new ) ) {
-				return array(
-					true,
-					array(
-						'field'	=> $this
-					)
-				);
-
-			} else {
-
-				/**
-				 * update_option() returns false if the new option is
-				 * the same as the old option, so let's check if that's
-				 * why we got a false response and send out a true
-				 * response if there's no error with the save process.
-				 */
-				$same = true;
-
-				if ( empty( $modified ) || empty( $modified[ $this->slug ] ) ) {
-					$same = false;
-				}
-
-				if ( ( isset( $modified[ $this->slug ]['title'] ) && $modified[ $this->slug ]['title'] !== $this->title ) ||
-					( !isset( $modified[ $this->slug ]['title'] ) && !empty( $this->title ) ) ) {
-					$same = false;
-				}
-
-				if ( empty( $modified[ $this->slug ]['fieldset'] ) || $modified[ $this->slug ]['fieldset'] !== $this->fieldset ) {
-					$same = false;
-				}
-
-				if ( $same ) {
-					return array(
-						true,
-						array(
-							'field'	=> $this
-						)
-					);
-
-				} else {
-					return array(
-						false,
-						array(
-							'error' 	=> 'save_failed',
-							'msg' 		=> __( 'An error occurred while updating the label for this default field. Please try again.', 'custom-fields-for-rtb' ),
-							'field'		=> $this,
-							'option'	=> $new,
-						)
-					);
-				}
-			}
-
-		// Custom field
-		} else {
-
-			$field = array(
-				'ID'			=> $this->ID,
-				'post_title'	=> $this->title,
-			);
-
-			if ( wp_update_post( $field ) ) {
-				return array(
-					true,
-					array(
-						'title'	=> get_the_title( $this->ID ),
-					)
-				);
-
-			} else {
-				return array(
-					false,
-					array(
-						'error' 	=> 'save_failed',
-						'msg' 		=> __( 'An error occurred while updating the label for this custom field. Please try again.', 'custom-fields-for-rtb' ),
-						'field'		=> $this,
-					)
-				);
-			}
-		}
+		if ( ! rtbPaidFeatures::can( 'custom_fields' ) || ! class_exists( 'fspphRTBFieldWriter', false ) ) { return array( false, array( 'error' => 'paid_runtime_unavailable' ) ); }
+		return fspphRTBFieldWriter::save_label( $this );
 	}
 
 	/**
@@ -446,84 +299,8 @@ class cffrtbField {
 	 * @since 0.1
 	 */
 	public function save_field() {
-		global $rtb_controller;
-
-		if ( empty( $this->title ) || empty( $this->type ) || ( $this->type !== 'fieldset' && empty( $this->subtype ) ) ) {
-			return array(
-				false,
-				array(
-					'error' 	=> 'missing_data',
-					'msg' 		=> __( 'This field could not be saved because required data was missing.', 'custom-fields-for-rtb' ),
-					'field'		=> $this,
-				)
-			);
-		}
-
-		$post = array(
-			'post_title'		=> $this->title,
-			'post_type'			=> 'cffrtb_field',
-			'post_status'		=> $this->status,
-		);
-		if ( $this->has_id() ) { $post['ID'] = $this->ID; }
-		if ( !empty( $this->slug ) ) { $post['post_name'] = $this->slug; }
-		if ( !empty( $this->order ) ) { $post['menu_order'] = $this->order; }
-
-		$post = apply_filters( 'cffrtb_insert_field_data', $post, $this );
-
-		$id = wp_insert_post( $post );
-		if ( is_wp_error( $id ) || empty( $id ) ) {
-			return array(
-				false,
-				array(
-					'error' 	=> 'save_post_failed',
-					'msg' 		=> __( 'An error occurred while saving this field. Please try again. If the problem persists, please refresh the page.', 'custom-fields-for-rtb' ),
-					'field'		=> $this,
-					'wp_error'	=> $id
-				)
-			);
-		}
-
-		$is_new_field = !$this->has_id();
-
-		$this->ID = $id;
-
-		$post_item = get_post( $id );
-		$this->title = get_the_title( $id );
-		$this->slug = $post_item->post_name;
-
-		$post_meta = array(
-			'type'		=> $this->type,
-		);
-		if ( !empty( $this->subtype ) ) { $post_meta['subtype'] = $this->subtype; }
-		if ( !empty( $this->required ) ) { $post_meta['required'] = $this->required; }
-		if ( !empty( $this->fieldset ) ) { $post_meta['fieldset'] = $this->fieldset; }
-		if ( $this->type == 'options' ) { $post_meta['options'] = $this->prepare_options_input(); }
-
-		$post_meta = apply_filters( 'cffrtb_insert_field_metadata', $post_meta, $this );
-
-		update_post_meta( $id, 'cffrtb', $post_meta );
-
-		$field = array(
-			'ID'	=> $this->ID,
-			'title'	=> $this->title,
-		);
-
-		if ( $this->type == 'fieldset' ) {
-			$type = 'fieldset';
-			$field['legend'] = $this->title;
-		} else {
-			$type = 'field';
-		}
-
-		return array(
-			true,
-			array(
-				'ID'			=> $this->ID,
-				'is_new_field'	=> $is_new_field,
-				'field'			=> $rtb_controller->editor->print_field( $this->slug, $field, $type ),
-				'type'			=> $this->type,
-			)
-		);
+		if ( ! rtbPaidFeatures::can( 'custom_fields' ) || ! class_exists( 'fspphRTBFieldWriter', false ) ) { return array( false, array( 'error' => 'paid_runtime_unavailable' ) ); }
+		return fspphRTBFieldWriter::save_field( $this );
 	}
 
 	/**

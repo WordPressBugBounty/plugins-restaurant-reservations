@@ -78,7 +78,9 @@ class rtbBooking {
 	public $table;
 	public $payment_failure_message;
 	public $receipt_id;
+	public $payment_currency = '';
 	public $mc_optin;
+	public $mc_optin_submitted = false;
 	public $cancellation_code;
 	public $staff_walk_in = false;
 
@@ -205,17 +207,12 @@ class rtbBooking {
 		$this->post_reservation_follow_up_sent = $meta['post_reservation_follow_up_sent'];
 
 		$this->reservation_notifications = $meta['reservation_notifications'];
-		$separate_diagnostics = get_post_meta( $this->ID, '_rtb_notification_diagnostic', false );
-		$this->notification_diagnostics = ! empty( $separate_diagnostics )
-			? array_slice( $separate_diagnostics, -50 )
-			: $meta['notification_diagnostics'];
+		// Separate history is fetched only for the selected Details panel.
+		$this->notification_diagnostics = $meta['notification_diagnostics'];
 
 		// Did they opt out?
-		$optout = $rtb_controller->settings->get_setting( 'mc-optout' );
-		// Because mcfrtbInit::reload_booking_meta() does not fire when needed for unknown reason
-		if ( $optout != 'no' ) {
-			$this->mc_optin = $meta['mc_optin'];
-		}
+		// Historical consent is shared booking data, even without the integration.
+		$this->mc_optin = $meta['mc_optin'];
 	}
 
 	/**
@@ -1619,6 +1616,12 @@ class rtbBooking {
 	 * @since 0.0.1
 	 */
 	public function insert_post_data( &$admission_lock = null ) {
+		global $rtb_controller;
+		if ( empty( $this->ID ) ) {
+			$errors_before = count( $this->validation_errors );
+			$rtb_controller->payment_manager->guard_unavailable_provider( $this );
+			if ( count( $this->validation_errors ) > $errors_before ) { return false; }
+		}
 		// Payment gateways and legacy integrations call this method directly.
 		// They must not bypass the same final inventory boundary used by forms.
 		if ( ! $admission_lock ) {
@@ -1830,15 +1833,31 @@ class rtbBooking {
 		}
 
 		$meta = apply_filters( 'rtb_insert_booking_metadata', $meta, $this );
+		// Preserve the original embedded evidence; do not copy the separate
+		// store back here or rewrite history from a stale booking object.
+		$previous = get_post_meta( $this->ID, 'rtb', true );
+		if ( is_array( $previous ) && isset( $previous['notification_diagnostics'] ) ) {
+			$meta['notification_diagnostics'] = $previous['notification_diagnostics'];
+		}
+		if ( is_array( $previous ) && array_key_exists( 'mc_optin', $previous ) && ! array_key_exists( 'mc_optin', $meta ) ) {
+			$meta['mc_optin'] = $previous['mc_optin'];
+		}
 
 		return update_post_meta( $this->ID, 'rtb', $meta );
 	}
 
 	public function payment_paid( $provider = '' )
 	{
+		$admission_lock = null;
+		return $this->payment_paid_locked( $provider, $admission_lock );
+	}
+
+	/** Reuse an already-owned inventory lock after the provider result was checked. */
+	public function payment_paid_locked( $provider, &$admission_lock )
+	{
 		if ( empty( $this->ID ) ) { return false; }
 		$this->determine_status( true );
-		$saved = $this->insert_post_data();
+		$saved = $this->insert_post_data( $admission_lock );
 		$persisted = new rtbBooking();
 		$verified = $saved && $persisted->load_post( (int) $this->ID )
 			&& $persisted->post_status === $this->post_status
@@ -1862,6 +1881,7 @@ class rtbBooking {
 	public function record_payment_reconciliation( $provider = '' ) {
 		if ( empty( $this->ID ) ) { return false; }
 		$transaction = array( 'provider' => (string) $provider, 'receipt_id' => (string) $this->receipt_id, 'deposit' => (float) $this->deposit, 'recorded_at' => time() );
+		if ( is_string( $this->payment_currency ) && preg_match( '/^[a-z]{3}$/D', strtolower( $this->payment_currency ) ) ) { $transaction['currency'] = strtolower( $this->payment_currency ); }
 		$ledger_name = rtbPaymentAttempt::ledger_name( $this->ID, $provider, (string) $this->receipt_id );
 		$ledger_saved = add_option( $ledger_name, $transaction, '', false );
 		$existing_transaction = get_option( $ledger_name );

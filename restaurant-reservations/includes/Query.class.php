@@ -72,7 +72,7 @@ class rtbQuery {
 			'post_type'			=> RTB_BOOKING_POST_TYPE,
 			'posts_per_page'	=> 10,
 			'date_range'		=> 'upcoming',
-			'post_status'		=> array_keys( $rtb_controller->cpts->booking_statuses ),
+			'post_status'		=> $rtb_controller->cpts->get_query_statuses(),
 			'order'				=> 'ASC',
 			'paged'				=> 1,
 		);

@@ -145,7 +145,7 @@ function rtb_print_booking_form( $args = array() )
 		}
 
 	elseif ( isset( $_GET['payment'] ) && 'review' === $_GET['payment'] ) : ?>
-		<div class="rtb-message"><p><?php echo esc_html__( 'Your payment was received, but the reservation update needs administrator review. Please do not pay again; contact the site administrator with your booking number.', 'restaurant-reservations' ); ?></p></div>
+		<div class="rtb-message"><p><?php echo esc_html__( 'Your payment or reservation update needs administrator review. Please do not pay again; contact the site administrator with your booking number.', 'restaurant-reservations' ); ?></p></div>
 	<?php elseif ( $rtb_controller->request->request_inserted === true or isset($_GET['payment']) ) :
 		if ( isset($_GET['payment']) && 'rtb-delayed-deposit' != $_GET['payment'] ) { ?>
 			<div class="rtb-message">
@@ -407,7 +407,7 @@ function rtb_print_view_bookings_form( $args = array() ) {
 			'month' => substr( $args['date'], 5, 2 ),
 			'day' => substr( $args['date'], 8, 2 )
 		),
-		'post_status' => array_keys( $rtb_controller->cpts->booking_statuses ),
+		'post_status' => $rtb_controller->cpts->get_query_statuses(),
 		'orderby' => 'date',
 		'order' => 'ASC'
 	);
@@ -610,20 +610,7 @@ function rtb_enqueue_assets() {
 		$screenID = '';
 	}
 	
-	if( $rtb_controller->settings->get_setting( 'rtb-styling-layout' ) == 'contemporary' && $screenID != 'toplevel_page_rtb-bookings' ){
-		wp_enqueue_style( 'rtb-contemporary-css', RTB_PLUGIN_URL . '/assets/css/contemporary.css' );
-	}
-	if( $rtb_controller->settings->get_setting( 'rtb-styling-layout' ) == 'minimal' && $screenID != 'toplevel_page_rtb-bookings' ){
-		wp_enqueue_style( 'rtb-columns-css', RTB_PLUGIN_URL . '/assets/css/columns-new.css' );
-	}
-	if( $rtb_controller->settings->get_setting( 'rtb-styling-layout' ) == 'columns' && $screenID != 'toplevel_page_rtb-bookings' ){
-		wp_enqueue_style( 'rtb-columns-css', RTB_PLUGIN_URL . '/assets/css/columns.css' );
-		wp_enqueue_script( 'rtb-columns-js', RTB_PLUGIN_URL . '/assets/js/columns.js', array( 'jquery' ), '', true );
-	}
-	if( $rtb_controller->settings->get_setting( 'rtb-styling-layout' ) == 'columns_alternate' && $screenID != 'toplevel_page_rtb-bookings' ){
-		wp_enqueue_style( 'rtb-columns-alternate', RTB_PLUGIN_URL . '/assets/css/columns-alternate.css' );
-		wp_enqueue_script( 'rtb-columns', RTB_PLUGIN_URL . '/assets/js/columns.js', array( 'jquery' ), '', true );
-	}
+	if ( rtbPaidFeatures::can( 'styling' ) && class_exists( 'fspphRTBStyling', false ) ) { fspphRTBStyling::enqueue_layout( $screenID ); }
 }
 } // endif;
 
@@ -1031,35 +1018,10 @@ function rtb_get_request_input( $lookup, $request ) {
 if ( !function_exists( 'rtb_add_custom_styling' ) ) {
 	function rtb_add_custom_styling() {
 		global $rtb_controller;
-		$styling = '<style>';
+		$styling = '';
 			if ( $rtb_controller->settings->get_setting('display-unavailable-time-slots') == '' ) { $styling .= '#rtb-time_root .picker__list .picker__list-item.picker__list-item--disabled { display: none; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-section-title-font-family') != '' ) { $styling .= '.rtb-booking-form fieldset legend { font-family: \'' . $rtb_controller->settings->get_setting('rtb-styling-section-title-font-family') . '\' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-section-title-font-size') != '' ) { $styling .=  '.rtb-booking-form fieldset legend { font-size: ' . $rtb_controller->settings->get_setting('rtb-styling-section-title-font-size') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-section-title-color') != '' ) { $styling .=  '.rtb-booking-form fieldset legend { color: ' . $rtb_controller->settings->get_setting('rtb-styling-section-title-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-section-background-color') != '' ) { $styling .=  '.rtb-booking-form fieldset { background-color: ' . $rtb_controller->settings->get_setting('rtb-styling-section-background-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-section-border-color') != '' ) { $styling .=  '.rtb-booking-form fieldset { border-color: ' . $rtb_controller->settings->get_setting('rtb-styling-section-border-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-section-border-size') != '' ) { $styling .=  '.rtb-booking-form fieldset { border-width: ' . $rtb_controller->settings->get_setting('rtb-styling-section-border-size') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-label-font-family') != '' ) { $styling .=  '.rtb-booking-form fieldset label, .rtb-booking-form .add-message a { font-family: \'' . $rtb_controller->settings->get_setting('rtb-styling-label-font-family') . '\' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-label-font-size') != '' ) { $styling .=  '.rtb-booking-form fieldset label { font-size: ' . $rtb_controller->settings->get_setting('rtb-styling-label-font-size') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-label-color') != '' ) { $styling .=  '.rtb-booking-form fieldset label { color: ' . $rtb_controller->settings->get_setting('rtb-styling-label-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-add-message-button-background-color') != '' ) { $styling .=  '.rtb-booking-form .add-message a { background-color: ' . $rtb_controller->settings->get_setting('rtb-styling-add-message-button-background-color') . ' !important; border-color: ' . $rtb_controller->settings->get_setting('rtb-styling-add-message-button-background-color') . ' !important; padding: 6px 12px !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-add-message-button-background-hover-color') != '' ) { $styling .=  '.rtb-booking-form .add-message a:hover { background-color: ' . $rtb_controller->settings->get_setting('rtb-styling-add-message-button-background-hover-color') . ' !important; border-color: ' . $rtb_controller->settings->get_setting('rtb-styling-add-message-button-background-hover-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-add-message-button-text-color') != '' ) { $styling .=  '.rtb-booking-form .add-message a { color: ' . $rtb_controller->settings->get_setting('rtb-styling-add-message-button-text-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-add-message-button-text-hover-color') != '' ) { $styling .=  '.rtb-booking-form .add-message a:hover { color: ' . $rtb_controller->settings->get_setting('rtb-styling-add-message-button-text-hover-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-background-color') != '' ) { $styling .=  '.rtb-booking-form form button { background-color: ' . $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-background-color') . ' !important; border-color: ' . $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-background-color') . ' !important; padding: 13px 28px !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-background-hover-color') != '' ) { $styling .=  '.rtb-booking-form form button:hover { background-color: ' . $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-background-hover-color') . ' !important; border-color: ' . $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-background-hover-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-text-color') != '' ) { $styling .=  '.rtb-booking-form form button { color: ' . $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-text-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-text-hover-color') != '' ) { $styling .=  '.rtb-booking-form form button:hover { color: ' . $rtb_controller->settings->get_setting('rtb-styling-request-booking-button-text-hover-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-cancel-button-background-color') != '' ) { $styling .=  '.rtb-modification-toggle { background-color: ' . $rtb_controller->settings->get_setting('rtb-styling-cancel-button-background-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-cancel-button-background-hover-color') != '' ) { $styling .=  '.rtb-modification-toggle:hover { background-color: ' . $rtb_controller->settings->get_setting('rtb-styling-cancel-button-background-hover-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-cancel-button-text-color') != '' ) { $styling .=  '.rtb-modification-toggle { color: ' . $rtb_controller->settings->get_setting('rtb-styling-cancel-button-text-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-cancel-button-text-hover-color') != '' ) { $styling .=  '.rtb-modification-toggle:hover { color: ' . $rtb_controller->settings->get_setting('rtb-styling-cancel-button-text-hover-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-find-reservations-button-background-color') != '' ) { $styling .=  '.rtb-find-reservation-button { background-color: ' . $rtb_controller->settings->get_setting('rtb-styling-find-reservations-button-background-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-find-reservations-button-background-hover-color') != '' ) { $styling .=  '.rtb-find-reservation-button:hover { background-color: ' . $rtb_controller->settings->get_setting('rtb-styling-find-reservations-button-background-hover-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-find-reservations-button-text-color') != '' ) { $styling .=  '.rtb-find-reservation-button { color: ' . $rtb_controller->settings->get_setting('rtb-styling-find-reservations-button-text-color') . ' !important; }'; }
-			if ( $rtb_controller->settings->get_setting('rtb-styling-find-reservations-button-text-hover-color') != '' ) { $styling .=  '.rtb-find-reservation-button:hover { color: ' . $rtb_controller->settings->get_setting('rtb-styling-find-reservations-button-text-hover-color') . ' !important; }'; }
-		$styling .=   '</style>';
-		return $styling;
+		if ( rtbPaidFeatures::can( 'styling' ) && class_exists( 'fspphRTBStyling', false ) ) { $styling .= fspphRTBStyling::custom_css(); }
+		return '<style>' . wp_strip_all_tags( $styling ) . '</style>';
 	}
 }
 
